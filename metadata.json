@@ -1,0 +1,5 @@
+{
+  "name": "AI Architect - 智慧空間生成",
+  "description": "An AI-powered architectural design tool that allows users to plan floor plans, arrange rooms, and generate 3D interior renders using Gemini.",
+  "requestFramePermissions": []
+}
