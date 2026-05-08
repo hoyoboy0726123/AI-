@@ -55,12 +55,13 @@ python main.py
 新增「AI 引擎」與「Agent」兩個頁籤：
 
 - **AI 引擎**：選 **Gemini** 或 **Ollama**，列出可用模型、測試連線、設定審查 rubric。
-- **Agent**：自然語言對話，已支援 16 個工具（P2 + P3 + P4）：
+- **Agent**：自然語言對話，已支援 17 個工具（P2 + P3 + P4 + P5）：
   - 查詢：`list_excel_sheets` / `read_excel_columns` / `read_template_variables` / `get_current_settings`
   - 設定：`set_word_path` / `set_excel_path` / `set_sheet_name` / `set_header_row` / `set_output_dir` / `set_filename_template` / `set_image_width_mm`
   - 驗證：`validate_template`
   - 執行：`generate_reports` / `open_output_folder`
   - 互動：`ask_user`（含 choices 單選）/ `request_file`（檔案 / 資料夾選取對話框）
+  - 渲染：`render_docx_pages`（docx → 每頁 PNG，供 P6 reviewer 使用）
   - Agent 缺資料時會主動跳檔案選取或單選對話框，不靠你貼路徑。
   - 範例：「全部產出」（agent 缺什麼就會問）、「驗證一下範本，缺欄位再問我要不要繼續」
   - Ctrl+Enter 送出。
@@ -94,9 +95,10 @@ API key 採 `.env` 管理：複製 `.env.example` 為 `.env` 並填入 `GEMINI_A
     ├── hotkey.py        # 全域快捷鍵
     └── agent/
         ├── registry.py      # Tool / ToolRegistry 框架
-        ├── tools.py         # 工具實作（read-only + 寫入 / 驗證 / 執行 / 互動）
-        ├── context.py       # AppContext：UI 狀態橋接（執行緒安全）+ ask_user / request_file
+        ├── tools.py         # 工具實作（read-only + 寫入 / 驗證 / 執行 / 互動 / 渲染）
+        ├── context.py       # AppContext：UI 狀態橋接（執行緒安全）+ ask_user / request_file / render_docx_pages
         ├── dialogs.py       # ChoiceDialog（agent 用單選對話框）
+        ├── docx_render.py   # docx → PDF (Word COM) → PNG (PyMuPDF) 管線
         ├── orchestrator.py  # planner loop（單回合 = 跑完所有 tool call）
         └── llm/             # LLM provider 抽象
             ├── base.py      # LLMClient + Message + ToolCall

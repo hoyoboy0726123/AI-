@@ -209,6 +209,33 @@ def make_writable_tools(ctx) -> list:
             func=ctx.open_output_folder,
         ),
         Tool(
+            name="render_docx_pages",
+            description=(
+                "將 docx 檔渲染成每頁一張 PNG，供視覺檢查（reviewer 用）。"
+                "需 Windows + Word + pymupdf。回傳 pages: [{page, path}]、output_dir、page_count。"
+                "max_pages > 0 時只渲染前 N 頁。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "docx_path": {
+                        "type": "string",
+                        "description": "Word 檔（.docx）的完整路徑",
+                    },
+                    "dpi": {
+                        "type": "integer",
+                        "description": "渲染解析度 DPI；預設 150，不可低於 72",
+                    },
+                    "max_pages": {
+                        "type": "integer",
+                        "description": "只渲染前 N 頁；0 = 全部",
+                    },
+                },
+                "required": ["docx_path"],
+            },
+            func=ctx.render_docx_pages,
+        ),
+        Tool(
             name="ask_user",
             description=(
                 "向使用者顯示對話框詢問補充資訊（短問句）。"

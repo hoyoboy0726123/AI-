@@ -200,6 +200,48 @@ class AppContext:
         ok = open_folder(path)
         return {"ok": ok, "path": path}
 
+    # ---------- 渲染 (P5: docx → image) ----------
+
+    def render_docx_pages(self, docx_path: str, dpi: int = 150, max_pages: int = 0) -> dict:
+        """把 docx 渲染成每頁一張 PNG，回傳 list of {page, path}。
+
+        失敗（未安裝 pymupdf / Word COM 失敗 / 檔案問題）統一以 dict 回傳 error。
+        """
+        from app.agent.docx_render import docx_to_images
+
+        if not docx_path:
+            return {"error": "未提供 docx 路徑"}
+        if not os.path.isfile(docx_path):
+            return {"error": f"檔案不存在: {docx_path}"}
+        if not docx_path.lower().endswith(".docx"):
+            return {"error": "必須是 .docx 檔"}
+
+        try:
+            d = max(72, int(dpi or 150))
+        except (TypeError, ValueError):
+            d = 150
+        try:
+            mp = max(0, int(max_pages or 0))
+        except (TypeError, ValueError):
+            mp = 0
+
+        try:
+            pages = docx_to_images(docx_path, dpi=d, max_pages=mp)
+        except FileNotFoundError as e:
+            return {"error": f"檔案不存在: {e}"}
+        except Exception as e:
+            return {"error": str(e)}
+
+        if not pages:
+            return {"error": "未渲染出任何頁面"}
+
+        output_dir = os.path.dirname(pages[0][1])
+        return {
+            "pages": [{"page": p, "path": path} for p, path in pages],
+            "output_dir": output_dir,
+            "page_count": len(pages),
+        }
+
     # ---------- 互動 (P4: human-in-the-loop) ----------
 
     def _is_cancelled(self) -> bool:
