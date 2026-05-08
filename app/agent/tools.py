@@ -208,6 +208,54 @@ def make_writable_tools(ctx) -> list:
             parameters={"type": "object", "properties": {}},
             func=ctx.open_output_folder,
         ),
+        Tool(
+            name="ask_user",
+            description=(
+                "向使用者顯示對話框詢問補充資訊（短問句）。"
+                "缺少必要資料、需要使用者決定 yes/no 或從幾個選項挑一個時呼叫。"
+                "使用者回覆字串放在 answer 欄位；按取消或關閉視窗回 cancelled=true。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "question": {
+                        "type": "string",
+                        "description": "要問使用者的問題（簡短一句）",
+                    },
+                    "choices": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "可選：候選答案清單。提供時介面顯示為單選 radio；不提供則為自由輸入。",
+                    },
+                },
+                "required": ["question"],
+            },
+            func=ctx.ask_user,
+        ),
+        Tool(
+            name="request_file",
+            description=(
+                "開啟檔案 / 資料夾選取對話框讓使用者選一個路徑。"
+                "缺少 word_path / excel_path / output_dir 這類路徑型資料時優先用此工具。"
+                "回傳 path；使用者取消回 cancelled=true。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "prompt": {
+                        "type": "string",
+                        "description": "對話框標題或說明（簡短）",
+                    },
+                    "kind": {
+                        "type": "string",
+                        "enum": ["word", "excel", "image", "directory", "any"],
+                        "description": "要選的類型；word=*.docx, excel=*.xlsx/*.xls, image=圖片, directory=資料夾, any=任意檔",
+                    },
+                },
+                "required": ["prompt"],
+            },
+            func=ctx.request_file,
+        ),
     ]
 
 

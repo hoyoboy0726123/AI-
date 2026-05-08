@@ -199,3 +199,123 @@ class AppContext:
         os.makedirs(path, exist_ok=True)
         ok = open_folder(path)
         return {"ok": ok, "path": path}
+
+    # ---------- 互動 (P4: human-in-the-loop) ----------
+
+    def _is_cancelled(self) -> bool:
+        orch = getattr(self._app, "agent_orchestrator", None)
+        if orch is None:
+            return False
+        ev = getattr(orch, "_cancel", None)
+        return bool(ev and ev.is_set())
+
+    def _set_status(self, text):
+        try:
+            self._app._agent_set_status(text)
+        except Exception:
+            pass
+
+    def ask_user(self, question: str, choices=None) -> dict:
+        """以對話框向使用者詢問，阻塞直到使用者回覆或取消。"""
+        if not question:
+            return {"error": "question 不可為空"}
+
+        import customtkinter as ctk
+        from app.agent.dialogs import ChoiceDialog
+
+        self._set_status("waiting_user")
+        state = {"answer": None, "dialog": None, "error": None}
+        done = threading.Event()
+
+        def show():
+            if self._is_cancelled():
+                done.set()
+                return
+            try:
+                if choices:
+                    dlg = ChoiceDialog(self._app, question, list(choices))
+                    state["dialog"] = dlg
+                    state["answer"] = dlg.get_input()
+                else:
+                    dlg = ctk.CTkInputDialog(text=question, title="Agent 詢問")
+                    state["dialog"] = dlg
+                    state["answer"] = dlg.get_input()
+            except Exception as e:
+                state["error"] = str(e)
+            finally:
+                done.set()
+
+        self._app.after(0, show)
+
+        try:
+            while not done.wait(timeout=0.3):
+                if self._is_cancelled():
+                    dlg = state.get("dialog")
+                    if dlg is not None:
+                        try:
+                            self._app.after(0, dlg.destroy)
+                        except Exception:
+                            pass
+                    return {"cancelled": True}
+        finally:
+            self._set_status("thinking")
+
+        if state["error"]:
+            return {"error": state["error"]}
+        ans = state["answer"]
+        if ans is None or ans == "":
+            return {"cancelled": True}
+        return {"answer": ans}
+
+    def request_file(self, prompt: str, kind: str = "any") -> dict:
+        """開啟檔案 / 資料夾選取對話框，回傳路徑或 cancelled。"""
+        from tkinter import filedialog
+
+        self._set_status("waiting_user")
+        state = {"path": None}
+        done = threading.Event()
+
+        def show():
+            if self._is_cancelled():
+                done.set()
+                return
+            try:
+                if kind == "directory":
+                    p = filedialog.askdirectory(title=prompt or "選取資料夾")
+                elif kind == "word":
+                    p = filedialog.askopenfilename(
+                        title=prompt or "選取 Word 範本",
+                        filetypes=[("Word", "*.docx")],
+                    )
+                elif kind == "excel":
+                    p = filedialog.askopenfilename(
+                        title=prompt or "選取 Excel 數據",
+                        filetypes=[("Excel", "*.xlsx *.xls")],
+                    )
+                elif kind == "image":
+                    p = filedialog.askopenfilename(
+                        title=prompt or "選取圖片",
+                        filetypes=[
+                            ("Image", "*.png *.jpg *.jpeg *.gif *.bmp"),
+                            ("All Files", "*.*"),
+                        ],
+                    )
+                else:
+                    p = filedialog.askopenfilename(title=prompt or "選取檔案")
+                state["path"] = p
+            finally:
+                done.set()
+
+        self._app.after(0, show)
+
+        try:
+            while not done.wait(timeout=0.3):
+                if self._is_cancelled():
+                    return {"cancelled": True}
+        finally:
+            self._set_status("thinking")
+
+        p = state.get("path")
+        if not p:
+            return {"cancelled": True}
+        return {"path": p}

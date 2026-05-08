@@ -222,7 +222,7 @@ app/
 | **P1 ✓** | LLM provider 抽象 + 模型列表 + AI 引擎 tab + .env | 在 UI 看到 Gemini / Ollama 模型；測試連線通 |
 | **P2 ✓** | Tool registry + 3 個 read-only tool + Agent 頁籤 + chat loop | 用 chat 問「這個 Excel 有哪些欄位」能正確答 |
 | **P3 ✓** | 寫入類 tool + validate + generate；planner 完整對話流 | 自然語言下「產出全部報告」能跑完 |
-| P4 | Human-in-the-loop（ask_user / request_file 對話框）| 缺檔案會主動問 |
+| **P4 ✓** | Human-in-the-loop（ask_user / request_file 對話框）| 缺檔案會主動問 |
 | P5 | docx → image pipeline | 任一 docx 轉成 PNG 列陣 |
 | P6 | Reviewer agent + 失敗標記 → `Failed_Reports/` | 自動審查；失敗存 fail folder 等下批處理 |
 | P7 | 抽樣 / 預算上限 / 進度 UI / 對話日誌匯出 | 生產級可用 |
