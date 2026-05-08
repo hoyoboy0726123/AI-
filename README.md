@@ -29,6 +29,20 @@ Office 視覺化對應與自動生成系統 (Windows 桌面應用)。
 pip install -r requirements.txt
 ```
 
+## 預檢測試（建議首次實機前先跑）
+
+```bash
+python tests/test_smoke.py
+```
+
+涵蓋：模組 import、設定持久化、25 個工具註冊、ReportGenerator 全流程（含圖片
+欄位、cancel）、範本編輯（rename / insert / 插圖）、資料夾掃描、reviewer JSON
+解析、suggest_mappings、generate-with-review 含預算耗盡、orchestrator 多工
+具流程 + cancel、LLMClient 缺 key/endpoint 的優雅降級。
+
+不涵蓋（需 Windows + 真實 LLM）：Word COM 操作、Tk 視窗渲染、DnD 拖拉、
+全域快捷鍵、Gemini/Ollama 真實呼叫品質。
+
 ## 使用方式
 
 ```bash
