@@ -37,6 +37,27 @@ from app.settings import load_settings, save_settings
 ctk.set_appearance_mode(APPEARANCE_MODE)
 ctk.set_default_color_theme(COLOR_THEME)
 
+# 拖拉檔案支援（可選；缺套件時退化）
+try:
+    import tkinterdnd2
+    DND_AVAILABLE = True
+except ImportError:
+    tkinterdnd2 = None
+    DND_AVAILABLE = False
+
+
+def _short_path(p: str, max_len: int = 50) -> str:
+    """log 用：太長的路徑顯示為 .../parent/name；短的維持原樣。"""
+    if not p:
+        return ""
+    if len(p) <= max_len:
+        return p
+    parent = os.path.basename(os.path.dirname(p))
+    name = os.path.basename(p)
+    if parent:
+        return f".../{parent}/{name}"
+    return name
+
 
 def open_folder(path):
     if not os.path.exists(path):
@@ -54,9 +75,25 @@ class AutoReportApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.settings = load_settings()
+        # 在建立 widget 前套用主題（避免閃爍）
+        try:
+            ctk.set_appearance_mode(self.settings.get("appearance_mode", "System"))
+        except Exception:
+            pass
         self.title(WINDOW_TITLE)
         self.geometry(WINDOW_SIZE)
         self.minsize(720, 620)
+
+        # 拖拉檔案支援（可選）
+        self._dnd_enabled = False
+        if DND_AVAILABLE:
+            try:
+                tkinterdnd2.TkinterDnD._require(self)
+                self.drop_target_register(tkinterdnd2.DND_FILES)
+                self.dnd_bind("<<Drop>>", self._on_file_drop)
+                self._dnd_enabled = True
+            except Exception:
+                self._dnd_enabled = False
 
         self.word_path = ctk.StringVar(value=self.settings["word_path"])
         self.excel_path = ctk.StringVar(value=self.settings["excel_path"])
@@ -78,6 +115,7 @@ class AutoReportApp(ctk.CTk):
         self.max_review_retries = ctk.StringVar(value=str(self.settings["max_review_retries"]))
         self.max_planner_calls = ctk.StringVar(value=str(self.settings["max_planner_calls"]))
         self.max_reviewer_calls = ctk.StringVar(value=str(self.settings["max_reviewer_calls"]))
+        self.appearance_mode = ctk.StringVar(value=self.settings.get("appearance_mode", "System"))
 
         self.mapping_active = False
         self.is_generating = False
@@ -110,9 +148,22 @@ class AutoReportApp(ctk.CTk):
     # ---- UI build ----
 
     def _build_ui(self):
+        # 標題列：左側 header，右側主題切換
+        header_bar = ctk.CTkFrame(self, fg_color="transparent")
+        header_bar.pack(fill="x", padx=15, pady=(15, 0))
         ctk.CTkLabel(
-            self, text=WINDOW_HEADER, font=ctk.CTkFont(size=20, weight="bold")
-        ).pack(pady=(15, 8))
+            header_bar, text=WINDOW_HEADER, font=ctk.CTkFont(size=20, weight="bold")
+        ).pack(side="left")
+        appearance_box = ctk.CTkFrame(header_bar, fg_color="transparent")
+        appearance_box.pack(side="right")
+        ctk.CTkLabel(appearance_box, text="主題:", text_color="gray").pack(side="left", padx=(0, 4))
+        ctk.CTkOptionMenu(
+            appearance_box,
+            variable=self.appearance_mode,
+            values=["System", "Dark", "Light"],
+            width=100,
+            command=self._on_appearance_changed,
+        ).pack(side="left")
 
         tabs = ctk.CTkTabview(self)
         tabs.pack(padx=15, pady=8, fill="both", expand=True)
@@ -148,6 +199,8 @@ class AutoReportApp(ctk.CTk):
         self.log("1) AI 引擎：選 Provider / 模型 / 預算")
         self.log("2) Agent：用一句話描述目標（缺資料會自動跳對話框）")
         self.log("3) 也可以走「設定 / 對應 / 產出」三頁籤手動操作（無 LLM 亦可）")
+        if self._dnd_enabled:
+            self.log("提示：可直接拖拉 .docx / .xlsx / 圖片 / 資料夾到視窗自動填入。")
 
     def _build_settings_tab(self, parent):
         rows = [
@@ -775,8 +828,10 @@ class AutoReportApp(ctk.CTk):
         try:
             with open(path, "w", encoding="utf-8") as f:
                 f.write(content)
-            self.log(f"對話已匯出至 {path}")
-            self._agent_append_text(f"\n── 對話已匯出至 {path} ──\n")
+            self.log(f"對話已匯出至 {_short_path(path)}")
+            self._agent_append_text(
+                f"\n── 對話已匯出至 {path} ──\n", tag="system"
+            )
         except Exception as e:
             self.log(f"匯出失敗: {e}")
 
@@ -874,6 +929,74 @@ class AutoReportApp(ctk.CTk):
         except (ValueError, TypeError):
             return 100
 
+    def _on_appearance_changed(self, value):
+        try:
+            ctk.set_appearance_mode(value)
+        except Exception as e:
+            self.log(f"切換主題失敗: {e}")
+
+    # ---- 拖拉檔案 ----
+
+    def _on_file_drop(self, event):
+        """處理拖入視窗的檔案；依副檔名自動分流。"""
+        try:
+            paths = self.tk.splitlist(event.data)
+        except Exception:
+            paths = [event.data]
+
+        routed = []
+        for raw in paths:
+            # tkdnd 在路徑含空白時會包 {}，需剝除
+            p = raw.strip()
+            if p.startswith("{") and p.endswith("}"):
+                p = p[1:-1]
+            if not p:
+                continue
+            kind = self._route_dropped_path(p)
+            if kind:
+                routed.append((kind, p))
+
+        if not routed:
+            self.log("拖入的檔案沒有可辨識的類型（支援 .docx / .xlsx / 圖片 / 資料夾）。")
+            return
+
+        for kind, p in routed:
+            self.log(f"拖入 → {kind}: {_short_path(p)}")
+
+    def _route_dropped_path(self, path: str):
+        """依副檔名 / 是否目錄分流到對應 Var；回傳路徑類型字串或 None。"""
+        if os.path.isdir(path):
+            self.output_dir.set(path)
+            return "輸出資料夾"
+
+        if not os.path.isfile(path):
+            return None
+
+        ext = os.path.splitext(path)[1].lower()
+        if ext == ".docx":
+            self.word_path.set(path)
+            return "Word 範本"
+        if ext in (".xlsx", ".xls"):
+            self.excel_path.set(path)
+            try:
+                self._refresh_sheet_list(silent=True)
+            except Exception:
+                pass
+            return "Excel 數據"
+        if ext in (".png", ".jpg", ".jpeg", ".gif", ".bmp"):
+            # 圖片：不自動寫到 path Var，因為沒有對應欄位；轉到 mapping 流程
+            ok, message, rng = OfficeMapper.insert_image_at_cursor(
+                path, width_mm=self._image_width_mm_int()
+            )
+            if ok:
+                self.mapping_history.append((f"[圖] {message}", rng))
+                self._refresh_history_box()
+            else:
+                self.log(message)
+            return "Word 圖片（已嘗試插入到游標位置）"
+
+        return None
+
     def _llm_ready(self) -> bool:
         """是否已選好 provider + planner 模型（不檢查 endpoint 是否真的可達）。"""
         provider = self.llm_provider.get()
@@ -914,6 +1037,7 @@ class AutoReportApp(ctk.CTk):
                 "review_rubric": self.rubric_box.get("1.0", "end").rstrip(),
                 "max_planner_calls": self._max_planner_calls_int(),
                 "max_reviewer_calls": self._max_reviewer_calls_int(),
+                "appearance_mode": self.appearance_mode.get(),
             }
         )
         try:

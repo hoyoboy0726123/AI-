@@ -9,3 +9,6 @@ openpyxl
 python-dotenv>=1.2.2
 google-genai>=2.0.0
 pymupdf>=1.27.0
+
+# UX 加值（可選；缺少時退化為 fallback 模式）
+tkinterdnd2>=0.4.3
