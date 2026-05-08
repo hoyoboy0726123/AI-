@@ -22,7 +22,11 @@ from app.config import (
     WINDOW_SIZE,
     WINDOW_TITLE,
 )
+import json
+
 from app.agent.llm import GEMINI_AVAILABLE, PROVIDERS, get_client
+from app.agent.orchestrator import AgentOrchestrator
+from app.agent.tools import build_default_registry
 from app.generator import ReportGenerator
 from app.hotkey import HotkeyManager
 from app.mapper import OfficeMapper
@@ -75,6 +79,9 @@ class AutoReportApp(ctk.CTk):
         self.cancel_event = threading.Event()
         self.mapping_history = []  # list of (label, (start, end))
 
+        self.agent_orchestrator = None
+        self.agent_thread = None
+
         self.hotkey_manager = HotkeyManager(HOTKEY, self._on_hotkey)
 
         self._build_ui()
@@ -96,11 +103,13 @@ class AutoReportApp(ctk.CTk):
         tabs.add("對應")
         tabs.add("產出")
         tabs.add("AI 引擎")
+        tabs.add("Agent")
 
         self._build_settings_tab(tabs.tab("設定"))
         self._build_mapping_tab(tabs.tab("對應"))
         self._build_generate_tab(tabs.tab("產出"))
         self._build_ai_tab(tabs.tab("AI 引擎"))
+        self._build_agent_tab(tabs.tab("Agent"))
 
         self.log_box = ctk.CTkTextbox(self, height=110)
         self.log_box.pack(padx=15, pady=(0, 12), fill="x")
@@ -403,6 +412,158 @@ class AutoReportApp(ctk.CTk):
             self.log(f"{provider}: 共 {len(models)} 個模型，其中 {len(vision)} 個支援 vision。")
 
         self.after(0, update)
+
+    # ---- Agent 頁籤 ----
+
+    def _build_agent_tab(self, parent):
+        top = ctk.CTkFrame(parent, fg_color="transparent")
+        top.pack(fill="x", padx=8, pady=(8, 4))
+        self.agent_status = ctk.CTkLabel(top, text="狀態: idle", text_color="gray")
+        self.agent_status.pack(side="left")
+        ctk.CTkButton(top, text="新對話", width=90, command=self._agent_reset).pack(side="right", padx=4)
+        ctk.CTkButton(
+            top, text="中止", width=90, fg_color=COLOR_RED, command=self._agent_cancel
+        ).pack(side="right", padx=4)
+
+        self.agent_box = ctk.CTkTextbox(parent, wrap="word")
+        self.agent_box.pack(fill="both", expand=True, padx=8, pady=4)
+        self.agent_box.configure(state="disabled")
+
+        bottom = ctk.CTkFrame(parent, fg_color="transparent")
+        bottom.pack(fill="x", padx=8, pady=(4, 8))
+        self.agent_input = ctk.CTkTextbox(bottom, height=70, wrap="word")
+        self.agent_input.pack(side="left", fill="x", expand=True, padx=(0, 6))
+        self.agent_input.bind("<Control-Return>", lambda _e: self._agent_send())
+        ctk.CTkButton(bottom, text="送出", width=80, command=self._agent_send).pack(side="right")
+
+        self._agent_append_text(
+            "── Agent 已就緒 ──\n"
+            "提示：在「AI 引擎」頁籤選好 provider 與模型後再開始對話。\n"
+            "範例：「目前選的 Excel 有哪些工作表？」「list 範本變數」\n"
+            "（Ctrl+Enter 也可送出）\n\n"
+        )
+
+    def _agent_set_status(self, text):
+        def update():
+            self.agent_status.configure(text=f"狀態: {text}")
+        self.after(0, update)
+
+    def _agent_append_text(self, text):
+        def append():
+            self.agent_box.configure(state="normal")
+            self.agent_box.insert("end", text)
+            self.agent_box.see("end")
+            self.agent_box.configure(state="disabled")
+        if threading.current_thread() is threading.main_thread():
+            append()
+        else:
+            self.after(0, append)
+
+    def _agent_render(self, msg):
+        if msg.role == "user":
+            self._agent_append_text(f"\n[你]\n{msg.text}\n")
+            return
+        if msg.role == "assistant":
+            for tc in msg.tool_calls:
+                args = json.dumps(tc.arguments, ensure_ascii=False)
+                self._agent_append_text(f"\n[助理 → 工具呼叫] {tc.name}({args})\n")
+            if msg.text:
+                self._agent_append_text(f"\n[助理]\n{msg.text}\n")
+            return
+        if msg.role == "tool":
+            preview = msg.text if len(msg.text) <= 600 else msg.text[:600] + "..."
+            self._agent_append_text(f"\n[工具回傳 {msg.tool_name}]\n{preview}\n")
+            return
+
+    def _agent_reset(self):
+        if self.agent_thread and self.agent_thread.is_alive():
+            self.log("Agent 仍在執行中，請先中止。")
+            return
+        self.agent_orchestrator = None
+        self.agent_box.configure(state="normal")
+        self.agent_box.delete("1.0", "end")
+        self.agent_box.configure(state="disabled")
+        self._agent_append_text("── 對話已重置 ──\n")
+        self._agent_set_status("idle")
+
+    def _agent_cancel(self):
+        if self.agent_orchestrator:
+            self.agent_orchestrator.cancel()
+            self._agent_set_status("cancelling")
+
+    def _agent_planner_model(self):
+        if self.llm_provider.get() == "Gemini":
+            return self.gemini_planner_model.get()
+        return self.ollama_planner_model.get()
+
+    def _agent_build_orchestrator(self):
+        provider = self.llm_provider.get()
+        if provider == "Gemini":
+            client = get_client("Gemini")
+        else:
+            client = get_client("Ollama", endpoint=self.ollama_endpoint.get())
+
+        if not client.is_available():
+            self._agent_append_text(
+                f"[錯誤] {provider} 不可用：請至「AI 引擎」頁籤檢查 API key / endpoint。\n"
+            )
+            return None
+
+        model = self._agent_planner_model()
+        if not model:
+            self._agent_append_text(
+                "[錯誤] 尚未選擇 planner 模型，請至「AI 引擎」頁籤刷新並選定。\n"
+            )
+            return None
+
+        context = {
+            "word_path": self.word_path.get(),
+            "excel_path": self.excel_path.get(),
+            "sheet_name": self.sheet_name.get(),
+            "header_row": self._header_row_int(),
+            "output_dir": self.output_dir.get(),
+        }
+        return AgentOrchestrator(
+            llm=client,
+            registry=build_default_registry(),
+            model=model,
+            context=context,
+        )
+
+    def _agent_send(self):
+        text = self.agent_input.get("1.0", "end").strip()
+        if not text:
+            return
+        if self.agent_thread and self.agent_thread.is_alive():
+            self._agent_append_text("[提示] 正在處理中，請稍候。\n")
+            return
+
+        self.agent_input.delete("1.0", "end")
+
+        if self.agent_orchestrator is None:
+            self.agent_orchestrator = self._agent_build_orchestrator()
+            if self.agent_orchestrator is None:
+                return
+
+        self._agent_render(type("M", (), {"role": "user", "text": text, "tool_calls": []})())
+        self.agent_orchestrator.add_user_message(text)
+        self._agent_set_status("thinking")
+
+        self.agent_thread = threading.Thread(target=self._agent_run_step, daemon=True)
+        self.agent_thread.start()
+
+    def _agent_run_step(self):
+        try:
+            for msg in self.agent_orchestrator.step():
+                if msg.role == "assistant" and msg.tool_calls:
+                    self._agent_set_status(f"calling {msg.tool_calls[0].name}")
+                elif msg.role == "tool":
+                    self._agent_set_status("thinking")
+                self._agent_render(msg)
+        except Exception as e:
+            self._agent_append_text(f"\n[執行錯誤] {e}\n")
+        finally:
+            self._agent_set_status("idle")
 
     # ---- helpers ----
 

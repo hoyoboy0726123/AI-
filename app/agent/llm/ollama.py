@@ -8,7 +8,7 @@ import json
 import os
 import urllib.request
 
-from .base import LLMClient
+from .base import LLMClient, Message, ToolCall
 
 
 class OllamaClient(LLMClient):
@@ -36,6 +36,17 @@ class OllamaClient(LLMClient):
         with urllib.request.urlopen(f"{self.endpoint}{path}", timeout=self.timeout) as r:
             return json.loads(r.read().decode("utf-8"))
 
+    def _post_json(self, path, payload, timeout=None):
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            f"{self.endpoint}{path}",
+            data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=timeout or 120) as r:
+            return json.loads(r.read().decode("utf-8"))
+
     def is_available(self):
         try:
             self._get("/api/tags")
@@ -60,3 +71,69 @@ class OllamaClient(LLMClient):
             for m in self.list_models()
             if any(k in m.lower() for k in self.VISION_KEYWORDS)
         ]
+
+    # ---- chat ----
+
+    def chat(self, messages, model=None, tools=None):
+        if not model:
+            raise RuntimeError("未指定 Ollama 模型。")
+
+        payload = {
+            "model": model,
+            "stream": False,
+            "messages": [self._msg_to_ollama(m) for m in messages],
+        }
+        if tools:
+            payload["tools"] = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": t["name"],
+                        "description": t.get("description", ""),
+                        "parameters": t.get("parameters", {"type": "object"}),
+                    },
+                }
+                for t in tools
+            ]
+
+        try:
+            body = self._post_json("/api/chat", payload, timeout=180)
+        except Exception as e:
+            raise RuntimeError(f"Ollama 連線失敗: {e}")
+
+        msg = body.get("message", {}) or {}
+        out = Message(role="assistant", text=msg.get("content", "") or "")
+        for tc in msg.get("tool_calls", []) or []:
+            fn = tc.get("function", {}) or {}
+            args = fn.get("arguments", {})
+            if isinstance(args, str):
+                # 部分模型回傳 JSON 字串而非 dict
+                try:
+                    args = json.loads(args)
+                except (json.JSONDecodeError, TypeError):
+                    args = {"_raw": args}
+            out.tool_calls.append(
+                ToolCall(name=fn.get("name", ""), arguments=args or {})
+            )
+        return out
+
+    @staticmethod
+    def _msg_to_ollama(msg):
+        if msg.role == "user":
+            return {"role": "user", "content": msg.text or ""}
+        if msg.role == "system":
+            return {"role": "system", "content": msg.text or ""}
+        if msg.role == "assistant":
+            d = {"role": "assistant", "content": msg.text or ""}
+            if msg.tool_calls:
+                d["tool_calls"] = [
+                    {"function": {"name": tc.name, "arguments": tc.arguments or {}}}
+                    for tc in msg.tool_calls
+                ]
+            return d
+        if msg.role == "tool":
+            d = {"role": "tool", "content": msg.text or ""}
+            if msg.tool_name:
+                d["name"] = msg.tool_name
+            return d
+        return {"role": "user", "content": msg.text or ""}

@@ -1,10 +1,24 @@
-"""LLM provider 抽象介面。
-
-所有 client 實作應盡量寬容：依賴未安裝、API key 未設、endpoint 不可達時，
-list_models 回空 list、is_available 回 False，不應 raise，避免拖垮 UI。
-"""
+"""LLM provider 抽象介面與訊息資料結構。"""
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+
+
+@dataclass
+class ToolCall:
+    name: str
+    arguments: dict
+    id: str = ""  # OpenAI 風格 provider 用
+
+
+@dataclass
+class Message:
+    """跨 provider 的中性訊息結構。"""
+
+    role: str  # "system" | "user" | "assistant" | "tool"
+    text: str = ""
+    tool_calls: list = field(default_factory=list)  # list[ToolCall]
+    tool_name: str = ""  # role="tool" 時，對應呼叫的工具名
 
 
 class LLMClient(ABC):
@@ -19,3 +33,12 @@ class LLMClient(ABC):
     @abstractmethod
     def list_vision_models(self) -> list:
         """列出支援多模態（vision）的模型名稱（reviewer 使用）。"""
+
+    def chat(self, messages, model=None, tools=None) -> Message:
+        """送出對話、可選工具，回傳 assistant Message（可能含 tool_calls）。
+
+        - messages: list[Message]，含 system / user / assistant / tool 各角色。
+        - tools: list[dict]，每個工具的 {name, description, parameters} JSON schema。
+        - model: 模型名稱字串。
+        """
+        raise NotImplementedError

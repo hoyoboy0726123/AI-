@@ -50,10 +50,20 @@ python main.py
 - **Word**：使用 docxtpl 的 Jinja 語法，例如 `{{ 客戶名稱 }}`、`{% for ... %}`。
 - **圖片欄位**：在 Excel 中填入完整檔案路徑（含 `.png/.jpg` 等副檔名），檔案存在時會自動轉為內嵌圖片。
 
-## AI Agent (P1：模型管理)
+## AI Agent
 
-新增「AI 引擎」頁籤可選擇 **Gemini** 或 **Ollama**，並列出可用模型。
-Gemini 走最新版 [`google-genai`](https://pypi.org/project/google-genai/) 統一 SDK。
+新增「AI 引擎」與「Agent」兩個頁籤：
+
+- **AI 引擎**：選 **Gemini** 或 **Ollama**，列出可用模型、測試連線、設定審查 rubric。
+- **Agent**：自然語言對話，目前已支援 3 個 read-only 工具（P2）：
+  - `list_excel_sheets` — 列出 Excel 工作表
+  - `read_excel_columns` — 讀取欄位名稱
+  - `read_template_variables` — 讀取 Word 範本變數
+  - 範例：「目前選的 Excel 有哪些工作表？」「list 範本變數」
+  - Ctrl+Enter 送出。
+
+Gemini 走最新版 [`google-genai`](https://pypi.org/project/google-genai/) 2.0+ 統一 SDK。
+Ollama 走 stdlib urllib，無額外依賴。
 
 API key 採 `.env` 管理：複製 `.env.example` 為 `.env` 並填入 `GEMINI_API_KEY`。
 
@@ -80,5 +90,11 @@ API key 採 `.env` 管理：複製 `.env.example` 為 `.env` 並填入 `GEMINI_A
     ├── generator.py     # 批次報告產出
     ├── hotkey.py        # 全域快捷鍵
     └── agent/
-        └── llm/         # LLM provider 抽象（Gemini / Ollama）
+        ├── registry.py      # Tool / ToolRegistry 框架
+        ├── tools.py         # read-only 工具實作（list_sheets / read_columns / read_template_vars）
+        ├── orchestrator.py  # planner loop（單回合 = 跑完所有 tool call）
+        └── llm/             # LLM provider 抽象
+            ├── base.py      # LLMClient + Message + ToolCall
+            ├── gemini.py    # google-genai 2.0+ 實作
+            └── ollama.py    # urllib REST 實作
 ```
