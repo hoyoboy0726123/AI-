@@ -1,38 +1,111 @@
-"""依 Excel 數據與 Word 範本批次產出報告。"""
+"""依 Excel 數據與 Word 範本批次產出報告，支援驗證、取消與圖片欄位。"""
 
 import os
 
 import pandas as pd
-from docxtpl import DocxTemplate
+from docx.shared import Mm
+from docxtpl import DocxTemplate, InlineImage
 
-from app.config import OUTPUT_DIR, REPORT_FILENAME_TEMPLATE
+from app.config import (
+    DEFAULT_FILENAME_TEMPLATE,
+    DEFAULT_HEADER_ROW,
+    DEFAULT_IMAGE_WIDTH_MM,
+    DEFAULT_OUTPUT_DIR,
+    IMAGE_EXTENSIONS,
+)
+from app.filename import render_filename
 
 
 class ReportGenerator:
-    """讀取 Excel 表格，逐列以 docxtpl 渲染 Word 範本並儲存。"""
+    """讀取 Excel 表格，逐列以 docxtpl 渲染 Word 範本並儲存。
 
-    def __init__(self, word_path, excel_path, output_dir=OUTPUT_DIR):
+    額外支援：
+    - 指定 sheet 與標題列
+    - 自訂檔名規則
+    - 產出前驗證範本變數 vs Excel 欄位
+    - cancel_event 中途取消
+    - Excel 中的圖片路徑欄位自動轉為 InlineImage
+    """
+
+    def __init__(
+        self,
+        word_path,
+        excel_path,
+        output_dir=DEFAULT_OUTPUT_DIR,
+        sheet_name=None,
+        header_row=DEFAULT_HEADER_ROW,
+        filename_template=DEFAULT_FILENAME_TEMPLATE,
+        image_width_mm=DEFAULT_IMAGE_WIDTH_MM,
+    ):
         self.word_path = word_path
         self.excel_path = excel_path
         self.output_dir = output_dir
+        self.sheet_name = sheet_name if sheet_name else 0
+        self.header_row = max(1, int(header_row))
+        self.filename_template = filename_template or DEFAULT_FILENAME_TEMPLATE
+        self.image_width_mm = image_width_mm
 
-    def generate(self, progress_callback=None):
+    def list_sheets(self):
+        return pd.ExcelFile(self.excel_path).sheet_names
+
+    def template_variables(self):
+        doc = DocxTemplate(self.word_path)
+        return doc.get_undeclared_template_variables()
+
+    def _read_dataframe(self):
+        return pd.read_excel(
+            self.excel_path,
+            sheet_name=self.sheet_name,
+            header=self.header_row - 1,
+        )
+
+    def validate(self):
+        """檢查範本變數與 Excel 欄位一致性。回傳 (missing, extra)。"""
+        template_vars = self.template_variables()
+        df = self._read_dataframe()
+        excel_cols = {str(c) for c in df.columns}
+        missing = template_vars - excel_cols
+        extra = excel_cols - template_vars
+        return missing, extra
+
+    def _build_context(self, doc, row_data):
+        """將圖片路徑欄位自動包裝為 InlineImage，其他欄位原樣傳入。"""
+        context = {}
+        for key, value in row_data.items():
+            if (
+                isinstance(value, str)
+                and value.lower().endswith(IMAGE_EXTENSIONS)
+                and os.path.isfile(value)
+            ):
+                context[key] = InlineImage(doc, value, width=Mm(self.image_width_mm))
+            else:
+                context[key] = value
+        return context
+
+    def generate(self, progress_callback=None, cancel_event=None):
         """產出所有報告。
 
-        progress_callback(current, total) 用來回報進度（例如更新 UI）。
-        回傳實際產出檔案數量。
+        progress_callback(current, total): 回報進度（UI 用）。
+        cancel_event: threading.Event；set 後在下一輪迴圈跳出。
+        回傳 (produced, total)。
         """
-        df = pd.read_excel(self.excel_path)
+        df = self._read_dataframe()
         os.makedirs(self.output_dir, exist_ok=True)
 
         total = len(df)
+        produced = 0
         for index, row in df.iterrows():
+            if cancel_event is not None and cancel_event.is_set():
+                break
+
             doc = DocxTemplate(self.word_path)
-            doc.render(row.to_dict())
-            filename = REPORT_FILENAME_TEMPLATE.format(index=index + 1)
+            row_dict = row.to_dict()
+            doc.render(self._build_context(doc, row_dict))
+            filename = render_filename(self.filename_template, row_dict, index + 1)
             doc.save(os.path.join(self.output_dir, filename))
 
+            produced += 1
             if progress_callback:
-                progress_callback(index + 1, total)
+                progress_callback(produced, total)
 
-        return total
+        return produced, total
