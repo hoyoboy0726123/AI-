@@ -22,3 +22,7 @@ Thumbs.db
 
 # Output
 Generated_Reports/
+Failed_Reports/
+
+# Secrets
+.env

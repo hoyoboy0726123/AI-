@@ -16,6 +16,14 @@ DEFAULT_IMAGE_WIDTH_MM = 80
 
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".bmp")
 
+FAILED_REPORTS_DIR = "Failed_Reports"
+
+DEFAULT_REVIEW_RUBRIC = """1. 文件中無未替換的範本佔位符（如 {{...}}、{%...%}）。
+2. 欄位填入的值符合該欄位語意（例如「日期」欄為合法日期格式）。
+3. 圖片若有指定，已正確嵌入於對應位置且未變形。
+4. 版面無明顯破版（文字疊圖、表格錯位等）。
+5. 整體風格與範本一致。"""
+
 COLOR_GREEN = "#2ecc71"
 COLOR_GREEN_HOVER = "#27ae60"
 COLOR_RED = "#e74c3c"

@@ -50,12 +50,27 @@ python main.py
 - **Word**：使用 docxtpl 的 Jinja 語法，例如 `{{ 客戶名稱 }}`、`{% for ... %}`。
 - **圖片欄位**：在 Excel 中填入完整檔案路徑（含 `.png/.jpg` 等副檔名），檔案存在時會自動轉為內嵌圖片。
 
+## AI Agent (P1：模型管理)
+
+新增「AI 引擎」頁籤可選擇 **Gemini** 或 **Ollama**，並列出可用模型。
+Gemini 走最新版 [`google-genai`](https://pypi.org/project/google-genai/) 統一 SDK。
+
+API key 採 `.env` 管理：複製 `.env.example` 為 `.env` 並填入 `GEMINI_API_KEY`。
+
+完整評估計劃見 [`docs/AGENT_PLAN.md`](docs/AGENT_PLAN.md)。
+
+> 沒有 LLM 環境（沒裝 `google-genai`、沒設 API key、沒跑 Ollama）也完全
+> 不影響「設定 / 對應 / 產出」三個手動頁籤的使用。
+
 ## 專案結構
 
 ```
 .
-├── main.py              # 進入點
+├── main.py              # 進入點（會載入 .env）
 ├── requirements.txt
+├── .env.example
+├── docs/
+│   └── AGENT_PLAN.md    # AI 代理階段化實作計劃
 └── app/
     ├── config.py        # 常數
     ├── settings.py      # 使用者設定持久化
@@ -63,5 +78,7 @@ python main.py
     ├── ui.py            # GUI 主視窗
     ├── mapper.py        # Word/Excel COM 操作
     ├── generator.py     # 批次報告產出
-    └── hotkey.py        # 全域快捷鍵
+    ├── hotkey.py        # 全域快捷鍵
+    └── agent/
+        └── llm/         # LLM provider 抽象（Gemini / Ollama）
 ```

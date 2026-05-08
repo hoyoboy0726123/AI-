@@ -1,6 +1,10 @@
-customtkinter
+customtkinter>=5.2.2
 pywin32
 keyboard
 pandas
-docxtpl
+docxtpl>=0.20.2
 openpyxl
+
+# AI agent 功能（可選；缺少時手動頁籤仍可正常使用）
+python-dotenv>=1.2.2
+google-genai>=2.0.0

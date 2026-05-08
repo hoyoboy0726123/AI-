@@ -22,6 +22,7 @@ from app.config import (
     WINDOW_SIZE,
     WINDOW_TITLE,
 )
+from app.agent.llm import GEMINI_AVAILABLE, PROVIDERS, get_client
 from app.generator import ReportGenerator
 from app.hotkey import HotkeyManager
 from app.mapper import OfficeMapper
@@ -59,6 +60,16 @@ class AutoReportApp(ctk.CTk):
         self.image_width_mm = ctk.StringVar(value=str(self.settings["image_width_mm"]))
         self.grid_columns = ctk.StringVar(value=str(self.settings["grid_columns"]))
 
+        self.llm_provider = ctk.StringVar(value=self.settings["llm_provider"])
+        self.gemini_planner_model = ctk.StringVar(value=self.settings["gemini_planner_model"])
+        self.gemini_reviewer_model = ctk.StringVar(value=self.settings["gemini_reviewer_model"])
+        self.ollama_endpoint = ctk.StringVar(value=self.settings["ollama_endpoint"])
+        self.ollama_planner_model = ctk.StringVar(value=self.settings["ollama_planner_model"])
+        self.ollama_reviewer_model = ctk.StringVar(value=self.settings["ollama_reviewer_model"])
+        self.enable_review = ctk.BooleanVar(value=self.settings["enable_review"])
+        self.review_sampling = ctk.StringVar(value=str(self.settings["review_sampling_percent"]))
+        self.max_review_retries = ctk.StringVar(value=str(self.settings["max_review_retries"]))
+
         self.mapping_active = False
         self.is_generating = False
         self.cancel_event = threading.Event()
@@ -84,10 +95,12 @@ class AutoReportApp(ctk.CTk):
         tabs.add("設定")
         tabs.add("對應")
         tabs.add("產出")
+        tabs.add("AI 引擎")
 
         self._build_settings_tab(tabs.tab("設定"))
         self._build_mapping_tab(tabs.tab("對應"))
         self._build_generate_tab(tabs.tab("產出"))
+        self._build_ai_tab(tabs.tab("AI 引擎"))
 
         self.log_box = ctk.CTkTextbox(self, height=110)
         self.log_box.pack(padx=15, pady=(0, 12), fill="x")
@@ -229,6 +242,168 @@ class AutoReportApp(ctk.CTk):
             parent, text="開啟輸出資料夾", command=self._open_output_dir
         ).pack(pady=(15, 8), padx=15, fill="x")
 
+    def _build_ai_tab(self, parent):
+        scroll = ctk.CTkScrollableFrame(parent)
+        scroll.pack(fill="both", expand=True, padx=4, pady=4)
+
+        # Provider 選擇
+        head = ctk.CTkFrame(scroll, fg_color="transparent")
+        head.pack(fill="x", padx=8, pady=(8, 4))
+        ctk.CTkLabel(head, text="Provider:").pack(side="left", padx=(0, 6))
+        self.provider_combo = ctk.CTkComboBox(
+            head,
+            variable=self.llm_provider,
+            values=list(PROVIDERS),
+            width=140,
+            command=lambda _v: self._show_provider_frame(),
+        )
+        self.provider_combo.pack(side="left", padx=4)
+        ctk.CTkButton(head, text="刷新模型", width=90, command=self._refresh_llm_models).pack(side="left", padx=4)
+        ctk.CTkButton(head, text="測試連線", width=90, command=self._test_llm).pack(side="left", padx=4)
+
+        # Gemini 設定區
+        self.gemini_frame = ctk.CTkFrame(scroll)
+        ctk.CTkLabel(self.gemini_frame, text="Gemini", font=ctk.CTkFont(weight="bold")).grid(
+            row=0, column=0, columnspan=2, padx=10, pady=(10, 4), sticky="w"
+        )
+        ctk.CTkLabel(self.gemini_frame, text="API Key 來源:").grid(row=1, column=0, padx=10, pady=6, sticky="w")
+        self.gemini_key_status = ctk.CTkLabel(self.gemini_frame, text=self._gemini_key_status_text())
+        self.gemini_key_status.grid(row=1, column=1, padx=10, pady=6, sticky="w")
+        ctk.CTkLabel(self.gemini_frame, text="Planner Model:").grid(row=2, column=0, padx=10, pady=6, sticky="w")
+        self.gemini_planner_combo = ctk.CTkComboBox(
+            self.gemini_frame, variable=self.gemini_planner_model, values=[""], width=320
+        )
+        self.gemini_planner_combo.grid(row=2, column=1, padx=10, pady=6, sticky="w")
+        ctk.CTkLabel(self.gemini_frame, text="Reviewer Model:").grid(row=3, column=0, padx=10, pady=6, sticky="w")
+        self.gemini_reviewer_combo = ctk.CTkComboBox(
+            self.gemini_frame, variable=self.gemini_reviewer_model, values=[""], width=320
+        )
+        self.gemini_reviewer_combo.grid(row=3, column=1, padx=10, pady=(6, 10), sticky="w")
+
+        # Ollama 設定區
+        self.ollama_frame = ctk.CTkFrame(scroll)
+        ctk.CTkLabel(self.ollama_frame, text="Ollama", font=ctk.CTkFont(weight="bold")).grid(
+            row=0, column=0, columnspan=2, padx=10, pady=(10, 4), sticky="w"
+        )
+        ctk.CTkLabel(self.ollama_frame, text="Endpoint:").grid(row=1, column=0, padx=10, pady=6, sticky="w")
+        ctk.CTkEntry(self.ollama_frame, textvariable=self.ollama_endpoint, width=320).grid(
+            row=1, column=1, padx=10, pady=6, sticky="w"
+        )
+        ctk.CTkLabel(self.ollama_frame, text="Planner Model:").grid(row=2, column=0, padx=10, pady=6, sticky="w")
+        self.ollama_planner_combo = ctk.CTkComboBox(
+            self.ollama_frame, variable=self.ollama_planner_model, values=[""], width=320
+        )
+        self.ollama_planner_combo.grid(row=2, column=1, padx=10, pady=6, sticky="w")
+        ctk.CTkLabel(self.ollama_frame, text="Reviewer Model:").grid(row=3, column=0, padx=10, pady=6, sticky="w")
+        self.ollama_reviewer_combo = ctk.CTkComboBox(
+            self.ollama_frame, variable=self.ollama_reviewer_model, values=[""], width=320
+        )
+        self.ollama_reviewer_combo.grid(row=3, column=1, padx=10, pady=(6, 10), sticky="w")
+
+        self._show_provider_frame()
+
+        # Reviewer 設定
+        rv = ctk.CTkFrame(scroll)
+        rv.pack(fill="x", padx=8, pady=(10, 6))
+        ctk.CTkLabel(rv, text="審查設定", font=ctk.CTkFont(weight="bold")).grid(
+            row=0, column=0, columnspan=4, padx=10, pady=(10, 4), sticky="w"
+        )
+        ctk.CTkCheckBox(rv, text="啟用審查", variable=self.enable_review).grid(
+            row=1, column=0, padx=10, pady=6, sticky="w"
+        )
+        ctk.CTkLabel(rv, text="抽樣比例 (%):").grid(row=1, column=1, padx=10, pady=6, sticky="e")
+        ctk.CTkEntry(rv, textvariable=self.review_sampling, width=70).grid(row=1, column=2, padx=4, pady=6, sticky="w")
+        ctk.CTkLabel(rv, text="最大重試:").grid(row=1, column=3, padx=10, pady=6, sticky="e")
+        ctk.CTkEntry(rv, textvariable=self.max_review_retries, width=70).grid(row=1, column=4, padx=4, pady=6, sticky="w")
+
+        ctk.CTkLabel(rv, text="評分標準 (rubric)：").grid(row=2, column=0, columnspan=5, padx=10, pady=(8, 2), sticky="w")
+        self.rubric_box = ctk.CTkTextbox(rv, height=140)
+        self.rubric_box.grid(row=3, column=0, columnspan=5, padx=10, pady=(0, 10), sticky="ew")
+        self.rubric_box.insert("1.0", self.settings["review_rubric"])
+        rv.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            scroll,
+            text="提示：Gemini API Key 由 .env 中 GEMINI_API_KEY 載入；無 LLM 環境亦可繼續使用其他頁籤。",
+            text_color="gray",
+        ).pack(padx=10, pady=(4, 8), anchor="w")
+
+        if not GEMINI_AVAILABLE:
+            ctk.CTkLabel(
+                scroll,
+                text="⚠ google-genai 套件未安裝，Gemini 功能將不可用（pip install google-genai）。",
+                text_color="orange",
+            ).pack(padx=10, pady=(0, 8), anchor="w")
+
+    def _show_provider_frame(self):
+        if self.llm_provider.get() == "Gemini":
+            self.ollama_frame.pack_forget()
+            self.gemini_frame.pack(fill="x", padx=8, pady=6)
+        else:
+            self.gemini_frame.pack_forget()
+            self.ollama_frame.pack(fill="x", padx=8, pady=6)
+
+    def _gemini_key_status_text(self):
+        if not GEMINI_AVAILABLE:
+            return "套件未安裝"
+        if os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"):
+            return ".env (GEMINI_API_KEY) 已設定"
+        return ".env 未設定"
+
+    def _build_llm_client(self):
+        provider = self.llm_provider.get()
+        if provider == "Gemini":
+            return get_client("Gemini")
+        return get_client("Ollama", endpoint=self.ollama_endpoint.get())
+
+    def _test_llm(self):
+        threading.Thread(target=self._test_llm_thread, daemon=True).start()
+
+    def _test_llm_thread(self):
+        provider = self.llm_provider.get()
+        try:
+            client = self._build_llm_client()
+            ok = client.is_available()
+        except Exception as e:
+            self._safe_log(f"{provider} 連線失敗: {e}")
+            return
+        self._safe_log(f"{provider} 連線測試: {'✓ 成功' if ok else '✗ 失敗 (檢查 API key 或 endpoint)'}")
+
+    def _refresh_llm_models(self):
+        threading.Thread(target=self._refresh_llm_models_thread, daemon=True).start()
+
+    def _refresh_llm_models_thread(self):
+        provider = self.llm_provider.get()
+        try:
+            client = self._build_llm_client()
+            models = client.list_models()
+            vision = client.list_vision_models()
+        except Exception as e:
+            self._safe_log(f"讀取模型清單失敗: {e}")
+            return
+
+        def update():
+            if provider == "Gemini":
+                planner_combo = self.gemini_planner_combo
+                reviewer_combo = self.gemini_reviewer_combo
+                planner_var = self.gemini_planner_model
+                reviewer_var = self.gemini_reviewer_model
+            else:
+                planner_combo = self.ollama_planner_combo
+                reviewer_combo = self.ollama_reviewer_combo
+                planner_var = self.ollama_planner_model
+                reviewer_var = self.ollama_reviewer_model
+
+            planner_combo.configure(values=models or [""])
+            reviewer_combo.configure(values=vision or models or [""])
+            if planner_var.get() not in models and models:
+                planner_var.set(models[0])
+            if reviewer_var.get() not in (vision or models) and (vision or models):
+                reviewer_var.set((vision or models)[0])
+            self.log(f"{provider}: 共 {len(models)} 個模型，其中 {len(vision)} 個支援 vision。")
+
+        self.after(0, update)
+
     # ---- helpers ----
 
     def log(self, msg):
@@ -257,6 +432,18 @@ class AutoReportApp(ctk.CTk):
         except (ValueError, TypeError):
             return 2
 
+    def _review_sampling_int(self):
+        try:
+            return max(1, min(100, int(float(self.review_sampling.get()))))
+        except (ValueError, TypeError):
+            return 100
+
+    def _max_retries_int(self):
+        try:
+            return max(0, int(self.max_review_retries.get()))
+        except (ValueError, TypeError):
+            return 3
+
     def _refresh_history_box(self):
         self.history_box.delete("1.0", "end")
         for i, (label, _) in enumerate(reversed(self.mapping_history), 1):
@@ -273,6 +460,16 @@ class AutoReportApp(ctk.CTk):
                 "header_row": self._header_row_int(),
                 "image_width_mm": self._image_width_mm_int(),
                 "grid_columns": self._grid_columns_int(),
+                "llm_provider": self.llm_provider.get(),
+                "gemini_planner_model": self.gemini_planner_model.get(),
+                "gemini_reviewer_model": self.gemini_reviewer_model.get(),
+                "ollama_endpoint": self.ollama_endpoint.get(),
+                "ollama_planner_model": self.ollama_planner_model.get(),
+                "ollama_reviewer_model": self.ollama_reviewer_model.get(),
+                "enable_review": bool(self.enable_review.get()),
+                "review_sampling_percent": self._review_sampling_int(),
+                "max_review_retries": self._max_retries_int(),
+                "review_rubric": self.rubric_box.get("1.0", "end").rstrip(),
             }
         )
         try:
