@@ -13,6 +13,7 @@ DEFAULTS = {
     "sheet_name": "",
     "header_row": 1,
     "image_width_mm": 80,
+    "grid_columns": 2,
 }
 
 

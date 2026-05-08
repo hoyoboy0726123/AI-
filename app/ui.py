@@ -56,6 +56,8 @@ class AutoReportApp(ctk.CTk):
         self.filename_template = ctk.StringVar(value=self.settings["filename_template"])
         self.sheet_name = ctk.StringVar(value=self.settings["sheet_name"])
         self.header_row = ctk.StringVar(value=str(self.settings["header_row"]))
+        self.image_width_mm = ctk.StringVar(value=str(self.settings["image_width_mm"]))
+        self.grid_columns = ctk.StringVar(value=str(self.settings["grid_columns"]))
 
         self.mapping_active = False
         self.is_generating = False
@@ -140,6 +142,24 @@ class AutoReportApp(ctk.CTk):
             text_color="gray",
         ).grid(row=r, column=1, padx=10, pady=(0, 8), sticky="w")
 
+        r += 1
+        ctk.CTkLabel(parent, text="圖片寬度 (mm):").grid(row=r, column=0, padx=10, pady=8, sticky="w")
+        ctk.CTkEntry(parent, textvariable=self.image_width_mm, width=80).grid(
+            row=r, column=1, padx=10, pady=8, sticky="w"
+        )
+        ctk.CTkLabel(parent, text="（插入圖片與圖片欄位的預設寬度，自動鎖長寬比）").grid(
+            row=r, column=1, padx=(95, 10), pady=8, sticky="w"
+        )
+
+        r += 1
+        ctk.CTkLabel(parent, text="網格欄數:").grid(row=r, column=0, padx=10, pady=8, sticky="w")
+        ctk.CTkEntry(parent, textvariable=self.grid_columns, width=80).grid(
+            row=r, column=1, padx=10, pady=8, sticky="w"
+        )
+        ctk.CTkLabel(parent, text="（多張圖片網格貼圖時每列張數）").grid(
+            row=r, column=1, padx=(95, 10), pady=8, sticky="w"
+        )
+
     def _build_mapping_tab(self, parent):
         self.btn_mapping = ctk.CTkButton(
             parent,
@@ -156,6 +176,12 @@ class AutoReportApp(ctk.CTk):
             command=self._insert_image_at_cursor,
         ).pack(pady=6, padx=15, fill="x")
 
+        ctk.CTkButton(
+            parent,
+            text="多選圖片以網格貼入 Word 游標位置",
+            command=self._insert_image_grid_at_cursor,
+        ).pack(pady=6, padx=15, fill="x")
+
         ctk.CTkLabel(
             parent, text="映射歷史（最新在最上）", font=ctk.CTkFont(weight="bold")
         ).pack(pady=(15, 4))
@@ -166,9 +192,18 @@ class AutoReportApp(ctk.CTk):
         self.history_box = ctk.CTkTextbox(history_frame, height=160)
         self.history_box.pack(side="left", fill="both", expand=True, padx=(0, 8))
 
+        undo_buttons = ctk.CTkFrame(history_frame, fg_color="transparent")
+        undo_buttons.pack(side="right", padx=4, pady=4, anchor="n")
         ctk.CTkButton(
-            history_frame, text="復原最近一筆", width=110, command=self._undo_last_mapping
-        ).pack(side="right", padx=4, pady=4, anchor="n")
+            undo_buttons, text="復原最近一筆", width=110, command=self._undo_last_mapping
+        ).pack(pady=(0, 6))
+        ctk.CTkButton(
+            undo_buttons,
+            text="全部復原",
+            width=110,
+            fg_color=COLOR_RED,
+            command=self._undo_all_mappings,
+        ).pack()
 
     def _build_generate_tab(self, parent):
         ctk.CTkButton(
@@ -210,6 +245,18 @@ class AutoReportApp(ctk.CTk):
         except (ValueError, TypeError):
             return 1
 
+    def _image_width_mm_int(self):
+        try:
+            return max(1, int(float(self.image_width_mm.get())))
+        except (ValueError, TypeError):
+            return 80
+
+    def _grid_columns_int(self):
+        try:
+            return max(1, int(self.grid_columns.get()))
+        except (ValueError, TypeError):
+            return 2
+
     def _refresh_history_box(self):
         self.history_box.delete("1.0", "end")
         for i, (label, _) in enumerate(reversed(self.mapping_history), 1):
@@ -224,6 +271,8 @@ class AutoReportApp(ctk.CTk):
                 "filename_template": self.filename_template.get(),
                 "sheet_name": self.sheet_name.get(),
                 "header_row": self._header_row_int(),
+                "image_width_mm": self._image_width_mm_int(),
+                "grid_columns": self._grid_columns_int(),
             }
         )
         try:
@@ -331,7 +380,7 @@ class AutoReportApp(ctk.CTk):
         if not path:
             return
         ok, message, rng = OfficeMapper.insert_image_at_cursor(
-            path, width_mm=self.settings.get("image_width_mm", 80)
+            path, width_mm=self._image_width_mm_int()
         )
         if ok:
             self.mapping_history.append((f"[圖] {message}", rng))
@@ -339,6 +388,48 @@ class AutoReportApp(ctk.CTk):
             self.log(f"圖片已插入: {message}")
         else:
             self.log(message)
+
+    def _insert_image_grid_at_cursor(self):
+        paths = filedialog.askopenfilenames(
+            title="多選要插入的圖片（將以網格貼入）",
+            filetypes=[
+                ("Image Files", "*.png *.jpg *.jpeg *.gif *.bmp"),
+                ("All Files", "*.*"),
+            ],
+        )
+        if not paths:
+            return
+        ok, message, rng = OfficeMapper.insert_image_grid_at_cursor(
+            list(paths),
+            columns=self._grid_columns_int(),
+            width_mm=self._image_width_mm_int(),
+        )
+        if ok:
+            self.mapping_history.append((f"[網格] {message}", rng))
+            self._refresh_history_box()
+            self.log(message)
+        else:
+            self.log(message)
+
+    def _undo_all_mappings(self):
+        if not self.mapping_history:
+            self.log("沒有可復原的映射。")
+            return
+        total = len(self.mapping_history)
+        failures = 0
+        # 由新到舊復原；先刪後段位置才不會被前段刪除影響
+        while self.mapping_history:
+            label, rng = self.mapping_history.pop()
+            if rng is None:
+                continue
+            ok, _ = OfficeMapper.remove_range(*rng)
+            if not ok:
+                failures += 1
+        self._refresh_history_box()
+        if failures:
+            self.log(f"全部復原完成（共 {total} 筆，{failures} 筆失敗）。")
+        else:
+            self.log(f"已全部復原 {total} 筆。")
 
     # ---- generation ----
 
@@ -350,7 +441,7 @@ class AutoReportApp(ctk.CTk):
             sheet_name=self.sheet_name.get() or None,
             header_row=self._header_row_int(),
             filename_template=self.filename_template.get(),
-            image_width_mm=self.settings.get("image_width_mm", 80),
+            image_width_mm=self._image_width_mm_int(),
         )
 
     def _validate(self):

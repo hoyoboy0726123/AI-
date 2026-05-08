@@ -77,6 +77,49 @@ class OfficeMapper:
             return False, f"圖片插入失敗: {e}", None
 
     @staticmethod
+    def insert_image_grid_at_cursor(image_paths, columns=2, width_mm=80):
+        """將多張圖片以 N x M 表格網格形式插入 Word 游標位置。
+
+        回傳 (success, message, range)；range 為整個表格的 (start, end)，可整體復原。
+        """
+        valid = [p for p in image_paths if p and os.path.isfile(p)]
+        if not valid:
+            return False, "未選取有效圖片。", None
+
+        try:
+            word = OfficeMapper._word()
+        except Exception:
+            return False, "連線失敗: 確保 Word 已開啟。", None
+
+        try:
+            cols = max(1, int(columns))
+            rows = (len(valid) + cols - 1) // cols
+
+            table = word.ActiveDocument.Tables.Add(
+                word.Selection.Range, rows, cols
+            )
+            for i, img_path in enumerate(valid):
+                cell = table.Cell(i // cols + 1, i % cols + 1)
+                shape = word.ActiveDocument.InlineShapes.AddPicture(
+                    FileName=img_path,
+                    LinkToFile=False,
+                    SaveWithDocument=True,
+                    Range=cell.Range,
+                )
+                if width_mm:
+                    shape.LockAspectRatio = MSO_TRUE
+                    shape.Width = width_mm * PT_PER_MM
+
+            tbl_range = table.Range
+            return (
+                True,
+                f"已插入 {len(valid)} 張圖片 ({cols}×{rows} 網格)",
+                (tbl_range.Start, tbl_range.End),
+            )
+        except Exception as e:
+            return False, f"網格插入失敗: {e}", None
+
+    @staticmethod
     def remove_range(start, end):
         """刪除 Word 中 [start, end) 範圍的內容（用於復原映射或圖片）。"""
         try:
