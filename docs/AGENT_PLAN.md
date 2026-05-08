@@ -225,7 +225,7 @@ app/
 | **P4 ✓** | Human-in-the-loop（ask_user / request_file 對話框）| 缺檔案會主動問 |
 | **P5 ✓** | docx → image pipeline（Word COM → PDF → PyMuPDF → PNG）| 任一 docx 轉成 PNG 列陣 |
 | **P6 ✓** | Reviewer agent + 失敗搬到 `Failed_Reports/` | 啟用審查時每份自動 VLM 評分；失敗複製到 fail folder |
-| P7 | 抽樣 / 預算上限 / 進度 UI / 對話日誌匯出 | 生產級可用 |
+| **P7 ✓** | 抽樣 / 預算上限 / 進度 UI / 對話日誌匯出 | 生產級可用 |
 
 ## 8. 已確認決策（user 2026-05-08）
 

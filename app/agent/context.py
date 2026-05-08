@@ -246,12 +246,20 @@ class AppContext:
         reviewed = 0
         failed = []  # list of {index, path, score, issues}
 
+        budget = getattr(self._app, "budget", None)
+        budget_exhausted = False
+
         for prod, tot, saved_path, row_dict in generator.generate_iter(cancel_event=cancel_event):
             produced = prod
             total = tot
             self._progress_ui(produced, total)
 
             if random.random() * 100 > sampling:
+                continue
+
+            if budget is not None and not budget.can_use_reviewer():
+                budget_exhausted = True
+                # 預算到頂後，剩下的 docx 仍會繼續產出但不再 review
                 continue
 
             result = review_report(
@@ -262,6 +270,8 @@ class AppContext:
                 model,
                 max_pages=4,
             )
+            if budget is not None:
+                budget.use_reviewer()
             reviewed += 1
 
             if "error" in result:
@@ -282,7 +292,7 @@ class AppContext:
                     }
                 )
 
-        return {
+        result_dict = {
             "produced": produced,
             "total": total,
             "reviewed": reviewed,
@@ -292,6 +302,13 @@ class AppContext:
             "failed_dir": failed_dir,
             "cancelled": cancel_event.is_set(),
         }
+        if budget_exhausted:
+            result_dict["review_budget_exhausted"] = True
+            result_dict["note"] = (
+                f"reviewer 預算已用完（{budget.reviewer_limit}）；"
+                f"後續 {produced - reviewed} 份未審查"
+            )
+        return result_dict
 
     def review_single_docx(self, docx_path: str, row_context_json: str = "") -> dict:
         """單獨審查任一 docx，回傳 reviewer 結果。"""
@@ -305,6 +322,10 @@ class AppContext:
         vlm, model, err = self._build_reviewer_client()
         if err:
             return {"error": err}
+
+        budget = getattr(self._app, "budget", None)
+        if budget is not None and not budget.can_use_reviewer():
+            return {"error": f"已達 reviewer 預算上限 {budget.reviewer_limit}"}
 
         rubric = ""
         try:
@@ -323,7 +344,10 @@ class AppContext:
                 row_context = {"raw": row_context_json}
 
         from app.agent.reviewer import review_report
-        return review_report(vlm, docx_path, row_context, rubric, model, max_pages=4)
+        result = review_report(vlm, docx_path, row_context, rubric, model, max_pages=4)
+        if budget is not None and "error" not in result:
+            budget.use_reviewer()
+        return result
 
     def open_output_folder(self) -> dict:
         from app.ui import open_folder

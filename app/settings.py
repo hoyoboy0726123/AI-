@@ -31,6 +31,8 @@ DEFAULTS = {
     "review_sampling_percent": 100,
     "max_review_retries": 3,
     "review_rubric": DEFAULT_REVIEW_RUBRIC,
+    "max_planner_calls": 50,
+    "max_reviewer_calls": 100,
 }
 
 

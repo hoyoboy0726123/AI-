@@ -54,12 +54,14 @@ class AgentOrchestrator:
         model: str,
         context: Optional[dict] = None,
         max_iters: int = 8,
+        budget=None,
     ):
         self.llm = llm
         self.registry = registry
         self.model = model
         self.context = context or {}
         self.max_iters = max_iters
+        self.budget = budget
         self._cancel = threading.Event()
         self.messages = [Message(role="system", text=self._build_system_prompt())]
 
@@ -83,12 +85,23 @@ class AgentOrchestrator:
                 yield Message(role="assistant", text="[已中止]")
                 return
 
+            if self.budget is not None and not self.budget.can_use_planner():
+                msg = Message(
+                    role="assistant",
+                    text=f"[已達 planner 預算上限 {self.budget.planner_limit}，請至「AI 引擎」頁籤重置計數或提高上限]",
+                )
+                self.messages.append(msg)
+                yield msg
+                return
+
             try:
                 resp = self.llm.chat(
                     self.messages,
                     model=self.model,
                     tools=self.registry.schemas(),
                 )
+                if self.budget is not None:
+                    self.budget.use_planner()
             except Exception as e:
                 err = Message(role="assistant", text=f"[LLM 錯誤] {e}")
                 self.messages.append(err)

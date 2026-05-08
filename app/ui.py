@@ -24,6 +24,7 @@ from app.config import (
 )
 import json
 
+from app.agent.budget import BudgetTracker
 from app.agent.context import AppContext
 from app.agent.llm import GEMINI_AVAILABLE, PROVIDERS, get_client
 from app.agent.orchestrator import AgentOrchestrator
@@ -74,6 +75,8 @@ class AutoReportApp(ctk.CTk):
         self.enable_review = ctk.BooleanVar(value=self.settings["enable_review"])
         self.review_sampling = ctk.StringVar(value=str(self.settings["review_sampling_percent"]))
         self.max_review_retries = ctk.StringVar(value=str(self.settings["max_review_retries"]))
+        self.max_planner_calls = ctk.StringVar(value=str(self.settings["max_planner_calls"]))
+        self.max_reviewer_calls = ctk.StringVar(value=str(self.settings["max_reviewer_calls"]))
 
         self.mapping_active = False
         self.is_generating = False
@@ -82,6 +85,13 @@ class AutoReportApp(ctk.CTk):
 
         self.agent_orchestrator = None
         self.agent_thread = None
+        self.agent_chat_log = []  # list of {ts, kind, ...}
+
+        self.budget = BudgetTracker(
+            planner_limit=int(self.settings["max_planner_calls"]),
+            reviewer_limit=int(self.settings["max_reviewer_calls"]),
+        )
+        self.app_context = AppContext(self)
 
         self.hotkey_manager = HotkeyManager(HOTKEY, self._on_hotkey)
 
@@ -90,6 +100,9 @@ class AutoReportApp(ctk.CTk):
 
         if self.excel_path.get() and os.path.isfile(self.excel_path.get()):
             self._refresh_sheet_list(silent=True)
+
+        # 啟動預算顯示輪詢（每 1.5s）
+        self.after(500, self._refresh_budget_label)
 
     # ---- UI build ----
 
@@ -332,6 +345,23 @@ class AutoReportApp(ctk.CTk):
         self.rubric_box.insert("1.0", self.settings["review_rubric"])
         rv.grid_columnconfigure(0, weight=1)
 
+        # 預算上限
+        bd = ctk.CTkFrame(scroll)
+        bd.pack(fill="x", padx=8, pady=(10, 6))
+        ctk.CTkLabel(bd, text="預算上限（本回合）", font=ctk.CTkFont(weight="bold")).grid(
+            row=0, column=0, columnspan=4, padx=10, pady=(10, 4), sticky="w"
+        )
+        ctk.CTkLabel(bd, text="Planner 上限:").grid(row=1, column=0, padx=10, pady=6, sticky="e")
+        ctk.CTkEntry(bd, textvariable=self.max_planner_calls, width=70).grid(row=1, column=1, padx=4, pady=6, sticky="w")
+        ctk.CTkLabel(bd, text="Reviewer 上限:").grid(row=1, column=2, padx=10, pady=6, sticky="e")
+        ctk.CTkEntry(bd, textvariable=self.max_reviewer_calls, width=70).grid(row=1, column=3, padx=4, pady=6, sticky="w")
+
+        self.budget_status_label = ctk.CTkLabel(bd, text="本回合已用：planner 0 / reviewer 0", text_color="gray")
+        self.budget_status_label.grid(row=2, column=0, columnspan=3, padx=10, pady=(2, 8), sticky="w")
+        ctk.CTkButton(bd, text="重置計數", width=90, command=self._reset_budget).grid(
+            row=2, column=3, padx=10, pady=(2, 8)
+        )
+
         ctk.CTkLabel(
             scroll,
             text="提示：Gemini API Key 由 .env 中 GEMINI_API_KEY 載入；無 LLM 環境亦可繼續使用其他頁籤。",
@@ -414,6 +444,36 @@ class AutoReportApp(ctk.CTk):
 
         self.after(0, update)
 
+    # ---- Budget ----
+
+    def _reset_budget(self):
+        self.budget.update_limits(
+            planner_limit=self._max_planner_calls_int(),
+            reviewer_limit=self._max_reviewer_calls_int(),
+        )
+        self.budget.reset()
+        self._refresh_budget_label()
+        self.log("已重置本回合 LLM 預算計數。")
+
+    def _sync_budget_limits(self):
+        """把 UI 數值同步到 BudgetTracker，但不重置已用次數。"""
+        self.budget.update_limits(
+            planner_limit=self._max_planner_calls_int(),
+            reviewer_limit=self._max_reviewer_calls_int(),
+        )
+
+    def _refresh_budget_label(self):
+        s = self.budget.status()
+        if hasattr(self, "budget_status_label"):
+            self.budget_status_label.configure(
+                text=(
+                    f"本回合已用：planner {s['planner_used']}/{s['planner_limit']}"
+                    f"  reviewer {s['reviewer_used']}/{s['reviewer_limit']}"
+                )
+            )
+        # 每 1.5 秒刷一次（輕量）
+        self.after(1500, self._refresh_budget_label)
+
     # ---- Agent 頁籤 ----
 
     def _build_agent_tab(self, parent):
@@ -422,6 +482,7 @@ class AutoReportApp(ctk.CTk):
         self.agent_status = ctk.CTkLabel(top, text="狀態: idle", text_color="gray")
         self.agent_status.pack(side="left")
         ctk.CTkButton(top, text="新對話", width=90, command=self._agent_reset).pack(side="right", padx=4)
+        ctk.CTkButton(top, text="匯出對話", width=90, command=self._agent_export_chat).pack(side="right", padx=4)
         ctk.CTkButton(
             top, text="中止", width=90, fg_color=COLOR_RED, command=self._agent_cancel
         ).pack(side="right", padx=4)
@@ -461,19 +522,31 @@ class AutoReportApp(ctk.CTk):
             self.after(0, append)
 
     def _agent_render(self, msg):
+        import datetime
+        ts = datetime.datetime.now().strftime("%H:%M:%S")
         if msg.role == "user":
-            self._agent_append_text(f"\n[你]\n{msg.text}\n")
+            self.agent_chat_log.append({"ts": ts, "kind": "user", "text": msg.text})
+            self._agent_append_text(f"\n[{ts}][你]\n{msg.text}\n")
             return
         if msg.role == "assistant":
             for tc in msg.tool_calls:
                 args = json.dumps(tc.arguments, ensure_ascii=False)
-                self._agent_append_text(f"\n[助理 → 工具呼叫] {tc.name}({args})\n")
+                self.agent_chat_log.append({
+                    "ts": ts, "kind": "tool_call",
+                    "name": tc.name, "args": tc.arguments,
+                })
+                self._agent_append_text(f"\n[{ts}][助理 → 工具呼叫] {tc.name}({args})\n")
             if msg.text:
-                self._agent_append_text(f"\n[助理]\n{msg.text}\n")
+                self.agent_chat_log.append({"ts": ts, "kind": "assistant", "text": msg.text})
+                self._agent_append_text(f"\n[{ts}][助理]\n{msg.text}\n")
             return
         if msg.role == "tool":
+            self.agent_chat_log.append({
+                "ts": ts, "kind": "tool_result",
+                "name": msg.tool_name, "text": msg.text,
+            })
             preview = msg.text if len(msg.text) <= 600 else msg.text[:600] + "..."
-            self._agent_append_text(f"\n[工具回傳 {msg.tool_name}]\n{preview}\n")
+            self._agent_append_text(f"\n[{ts}][工具回傳 {msg.tool_name}]\n{preview}\n")
             return
 
     def _agent_reset(self):
@@ -481,10 +554,17 @@ class AutoReportApp(ctk.CTk):
             self.log("Agent 仍在執行中，請先中止。")
             return
         self.agent_orchestrator = None
+        self.agent_chat_log = []
+        self.budget.update_limits(
+            planner_limit=self._max_planner_calls_int(),
+            reviewer_limit=self._max_reviewer_calls_int(),
+        )
+        self.budget.reset()
+        self._refresh_budget_label()
         self.agent_box.configure(state="normal")
         self.agent_box.delete("1.0", "end")
         self.agent_box.configure(state="disabled")
-        self._agent_append_text("── 對話已重置 ──\n")
+        self._agent_append_text("── 對話已重置（預算計數歸零）──\n")
         self._agent_set_status("idle")
 
     def _agent_cancel(self):
@@ -524,12 +604,14 @@ class AutoReportApp(ctk.CTk):
             "header_row": self._header_row_int(),
             "output_dir": self.output_dir.get(),
         }
-        app_context = AppContext(self)
+        # 啟動前同步預算上限到 tracker（不重置已用次數）
+        self._sync_budget_limits()
         return AgentOrchestrator(
             llm=client,
-            registry=build_default_registry(app_context),
+            registry=build_default_registry(self.app_context),
             model=model,
             context=ui_context,
+            budget=self.budget,
         )
 
     def _agent_send(self):
@@ -566,6 +648,71 @@ class AutoReportApp(ctk.CTk):
             self._agent_append_text(f"\n[執行錯誤] {e}\n")
         finally:
             self._agent_set_status("idle")
+
+    def _agent_export_chat(self):
+        if not self.agent_chat_log:
+            self.log("沒有對話可匯出。")
+            return
+        import datetime
+        default_name = f"agent_chat_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')}.md"
+        path = filedialog.asksaveasfilename(
+            title="匯出對話為 Markdown",
+            defaultextension=".md",
+            initialfile=default_name,
+            filetypes=[("Markdown", "*.md"), ("Text", "*.txt"), ("All Files", "*.*")],
+        )
+        if not path:
+            return
+        content = self._format_chat_markdown()
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
+            self.log(f"對話已匯出至 {path}")
+            self._agent_append_text(f"\n── 對話已匯出至 {path} ──\n")
+        except Exception as e:
+            self.log(f"匯出失敗: {e}")
+
+    def _format_chat_markdown(self):
+        import datetime
+        lines = ["# Agent 對話", ""]
+        lines.append(f"匯出時間：{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(f"Provider：{self.llm_provider.get()}")
+        if self.llm_provider.get() == "Gemini":
+            lines.append(f"Planner Model：{self.gemini_planner_model.get() or '(未設)'}")
+            lines.append(f"Reviewer Model：{self.gemini_reviewer_model.get() or '(未設)'}")
+        else:
+            lines.append(f"Endpoint：{self.ollama_endpoint.get()}")
+            lines.append(f"Planner Model：{self.ollama_planner_model.get() or '(未設)'}")
+            lines.append(f"Reviewer Model：{self.ollama_reviewer_model.get() or '(未設)'}")
+        s = self.budget.status()
+        lines.append(
+            f"預算使用：planner {s['planner_used']}/{s['planner_limit']}，"
+            f"reviewer {s['reviewer_used']}/{s['reviewer_limit']}"
+        )
+        lines.append("")
+
+        for entry in self.agent_chat_log:
+            ts = entry.get("ts", "")
+            kind = entry["kind"]
+            if kind == "user":
+                lines.append(f"## [{ts}] 你")
+                lines.append(entry.get("text", ""))
+            elif kind == "assistant":
+                lines.append(f"## [{ts}] 助理")
+                lines.append(entry.get("text", ""))
+            elif kind == "tool_call":
+                args_json = json.dumps(entry.get("args", {}), ensure_ascii=False)
+                lines.append(f"### [{ts}] 助理 → 工具呼叫")
+                lines.append("```")
+                lines.append(f"{entry.get('name','')}({args_json})")
+                lines.append("```")
+            elif kind == "tool_result":
+                lines.append(f"### [{ts}] 工具回傳：{entry.get('name', '?')}")
+                lines.append("```json")
+                lines.append(entry.get("text", ""))
+                lines.append("```")
+            lines.append("")
+        return "\n".join(lines)
 
     # ---- helpers ----
 
@@ -607,6 +754,18 @@ class AutoReportApp(ctk.CTk):
         except (ValueError, TypeError):
             return 3
 
+    def _max_planner_calls_int(self):
+        try:
+            return max(1, int(self.max_planner_calls.get()))
+        except (ValueError, TypeError):
+            return 50
+
+    def _max_reviewer_calls_int(self):
+        try:
+            return max(1, int(self.max_reviewer_calls.get()))
+        except (ValueError, TypeError):
+            return 100
+
     def _refresh_history_box(self):
         self.history_box.delete("1.0", "end")
         for i, (label, _) in enumerate(reversed(self.mapping_history), 1):
@@ -633,6 +792,8 @@ class AutoReportApp(ctk.CTk):
                 "review_sampling_percent": self._review_sampling_int(),
                 "max_review_retries": self._max_retries_int(),
                 "review_rubric": self.rubric_box.get("1.0", "end").rstrip(),
+                "max_planner_calls": self._max_planner_calls_int(),
+                "max_reviewer_calls": self._max_reviewer_calls_int(),
             }
         )
         try:
@@ -831,44 +992,46 @@ class AutoReportApp(ctk.CTk):
             messagebox.showwarning("警告", "請先選取範本與數據檔案！")
             return
 
-        self.cancel_event = threading.Event()
-        self.is_generating = True
-        self.btn_generate.configure(text="取消產出", fg_color=COLOR_RED)
-        self.progress.set(0)
-        self.progress_label.configure(text="準備中...")
-
+        # AppContext.generate_reports 會自行設置 is_generating / cancel_event /
+        # 並驅動 progress UI；此處只啟動背景緒。
         threading.Thread(target=self._process_files, daemon=True).start()
 
     def _process_files(self):
+        # 啟用審查時，預算上限同步到 tracker
+        self._sync_budget_limits()
+        self._safe_log("開始讀取數據...")
         try:
-            self._safe_log("開始讀取數據...")
-            generator = self._build_generator()
-            produced, total = generator.generate(
-                progress_callback=self._on_progress,
-                cancel_event=self.cancel_event,
-            )
-            if self.cancel_event.is_set():
-                self._safe_log(f"已取消，已產出 {produced}/{total} 份。")
-            else:
-                self._safe_log(f"完成！共 {produced} 份，輸出於 {self.output_dir.get()}")
-                self.after(
-                    0,
-                    lambda: messagebox.showinfo("成功", f"已產出 {produced} 份報告！"),
-                )
+            result = self.app_context.generate_reports()
         except Exception as e:
             self._safe_log(f"生成失敗: {e}")
-        finally:
-            self.is_generating = False
-            self.after(0, self._reset_generation_ui)
+            return
 
-    def _on_progress(self, current, total):
-        ratio = current / total if total else 0
+        if "error" in result:
+            self._safe_log(f"生成失敗: {result['error']}")
+            return
 
-        def update():
-            self.progress.set(ratio)
-            self.progress_label.configure(text=f"進度 {current}/{total}")
+        self._show_completion_summary(result)
 
-        self.after(0, update)
+    def _show_completion_summary(self, result):
+        produced = result.get("produced", 0)
+        total = result.get("total", produced)
+        cancelled = result.get("cancelled", False)
+
+        parts = [f"產出 {produced}/{total}"]
+        if "reviewed" in result:
+            parts.append(f"審查 {result['reviewed']} 份")
+            failed_count = result.get("failed_count", 0)
+            if failed_count > 0:
+                parts.append(f"失敗 {failed_count} 份 → {result.get('failed_dir', 'Failed_Reports')}")
+            if result.get("review_budget_exhausted"):
+                parts.append("（reviewer 預算用盡）")
+        if cancelled:
+            parts.append("(已取消)")
+
+        msg = "，".join(parts)
+        self._safe_log(f"完成：{msg}")
+        if not cancelled:
+            self.after(0, lambda: messagebox.showinfo("成功", msg))
 
     def _reset_generation_ui(self):
         self.btn_generate.configure(text="開始批次產出報告", fg_color=COLOR_BLUE)

@@ -68,10 +68,21 @@ python main.py
 
 ### 審查設定（AI 引擎頁籤）
 
-- **啟用審查**：勾選後 `generate_reports` 改走「邊產邊審」流程
+- **啟用審查**：勾選後 `generate_reports` 改走「邊產邊審」流程；UI 的「開始批次產出報告」按鈕也會走相同路徑
 - **抽樣比例**：1–100%；100 = 每份都審
 - **評分標準（rubric）**：多行文字輸入；reviewer 依此 rubric 給 passed/score/issues
 - 審查失敗的報告會 **複製** 到 `Failed_Reports/`（與 output_dir 同層），檔名重複自動加序號；不自動重產，等下批人工處理。
+
+### 預算上限（AI 引擎頁籤）
+
+- **Planner 上限**：每回合對話可呼叫 LLM 的次數上限（預設 50）；達上限會停止 agent 並提示去重置
+- **Reviewer 上限**：每回合 VLM 審查呼叫上限（預設 100）；達上限後該回合剩餘的報告會跳過審查（仍會產出）
+- 「**重置計數**」按鈕：歸零本回合已用次數
+- 計數於「新對話」時自動重置；上限變動不會重置已用次數
+
+### 對話日誌匯出（Agent 頁籤）
+
+- **匯出對話** 按鈕：把整段對話（含工具呼叫 / 工具回傳 / 助理文字）以 Markdown 格式存檔，含時戳、provider、模型、預算用量。可作為審計或除錯紀錄。
 
 Gemini 走最新版 [`google-genai`](https://pypi.org/project/google-genai/) 2.0+ 統一 SDK。
 Ollama 走 stdlib urllib，無額外依賴。
@@ -104,10 +115,11 @@ API key 採 `.env` 管理：複製 `.env.example` 為 `.env` 並填入 `GEMINI_A
         ├── registry.py      # Tool / ToolRegistry 框架
         ├── tools.py         # 工具實作（read-only + 寫入 / 驗證 / 執行 / 互動 / 渲染 / 審查）
         ├── context.py       # AppContext：UI 狀態橋接（執行緒安全）
+        ├── budget.py        # BudgetTracker：planner / reviewer 呼叫次數上限
         ├── dialogs.py       # ChoiceDialog（agent 用單選對話框）
         ├── docx_render.py   # docx → PDF (Word COM) → PNG (PyMuPDF) 管線
         ├── reviewer.py      # VLM 審查（review_report + JSON 抽取 + 失敗檔搬移）
-        ├── orchestrator.py  # planner loop（單回合 = 跑完所有 tool call）
+        ├── orchestrator.py  # planner loop（單回合 = 跑完所有 tool call；尊重預算）
         └── llm/             # LLM provider 抽象
             ├── base.py      # LLMClient + Message + ToolCall + vision_complete
             ├── gemini.py    # google-genai 2.0+ 實作（含 vision）
