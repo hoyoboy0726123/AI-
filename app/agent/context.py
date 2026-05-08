@@ -137,16 +137,19 @@ class AppContext:
             "passed": not missing,
         }
 
-    def generate_reports(self) -> dict:
-        if self._app.is_generating:
-            return {"error": "已有生成任務在執行中"}
-        if not self._app.word_path.get() or not self._app.excel_path.get():
-            return {"error": "請先設定 Word 與 Excel 路徑"}
+    def _progress_ui(self, current, total):
+        ratio = current / total if total else 0
 
-        cancel_event = threading.Event()
-        self._app.cancel_event = cancel_event
-        self._app.is_generating = True
+        def update():
+            try:
+                self._app.progress.set(ratio)
+                self._app.progress_label.configure(text=f"進度 {current}/{total}")
+            except Exception:
+                pass
 
+        self._app.after(0, update)
+
+    def _start_generation_ui(self):
         from app.config import COLOR_RED
 
         def start_ui():
@@ -159,36 +162,168 @@ class AppContext:
 
         self._app.after(0, start_ui)
 
-        def progress_ui(current, total):
-            ratio = current / total if total else 0
+    def _build_reviewer_client(self):
+        """回傳 (client, model, error_or_None)。"""
+        provider = self._app.llm_provider.get()
+        if provider == "Gemini":
+            from app.agent.llm import GeminiClient
+            client = GeminiClient()
+            model = self._app.gemini_reviewer_model.get()
+        else:
+            from app.agent.llm import OllamaClient
+            client = OllamaClient(endpoint=self._app.ollama_endpoint.get())
+            model = self._app.ollama_reviewer_model.get()
 
-            def update():
-                try:
-                    self._app.progress.set(ratio)
-                    self._app.progress_label.configure(text=f"進度 {current}/{total}")
-                except Exception:
-                    pass
+        if not client.is_available():
+            return client, model, f"{provider} reviewer 不可用（檢查 API key / endpoint）"
+        if not model:
+            return client, model, f"未選 {provider} reviewer 模型（請至 AI 引擎頁籤選定）"
+        return client, model, None
 
-            self._app.after(0, update)
+    def generate_reports(self) -> dict:
+        if self._app.is_generating:
+            return {"error": "已有生成任務在執行中"}
+        if not self._app.word_path.get() or not self._app.excel_path.get():
+            return {"error": "請先設定 Word 與 Excel 路徑"}
+
+        cancel_event = threading.Event()
+        self._app.cancel_event = cancel_event
+        self._app.is_generating = True
+        self._start_generation_ui()
+
+        enable_review = bool(self._app.enable_review.get())
 
         try:
-            generator = self._build_generator()
-            produced, total = generator.generate(
-                progress_callback=progress_ui,
-                cancel_event=cancel_event,
-            )
+            if enable_review:
+                return self._generate_with_review_loop(cancel_event)
+            return self._generate_simple_loop(cancel_event)
         except Exception as e:
             return {"error": str(e)}
         finally:
             self._app.is_generating = False
             self._app.after(0, self._app._reset_generation_ui)
 
+    def _generate_simple_loop(self, cancel_event) -> dict:
+        generator = self._build_generator()
+        produced, total = generator.generate(
+            progress_callback=self._progress_ui,
+            cancel_event=cancel_event,
+        )
         return {
             "produced": produced,
             "total": total,
             "output_dir": self._app.output_dir.get(),
             "cancelled": cancel_event.is_set(),
         }
+
+    def _generate_with_review_loop(self, cancel_event) -> dict:
+        import random
+
+        from app.agent.reviewer import move_to_failed_reports, review_report
+        from app.config import FAILED_REPORTS_DIR
+
+        vlm, model, err = self._build_reviewer_client()
+        if err:
+            return {"error": err}
+
+        rubric = ""
+        try:
+            rubric = self._app.rubric_box.get("1.0", "end").rstrip()
+        except Exception:
+            pass
+        sampling = self._app._review_sampling_int()
+
+        # Failed_Reports/ 與 output_dir 同一層（皆相對於 cwd）
+        output_dir = self._app.output_dir.get() or "."
+        if os.path.isabs(output_dir):
+            failed_dir = os.path.join(os.path.dirname(output_dir), FAILED_REPORTS_DIR)
+        else:
+            failed_dir = FAILED_REPORTS_DIR
+
+        generator = self._build_generator()
+        produced = 0
+        total = 0
+        reviewed = 0
+        failed = []  # list of {index, path, score, issues}
+
+        for prod, tot, saved_path, row_dict in generator.generate_iter(cancel_event=cancel_event):
+            produced = prod
+            total = tot
+            self._progress_ui(produced, total)
+
+            if random.random() * 100 > sampling:
+                continue
+
+            result = review_report(
+                vlm,
+                saved_path,
+                row_dict,
+                rubric,
+                model,
+                max_pages=4,
+            )
+            reviewed += 1
+
+            if "error" in result:
+                # reviewer 自身錯誤：不算 failed，繼續
+                continue
+
+            if not result.get("passed"):
+                try:
+                    target = move_to_failed_reports(saved_path, failed_dir)
+                except Exception as e:
+                    target = saved_path  # fallback to original
+                failed.append(
+                    {
+                        "index": prod,
+                        "path": target,
+                        "score": result.get("score", 0),
+                        "issues": result.get("issues", [])[:5],
+                    }
+                )
+
+        return {
+            "produced": produced,
+            "total": total,
+            "reviewed": reviewed,
+            "failed_count": len(failed),
+            "failed": failed[:10],  # 控制回傳大小
+            "output_dir": self._app.output_dir.get(),
+            "failed_dir": failed_dir,
+            "cancelled": cancel_event.is_set(),
+        }
+
+    def review_single_docx(self, docx_path: str, row_context_json: str = "") -> dict:
+        """單獨審查任一 docx，回傳 reviewer 結果。"""
+        if not docx_path:
+            return {"error": "未提供 docx_path"}
+        if not os.path.isfile(docx_path):
+            return {"error": f"檔案不存在: {docx_path}"}
+        if not docx_path.lower().endswith(".docx"):
+            return {"error": "必須是 .docx 檔"}
+
+        vlm, model, err = self._build_reviewer_client()
+        if err:
+            return {"error": err}
+
+        rubric = ""
+        try:
+            rubric = self._app.rubric_box.get("1.0", "end").rstrip()
+        except Exception:
+            pass
+
+        row_context = {}
+        if row_context_json:
+            try:
+                import json as _json
+                row_context = _json.loads(row_context_json)
+                if not isinstance(row_context, dict):
+                    row_context = {"data": row_context}
+            except Exception:
+                row_context = {"raw": row_context_json}
+
+        from app.agent.reviewer import review_report
+        return review_report(vlm, docx_path, row_context, rubric, model, max_pages=4)
 
     def open_output_folder(self) -> dict:
         from app.ui import open_folder

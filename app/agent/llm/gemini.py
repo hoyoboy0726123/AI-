@@ -20,6 +20,22 @@ except ImportError:
 from .base import LLMClient, Message, ToolCall
 
 
+def _load_image(img):
+    """接受路徑字串或 bytes，回 (bytes, mime_type)。"""
+    if isinstance(img, (bytes, bytearray)):
+        return bytes(img), "image/png"
+    path = str(img).lower()
+    with open(img, "rb") as f:
+        data = f.read()
+    if path.endswith(".jpg") or path.endswith(".jpeg"):
+        return data, "image/jpeg"
+    if path.endswith(".gif"):
+        return data, "image/gif"
+    if path.endswith(".webp"):
+        return data, "image/webp"
+    return data, "image/png"
+
+
 class GeminiClient(LLMClient):
     def __init__(self, api_key=None):
         self.api_key = (
@@ -65,6 +81,32 @@ class GeminiClient(LLMClient):
     def list_vision_models(self):
         # Gemini 1.5 / 2.x / 3.x 全系列為多模態
         return [m for m in self.list_models() if "gemini" in m.lower()]
+
+    # ---- vision (P6 reviewer) ----
+
+    def vision_complete(self, system, user_text, images, model):
+        client = self._ensure_client()
+        if client is None:
+            raise RuntimeError("Gemini client 不可用：套件未安裝或 API key 未設定。")
+
+        parts = [genai_types.Part(text=user_text or "")]
+        for img in images or []:
+            data, mime = _load_image(img)
+            parts.append(genai_types.Part.from_bytes(data=data, mime_type=mime))
+
+        contents = [genai_types.Content(role="user", parts=parts)]
+
+        config = genai_types.GenerateContentConfig(
+            system_instruction=system or None,
+        )
+
+        response = client.models.generate_content(
+            model=model or "gemini-2.5-flash",
+            contents=contents,
+            config=config,
+        )
+
+        return getattr(response, "text", "") or ""
 
     # ---- chat ----
 

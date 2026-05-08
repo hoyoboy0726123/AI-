@@ -42,3 +42,15 @@ class LLMClient(ABC):
         - model: 模型名稱字串。
         """
         raise NotImplementedError
+
+    def vision_complete(self, system: str, user_text: str, images: list, model: str) -> str:
+        """單回合多模態文字補全（reviewer 用）。
+
+        - system: system instruction（可空字串）
+        - user_text: 使用者要傳給模型的文字
+        - images: list；每個元素為圖片檔案路徑（str）或 raw bytes
+        - model: 模型名稱
+
+        回傳：模型輸出的文字。
+        """
+        raise NotImplementedError

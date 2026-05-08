@@ -198,7 +198,12 @@ def make_writable_tools(ctx) -> list:
         ),
         Tool(
             name="generate_reports",
-            description="依當前設定批次產出所有報告。建議先執行 validate_template；missing 欄位非空時應先告知使用者。回傳 produced / total / output_dir。",
+            description=(
+                "依當前設定批次產出所有報告。建議先執行 validate_template；missing 欄位非空時應先告知使用者。"
+                "若 AI 引擎頁籤的「啟用審查」開啟，會在每份產出後自動由 reviewer 模型審查；"
+                "失敗者複製到 Failed_Reports/ 等下一批處理。"
+                "回傳 produced / total / output_dir；啟用審查時另含 reviewed / failed_count / failed[] / failed_dir。"
+            ),
             parameters={"type": "object", "properties": {}},
             func=ctx.generate_reports,
         ),
@@ -207,6 +212,29 @@ def make_writable_tools(ctx) -> list:
             description="於檔案總管開啟當前輸出資料夾。",
             parameters={"type": "object", "properties": {}},
             func=ctx.open_output_folder,
+        ),
+        Tool(
+            name="review_single_docx",
+            description=(
+                "用 VLM reviewer 審查單一 docx 檔，依 rubric 回傳 passed / score / issues / suggestions。"
+                "需先在「AI 引擎」頁籤選好 reviewer 模型；呼叫後會自動把該 docx 渲染成 PNG 送 VLM。"
+                "可選提供 row_context_json（產生這份報告所用的數據 JSON 字串）讓 reviewer 有上下文比對。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "docx_path": {
+                        "type": "string",
+                        "description": "Word 檔（.docx）的完整路徑",
+                    },
+                    "row_context_json": {
+                        "type": "string",
+                        "description": "可選：產生此份報告所用的資料（JSON 字串）",
+                    },
+                },
+                "required": ["docx_path"],
+            },
+            func=ctx.review_single_docx,
         ),
         Tool(
             name="render_docx_pages",

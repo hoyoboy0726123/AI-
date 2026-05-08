@@ -4,6 +4,7 @@
 P3 若需要更穩的 tool calling 再考慮加入官方 ollama Python lib。
 """
 
+import base64
 import json
 import os
 import urllib.request
@@ -116,6 +117,42 @@ class OllamaClient(LLMClient):
                 ToolCall(name=fn.get("name", ""), arguments=args or {})
             )
         return out
+
+    # ---- vision (P6 reviewer) ----
+
+    def vision_complete(self, system, user_text, images, model):
+        if not model:
+            raise RuntimeError("未指定 Ollama 模型。")
+
+        encoded = []
+        for img in images or []:
+            if isinstance(img, (bytes, bytearray)):
+                data = bytes(img)
+            else:
+                with open(img, "rb") as f:
+                    data = f.read()
+            encoded.append(base64.b64encode(data).decode("ascii"))
+
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append(
+            {
+                "role": "user",
+                "content": user_text or "",
+                "images": encoded,
+            }
+        )
+
+        payload = {"model": model, "stream": False, "messages": messages}
+
+        try:
+            body = self._post_json("/api/chat", payload, timeout=300)
+        except Exception as e:
+            raise RuntimeError(f"Ollama 連線失敗: {e}")
+
+        msg = body.get("message", {}) or {}
+        return msg.get("content", "") or ""
 
     @staticmethod
     def _msg_to_ollama(msg):

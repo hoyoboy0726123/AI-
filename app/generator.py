@@ -82,12 +82,10 @@ class ReportGenerator:
                 context[key] = value
         return context
 
-    def generate(self, progress_callback=None, cancel_event=None):
-        """產出所有報告。
+    def generate_iter(self, cancel_event=None):
+        """逐列產出報告，yield (produced, total, saved_path, row_dict)。
 
-        progress_callback(current, total): 回報進度（UI 用）。
-        cancel_event: threading.Event；set 後在下一輪迴圈跳出。
-        回傳 (produced, total)。
+        提供給 reviewer 流程（P6）：每存一份就交給 caller 立刻處理。
         """
         df = self._read_dataframe()
         os.makedirs(self.output_dir, exist_ok=True)
@@ -96,16 +94,30 @@ class ReportGenerator:
         produced = 0
         for index, row in df.iterrows():
             if cancel_event is not None and cancel_event.is_set():
-                break
+                return
 
             doc = DocxTemplate(self.word_path)
             row_dict = row.to_dict()
             doc.render(self._build_context(doc, row_dict))
             filename = render_filename(self.filename_template, row_dict, index + 1)
-            doc.save(os.path.join(self.output_dir, filename))
+            saved_path = os.path.join(self.output_dir, filename)
+            doc.save(saved_path)
 
             produced += 1
+            yield produced, total, saved_path, row_dict
+
+    def generate(self, progress_callback=None, cancel_event=None):
+        """產出所有報告。
+
+        progress_callback(current, total): 回報進度（UI 用）。
+        cancel_event: threading.Event；set 後在下一輪迴圈跳出。
+        回傳 (produced, total)。
+        """
+        produced = 0
+        total = 0
+        for prod, tot, _saved_path, _row in self.generate_iter(cancel_event=cancel_event):
+            produced = prod
+            total = tot
             if progress_callback:
                 progress_callback(produced, total)
-
         return produced, total
