@@ -237,6 +237,96 @@ def make_writable_tools(ctx) -> list:
             func=ctx.review_single_docx,
         ),
         Tool(
+            name="read_docx_text",
+            description=(
+                "讀取 Word 範本的所有段落文字（用於對應前先看內容）。"
+                "max_paragraphs > 0 時截斷至前 N 段。"
+                "未指定 word_path 則用當前設定。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "word_path": {
+                        "type": "string",
+                        "description": "Word 路徑；空則用當前設定",
+                    },
+                    "max_paragraphs": {
+                        "type": "integer",
+                        "description": "段落數上限；0 = 全部",
+                    },
+                },
+                "required": [],
+            },
+            func=ctx.read_docx_text,
+        ),
+        Tool(
+            name="rename_template_variable",
+            description=(
+                "把 Word 範本中的 {{ old }} 全部改成 {{ new }}（容忍空白變化），存檔。"
+                "用於把既有變數名對齊 Excel 欄位。回傳 {changed: N}；找不到時 changed=0。"
+                "未指定 word_path 則用當前設定。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "old": {"type": "string", "description": "舊變數名（不含 {{ }}）"},
+                    "new": {"type": "string", "description": "新變數名（不含 {{ }}）"},
+                    "word_path": {"type": "string"},
+                },
+                "required": ["old", "new"],
+            },
+            func=ctx.rename_template_variable,
+        ),
+        Tool(
+            name="insert_template_variable",
+            description=(
+                "在範本中找到 anchor 文字並插入 {{ variable }}（用於從零標註空白範本）。"
+                "範例：anchor=「客戶姓名：」、variable=「客戶名稱」、position=after → "
+                "「客戶姓名：{{ 客戶名稱 }}」。只插入第一個出現的 anchor。"
+                "未指定 word_path 則用當前設定。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "anchor": {
+                        "type": "string",
+                        "description": "範本中要對齊的文字（例：「客戶姓名：」）",
+                    },
+                    "variable": {
+                        "type": "string",
+                        "description": "要插入的變數名（不含 {{ }}）",
+                    },
+                    "position": {
+                        "type": "string",
+                        "enum": ["after", "before", "replace"],
+                        "description": "插入位置；預設 after",
+                    },
+                    "word_path": {"type": "string"},
+                },
+                "required": ["anchor", "variable"],
+            },
+            func=ctx.insert_template_variable,
+        ),
+        Tool(
+            name="suggest_mappings",
+            description=(
+                "讓 planner LLM 一次性比對 Word 範本內容與 Excel 欄位，回傳建議的 "
+                "renames（變數改名）與 inserts（在某段文字附近插入變數）清單；不會自動套用。"
+                "得到建議後請用 ask_user 確認，再呼叫 rename_template_variable / "
+                "insert_template_variable 套用。消耗 1 次 planner 預算。"
+                "word_path / excel_path 留空時使用當前設定。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "word_path": {"type": "string"},
+                    "excel_path": {"type": "string"},
+                },
+                "required": [],
+            },
+            func=ctx.suggest_mappings,
+        ),
+        Tool(
             name="render_docx_pages",
             description=(
                 "將 docx 檔渲染成每頁一張 PNG，供視覺檢查（reviewer 用）。"

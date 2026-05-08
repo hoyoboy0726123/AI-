@@ -180,6 +180,24 @@ class AppContext:
             return client, model, f"未選 {provider} reviewer 模型（請至 AI 引擎頁籤選定）"
         return client, model, None
 
+    def _build_planner_client(self):
+        """回傳 (client, model, error_or_None)。"""
+        provider = self._app.llm_provider.get()
+        if provider == "Gemini":
+            from app.agent.llm import GeminiClient
+            client = GeminiClient()
+            model = self._app.gemini_planner_model.get()
+        else:
+            from app.agent.llm import OllamaClient
+            client = OllamaClient(endpoint=self._app.ollama_endpoint.get())
+            model = self._app.ollama_planner_model.get()
+
+        if not client.is_available():
+            return client, model, f"{provider} planner 不可用（檢查 API key / endpoint）"
+        if not model:
+            return client, model, f"未選 {provider} planner 模型（請至 AI 引擎頁籤選定）"
+        return client, model, None
+
     def generate_reports(self) -> dict:
         if self._app.is_generating:
             return {"error": "已有生成任務在執行中"}
@@ -358,6 +376,89 @@ class AppContext:
         os.makedirs(path, exist_ok=True)
         ok = open_folder(path)
         return {"ok": ok, "path": path}
+
+    # ---------- 範本對應 (P8: 自動對應) ----------
+
+    def read_docx_text(self, word_path: str = "", max_paragraphs: int = 0) -> dict:
+        from app.agent.template_edit import read_docx_text as _read
+
+        path = word_path or self._app.word_path.get()
+        return _read(path, max_paragraphs=max_paragraphs)
+
+    def rename_template_variable(
+        self, old: str, new: str, word_path: str = ""
+    ) -> dict:
+        from app.agent.template_edit import rename_template_variable as _rename
+
+        path = word_path or self._app.word_path.get()
+        return _rename(path, old, new)
+
+    def insert_template_variable(
+        self,
+        anchor: str,
+        variable: str,
+        position: str = "after",
+        word_path: str = "",
+    ) -> dict:
+        from app.agent.template_edit import insert_template_variable as _insert
+
+        path = word_path or self._app.word_path.get()
+        return _insert(path, anchor, variable, position)
+
+    def suggest_mappings(self, word_path: str = "", excel_path: str = "") -> dict:
+        """讀範本 + Excel，呼 planner LLM 回傳 renames / inserts 建議清單。
+
+        消耗 1 次 planner 預算（成功時）。
+        """
+        from app.agent.mapping_suggester import suggest_mappings as _suggest
+        from app.agent.template_edit import read_docx_text as _read_docx
+
+        wp = word_path or self._app.word_path.get()
+        ep = excel_path or self._app.excel_path.get()
+        if not wp:
+            return {"error": "未提供 Word 路徑"}
+        if not ep:
+            return {"error": "未提供 Excel 路徑"}
+
+        # 讀範本段落（限制長度避免吃太多 prompt）
+        rd = _read_docx(wp, max_paragraphs=80)
+        if "error" in rd:
+            return {"error": f"讀範本失敗: {rd['error']}"}
+        paragraphs = rd.get("paragraphs", [])
+
+        # 讀範本既有變數
+        try:
+            from docxtpl import DocxTemplate
+            tpl_vars = list(DocxTemplate(wp).get_undeclared_template_variables())
+        except Exception as e:
+            return {"error": f"讀範本變數失敗: {e}"}
+
+        # 讀 Excel 欄位
+        try:
+            import pandas as pd
+            df = pd.read_excel(
+                ep,
+                sheet_name=self._app.sheet_name.get() or 0,
+                header=max(0, self._app._header_row_int() - 1),
+                nrows=0,
+            )
+            excel_columns = [str(c) for c in df.columns]
+        except Exception as e:
+            return {"error": f"讀 Excel 欄位失敗: {e}"}
+
+        # planner LLM
+        llm, model, err = self._build_planner_client()
+        if err:
+            return {"error": err}
+
+        budget = getattr(self._app, "budget", None)
+        if budget is not None and not budget.can_use_planner():
+            return {"error": f"已達 planner 預算上限 {budget.planner_limit}"}
+
+        result = _suggest(llm, paragraphs, tpl_vars, excel_columns, model)
+        if "error" not in result and budget is not None:
+            budget.use_planner()
+        return result
 
     # ---------- 渲染 (P5: docx → image) ----------
 

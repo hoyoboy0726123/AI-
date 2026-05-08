@@ -55,16 +55,37 @@ python main.py
 新增「AI 引擎」與「Agent」兩個頁籤：
 
 - **AI 引擎**：選 **Gemini** 或 **Ollama**，列出可用模型、測試連線、設定審查 rubric。
-- **Agent**：自然語言對話，已支援 18 個工具（P2 → P6）：
-  - 查詢：`list_excel_sheets` / `read_excel_columns` / `read_template_variables` / `get_current_settings`
+- **Agent**：自然語言對話，已支援 22 個工具（P2 → P8）：
+  - 查詢：`list_excel_sheets` / `read_excel_columns` / `read_template_variables` / `get_current_settings` / `read_docx_text`
   - 設定：`set_word_path` / `set_excel_path` / `set_sheet_name` / `set_header_row` / `set_output_dir` / `set_filename_template` / `set_image_width_mm`
+  - **範本對應 (P8)**：`suggest_mappings`（一鍵讓 LLM 比對 Word + Excel 給建議）/ `rename_template_variable`（改名 `{{ X }}` → `{{ Y }}`）/ `insert_template_variable`（在某段文字附近插入 `{{ var }}`）
   - 驗證：`validate_template`
   - 執行：`generate_reports`（**啟用審查時** 每份產出後自動由 VLM 評分；失敗的搬到 `Failed_Reports/` 等下一批人工處理）/ `open_output_folder`
   - 審查：`review_single_docx`（單獨審查任一 docx）/ `render_docx_pages`（docx → 每頁 PNG）
   - 互動：`ask_user`（含 choices 單選）/ `request_file`（檔案 / 資料夾選取對話框）
   - Agent 缺資料時會主動跳檔案選取或單選對話框，不靠你貼路徑。
-  - 範例：「全部產出」（agent 缺什麼就會問）、「驗證範本，有缺欄位再問我」、「把報告_3.docx 拿去審查一下」
+  - 範例：「**幫我把標籤對好**」「全部產出」「驗證範本，有缺欄位再問我」
   - Ctrl+Enter 送出。
+
+### 自動範本對應（P8）
+
+工作流：
+```
+你: 幫我把範本標籤對好
+
+[助理 → suggest_mappings] LLM 看 Word 段落 + 既有變數 + Excel 欄位
+[工具回傳] {
+  "renames": [{"from":"客戶","to":"客戶名稱","reason":"Excel 用客戶名稱"}],
+  "inserts": [{"anchor":"電話：","var":"電話","position":"after","reason":"範本有空白等待填入"}]
+}
+[助理 → ask_user] 「建議改 {{客戶}}→{{客戶名稱}}、在「電話：」後插入 {{電話}}。執行哪些？」
+                  [全部執行 / 只 rename / 只 insert / 都不要]
+〔你選「全部執行」〕
+[助理 → rename_template_variable]
+[助理 → insert_template_variable]
+[助理 → validate_template] {"passed": true}
+[助理] 範本對應完成，可開始批次產出。DONE
+```
 
 ### 審查設定（AI 引擎頁籤）
 
@@ -112,14 +133,16 @@ API key 採 `.env` 管理：複製 `.env.example` 為 `.env` 並填入 `GEMINI_A
     ├── generator.py     # 批次報告產出
     ├── hotkey.py        # 全域快捷鍵
     └── agent/
-        ├── registry.py      # Tool / ToolRegistry 框架
-        ├── tools.py         # 工具實作（read-only + 寫入 / 驗證 / 執行 / 互動 / 渲染 / 審查）
-        ├── context.py       # AppContext：UI 狀態橋接（執行緒安全）
-        ├── budget.py        # BudgetTracker：planner / reviewer 呼叫次數上限
-        ├── dialogs.py       # ChoiceDialog（agent 用單選對話框）
-        ├── docx_render.py   # docx → PDF (Word COM) → PNG (PyMuPDF) 管線
-        ├── reviewer.py      # VLM 審查（review_report + JSON 抽取 + 失敗檔搬移）
-        ├── orchestrator.py  # planner loop（單回合 = 跑完所有 tool call；尊重預算）
+        ├── registry.py            # Tool / ToolRegistry 框架
+        ├── tools.py               # 工具實作（22 個工具）
+        ├── context.py             # AppContext：UI 狀態橋接（執行緒安全）
+        ├── budget.py              # BudgetTracker：planner / reviewer 呼叫次數上限
+        ├── dialogs.py             # ChoiceDialog（agent 用單選對話框）
+        ├── docx_render.py         # docx → PDF (Word COM) → PNG (PyMuPDF) 管線
+        ├── reviewer.py            # VLM 審查（review_report + JSON 抽取 + 失敗檔搬移）
+        ├── template_edit.py       # P8: read_docx_text + rename / insert template var
+        ├── mapping_suggester.py   # P8: LLM 自動建議 renames + inserts
+        ├── orchestrator.py        # planner loop（單回合 = 跑完所有 tool call；尊重預算）
         └── llm/             # LLM provider 抽象
             ├── base.py      # LLMClient + Message + ToolCall + vision_complete
             ├── gemini.py    # google-genai 2.0+ 實作（含 vision）
