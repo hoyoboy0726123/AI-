@@ -1,0 +1,6 @@
+customtkinter
+pywin32
+keyboard
+pandas
+docxtpl
+openpyxl
