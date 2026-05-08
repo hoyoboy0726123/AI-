@@ -24,6 +24,7 @@ from app.config import (
 )
 import json
 
+from app.agent.context import AppContext
 from app.agent.llm import GEMINI_AVAILABLE, PROVIDERS, get_client
 from app.agent.orchestrator import AgentOrchestrator
 from app.agent.tools import build_default_registry
@@ -516,18 +517,19 @@ class AutoReportApp(ctk.CTk):
             )
             return None
 
-        context = {
+        ui_context = {
             "word_path": self.word_path.get(),
             "excel_path": self.excel_path.get(),
             "sheet_name": self.sheet_name.get(),
             "header_row": self._header_row_int(),
             "output_dir": self.output_dir.get(),
         }
+        app_context = AppContext(self)
         return AgentOrchestrator(
             llm=client,
-            registry=build_default_registry(),
+            registry=build_default_registry(app_context),
             model=model,
-            context=context,
+            context=ui_context,
         )
 
     def _agent_send(self):

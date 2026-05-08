@@ -55,11 +55,13 @@ python main.py
 新增「AI 引擎」與「Agent」兩個頁籤：
 
 - **AI 引擎**：選 **Gemini** 或 **Ollama**，列出可用模型、測試連線、設定審查 rubric。
-- **Agent**：自然語言對話，目前已支援 3 個 read-only 工具（P2）：
-  - `list_excel_sheets` — 列出 Excel 工作表
-  - `read_excel_columns` — 讀取欄位名稱
-  - `read_template_variables` — 讀取 Word 範本變數
-  - 範例：「目前選的 Excel 有哪些工作表？」「list 範本變數」
+- **Agent**：自然語言對話，已支援 14 個工具（P2 + P3）：
+  - 查詢：`list_excel_sheets` / `read_excel_columns` / `read_template_variables` / `get_current_settings`
+  - 設定：`set_word_path` / `set_excel_path` / `set_sheet_name` / `set_header_row` / `set_output_dir` / `set_filename_template` / `set_image_width_mm`
+  - 驗證：`validate_template`
+  - 執行：`generate_reports` / `open_output_folder`
+  - 範例：「用 abc.docx 配 data.xlsx 全部產出，檔名用 {客戶}_{日期}.docx」
+  - 範例：「目前設定？」「驗證一下範本」「跑全部，產完打開資料夾」
   - Ctrl+Enter 送出。
 
 Gemini 走最新版 [`google-genai`](https://pypi.org/project/google-genai/) 2.0+ 統一 SDK。
@@ -91,7 +93,8 @@ API key 採 `.env` 管理：複製 `.env.example` 為 `.env` 並填入 `GEMINI_A
     ├── hotkey.py        # 全域快捷鍵
     └── agent/
         ├── registry.py      # Tool / ToolRegistry 框架
-        ├── tools.py         # read-only 工具實作（list_sheets / read_columns / read_template_vars）
+        ├── tools.py         # 工具實作（read-only + 寫入 / 驗證 / 執行）
+        ├── context.py       # AppContext：UI 狀態橋接（執行緒安全）
         ├── orchestrator.py  # planner loop（單回合 = 跑完所有 tool call）
         └── llm/             # LLM provider 抽象
             ├── base.py      # LLMClient + Message + ToolCall
