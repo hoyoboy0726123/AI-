@@ -56,6 +56,7 @@ class AutoReportApp(ctk.CTk):
         self.settings = load_settings()
         self.title(WINDOW_TITLE)
         self.geometry(WINDOW_SIZE)
+        self.minsize(720, 620)
 
         self.word_path = ctk.StringVar(value=self.settings["word_path"])
         self.excel_path = ctk.StringVar(value=self.settings["excel_path"])
@@ -103,6 +104,8 @@ class AutoReportApp(ctk.CTk):
 
         # 啟動預算顯示輪詢（每 1.5s）
         self.after(500, self._refresh_budget_label)
+        # 產出按鈕的 enable/disable 狀態輪詢
+        self.after(800, self._refresh_generate_button_state)
 
     # ---- UI build ----
 
@@ -127,7 +130,24 @@ class AutoReportApp(ctk.CTk):
 
         self.log_box = ctk.CTkTextbox(self, height=110)
         self.log_box.pack(padx=15, pady=(0, 12), fill="x")
-        self.log("系統準備就緒。")
+
+        # 智慧預設頁籤：未配置 LLM 停在「AI 引擎」，已配置且有路徑停在「Agent」
+        self.tabs = tabs
+        try:
+            if self._llm_ready() and (self.word_path.get() or self.excel_path.get()):
+                tabs.set("Agent")
+            elif self._llm_ready():
+                tabs.set("Agent")
+            else:
+                tabs.set("AI 引擎")
+        except Exception:
+            pass
+
+        # 歡迎訊息
+        self.log("──── 快速上手 ────")
+        self.log("1) AI 引擎：選 Provider / 模型 / 預算")
+        self.log("2) Agent：用一句話描述目標（缺資料會自動跳對話框）")
+        self.log("3) 也可以走「設定 / 對應 / 產出」三頁籤手動操作（無 LLM 亦可）")
 
     def _build_settings_tab(self, parent):
         rows = [
@@ -154,9 +174,11 @@ class AutoReportApp(ctk.CTk):
         ctk.CTkEntry(parent, textvariable=self.header_row, width=80).grid(
             row=r, column=1, padx=10, pady=8, sticky="w"
         )
-        ctk.CTkLabel(parent, text="（Excel 中欄位名稱所在列，預設 1）").grid(
-            row=r, column=1, padx=(95, 10), pady=8, sticky="w"
-        )
+        ctk.CTkLabel(
+            parent,
+            text="（Excel 中欄位名稱所在列，預設 1）",
+            text_color="gray",
+        ).grid(row=r, column=2, padx=(0, 10), pady=8, sticky="w")
 
         r += 1
         ctk.CTkLabel(parent, text="輸出資料夾:").grid(row=r, column=0, padx=10, pady=8, sticky="w")
@@ -183,18 +205,22 @@ class AutoReportApp(ctk.CTk):
         ctk.CTkEntry(parent, textvariable=self.image_width_mm, width=80).grid(
             row=r, column=1, padx=10, pady=8, sticky="w"
         )
-        ctk.CTkLabel(parent, text="（插入圖片與圖片欄位的預設寬度，自動鎖長寬比）").grid(
-            row=r, column=1, padx=(95, 10), pady=8, sticky="w"
-        )
+        ctk.CTkLabel(
+            parent,
+            text="（插入圖片與圖片欄位的預設寬度，自動鎖長寬比）",
+            text_color="gray",
+        ).grid(row=r, column=2, padx=(0, 10), pady=8, sticky="w")
 
         r += 1
         ctk.CTkLabel(parent, text="網格欄數:").grid(row=r, column=0, padx=10, pady=8, sticky="w")
         ctk.CTkEntry(parent, textvariable=self.grid_columns, width=80).grid(
             row=r, column=1, padx=10, pady=8, sticky="w"
         )
-        ctk.CTkLabel(parent, text="（多張圖片網格貼圖時每列張數）").grid(
-            row=r, column=1, padx=(95, 10), pady=8, sticky="w"
-        )
+        ctk.CTkLabel(
+            parent,
+            text="（多張圖片網格貼圖時每列張數）",
+            text_color="gray",
+        ).grid(row=r, column=2, padx=(0, 10), pady=8, sticky="w")
 
     def _build_mapping_tab(self, parent):
         self.btn_mapping = ctk.CTkButton(
@@ -278,7 +304,7 @@ class AutoReportApp(ctk.CTk):
             variable=self.llm_provider,
             values=list(PROVIDERS),
             width=140,
-            command=lambda _v: self._show_provider_frame(),
+            command=lambda _v: self._on_provider_changed(),
         )
         self.provider_combo.pack(side="left", padx=4)
         ctk.CTkButton(head, text="刷新模型", width=90, command=self._refresh_llm_models).pack(side="left", padx=4)
@@ -339,7 +365,13 @@ class AutoReportApp(ctk.CTk):
         ctk.CTkLabel(rv, text="最大重試:").grid(row=1, column=3, padx=10, pady=6, sticky="e")
         ctk.CTkEntry(rv, textvariable=self.max_review_retries, width=70).grid(row=1, column=4, padx=4, pady=6, sticky="w")
 
-        ctk.CTkLabel(rv, text="評分標準 (rubric)：").grid(row=2, column=0, columnspan=5, padx=10, pady=(8, 2), sticky="w")
+        rubric_header = ctk.CTkFrame(rv, fg_color="transparent")
+        rubric_header.grid(row=2, column=0, columnspan=5, padx=10, pady=(8, 2), sticky="ew")
+        ctk.CTkLabel(rubric_header, text="評分標準 (rubric)：").pack(side="left")
+        ctk.CTkButton(
+            rubric_header, text="重置為預設", width=90, command=self._reset_rubric
+        ).pack(side="right")
+
         self.rubric_box = ctk.CTkTextbox(rv, height=140)
         self.rubric_box.grid(row=3, column=0, columnspan=5, padx=10, pady=(0, 10), sticky="ew")
         self.rubric_box.insert("1.0", self.settings["review_rubric"])
@@ -382,6 +414,11 @@ class AutoReportApp(ctk.CTk):
         else:
             self.gemini_frame.pack_forget()
             self.ollama_frame.pack(fill="x", padx=8, pady=6)
+
+    def _on_provider_changed(self):
+        """切換 provider 時自動切換子面板並背景刷新模型清單。"""
+        self._show_provider_frame()
+        self._refresh_llm_models()
 
     def _gemini_key_status_text(self):
         if not GEMINI_AVAILABLE:
@@ -462,6 +499,36 @@ class AutoReportApp(ctk.CTk):
             reviewer_limit=self._max_reviewer_calls_int(),
         )
 
+    def _reset_rubric(self):
+        from app.config import DEFAULT_REVIEW_RUBRIC
+
+        self.rubric_box.delete("1.0", "end")
+        self.rubric_box.insert("1.0", DEFAULT_REVIEW_RUBRIC)
+        self.log("rubric 已還原為預設值。")
+
+    def _refresh_generate_button_state(self):
+        """缺路徑時把「開始批次產出報告」按鈕灰階。"""
+        if not hasattr(self, "btn_generate"):
+            return
+        if self.is_generating:
+            return  # 取消模式時保持原樣
+        ready = bool(self.word_path.get() and self.excel_path.get())
+        try:
+            if ready:
+                self.btn_generate.configure(
+                    state="normal",
+                    fg_color=COLOR_BLUE,
+                    text="開始批次產出報告",
+                )
+            else:
+                self.btn_generate.configure(
+                    state="disabled",
+                    text="請先到「設定」頁籤指定 Word + Excel 路徑",
+                )
+        except Exception:
+            pass
+        self.after(800, self._refresh_generate_button_state)
+
     def _refresh_budget_label(self):
         s = self.budget.status()
         if hasattr(self, "budget_status_label"):
@@ -489,33 +556,72 @@ class AutoReportApp(ctk.CTk):
 
         self.agent_box = ctk.CTkTextbox(parent, wrap="word")
         self.agent_box.pack(fill="both", expand=True, padx=8, pady=4)
-        self.agent_box.configure(state="disabled")
+        # 允許選取與複製，但禁止鍵盤輸入
+        self.agent_box.bind("<Key>", self._agent_box_block_keys)
+        # 訊息類型上色
+        try:
+            self.agent_box.tag_config("user", foreground="#3498db")  # 藍
+            self.agent_box.tag_config("assistant", foreground="#2ecc71")  # 綠
+            self.agent_box.tag_config("tool_call", foreground="#888888")  # 灰
+            self.agent_box.tag_config("tool_result", foreground="#888888")
+            self.agent_box.tag_config("system", foreground="#e67e22")  # 橘
+        except Exception:
+            pass
 
         bottom = ctk.CTkFrame(parent, fg_color="transparent")
         bottom.pack(fill="x", padx=8, pady=(4, 8))
-        self.agent_input = ctk.CTkTextbox(bottom, height=70, wrap="word")
+        self.agent_input = ctk.CTkTextbox(bottom, height=90, wrap="word")
         self.agent_input.pack(side="left", fill="x", expand=True, padx=(0, 6))
-        self.agent_input.bind("<Control-Return>", lambda _e: self._agent_send())
+        self.agent_input.bind("<Control-Return>", lambda _e: (self._agent_send(), "break")[1])
         ctk.CTkButton(bottom, text="送出", width=80, command=self._agent_send).pack(side="right")
 
         self._agent_append_text(
             "── Agent 已就緒 ──\n"
             "提示：在「AI 引擎」頁籤選好 provider 與模型後再開始對話。\n"
-            "範例：「目前選的 Excel 有哪些工作表？」「list 範本變數」\n"
-            "（Ctrl+Enter 也可送出）\n\n"
+            "範例：「幫我把標籤對好」「全部產出，要審查」「資料夾的圖貼到範本」\n"
+            "（Ctrl+Enter 送出）\n\n",
+            tag="system",
         )
 
     def _agent_set_status(self, text):
+        color_map = {
+            "idle": "gray",
+            "thinking": "#3498db",
+            "waiting_user": "#e67e22",
+            "cancelling": "#e74c3c",
+        }
+        color = "gray"
+        for key, c in color_map.items():
+            if text.startswith(key) or key in text:
+                color = c
+                break
+        if "calling" in text:
+            color = "#2ecc71"
+
         def update():
-            self.agent_status.configure(text=f"狀態: {text}")
+            try:
+                self.agent_status.configure(text=f"狀態: {text}", text_color=color)
+            except Exception:
+                self.agent_status.configure(text=f"狀態: {text}")
         self.after(0, update)
 
-    def _agent_append_text(self, text):
+    def _agent_box_block_keys(self, event):
+        """禁止打字但保留複製 / 選取 / 滾動。"""
+        # Ctrl+C / Ctrl+A / 方向鍵 / Home / End 都放行
+        allowed = ("c", "C", "a", "A", "Insert")
+        if event.state & 0x4 and event.keysym in allowed:  # Ctrl modifier
+            return None
+        if event.keysym in (
+            "Left", "Right", "Up", "Down", "Home", "End",
+            "Prior", "Next", "Shift_L", "Shift_R", "Control_L", "Control_R",
+        ):
+            return None
+        return "break"
+
+    def _agent_append_text(self, text, tag=None):
         def append():
-            self.agent_box.configure(state="normal")
-            self.agent_box.insert("end", text)
+            self.agent_box.insert("end", text, (tag,) if tag else ())
             self.agent_box.see("end")
-            self.agent_box.configure(state="disabled")
         if threading.current_thread() is threading.main_thread():
             append()
         else:
@@ -526,7 +632,7 @@ class AutoReportApp(ctk.CTk):
         ts = datetime.datetime.now().strftime("%H:%M:%S")
         if msg.role == "user":
             self.agent_chat_log.append({"ts": ts, "kind": "user", "text": msg.text})
-            self._agent_append_text(f"\n[{ts}][你]\n{msg.text}\n")
+            self._agent_append_text(f"\n[{ts}][你]\n{msg.text}\n", tag="user")
             return
         if msg.role == "assistant":
             for tc in msg.tool_calls:
@@ -535,10 +641,12 @@ class AutoReportApp(ctk.CTk):
                     "ts": ts, "kind": "tool_call",
                     "name": tc.name, "args": tc.arguments,
                 })
-                self._agent_append_text(f"\n[{ts}][助理 → 工具呼叫] {tc.name}({args})\n")
+                self._agent_append_text(
+                    f"\n[{ts}] → {tc.name}({args})\n", tag="tool_call"
+                )
             if msg.text:
                 self.agent_chat_log.append({"ts": ts, "kind": "assistant", "text": msg.text})
-                self._agent_append_text(f"\n[{ts}][助理]\n{msg.text}\n")
+                self._agent_append_text(f"\n[{ts}][助理]\n{msg.text}\n", tag="assistant")
             return
         if msg.role == "tool":
             self.agent_chat_log.append({
@@ -546,7 +654,9 @@ class AutoReportApp(ctk.CTk):
                 "name": msg.tool_name, "text": msg.text,
             })
             preview = msg.text if len(msg.text) <= 600 else msg.text[:600] + "..."
-            self._agent_append_text(f"\n[{ts}][工具回傳 {msg.tool_name}]\n{preview}\n")
+            self._agent_append_text(
+                f"   ↳ {msg.tool_name}: {preview}\n", tag="tool_result"
+            )
             return
 
     def _agent_reset(self):
@@ -561,10 +671,8 @@ class AutoReportApp(ctk.CTk):
         )
         self.budget.reset()
         self._refresh_budget_label()
-        self.agent_box.configure(state="normal")
         self.agent_box.delete("1.0", "end")
-        self.agent_box.configure(state="disabled")
-        self._agent_append_text("── 對話已重置（預算計數歸零）──\n")
+        self._agent_append_text("── 對話已重置（預算計數歸零）──\n", tag="system")
         self._agent_set_status("idle")
 
     def _agent_cancel(self):
@@ -765,6 +873,18 @@ class AutoReportApp(ctk.CTk):
             return max(1, int(self.max_reviewer_calls.get()))
         except (ValueError, TypeError):
             return 100
+
+    def _llm_ready(self) -> bool:
+        """是否已選好 provider + planner 模型（不檢查 endpoint 是否真的可達）。"""
+        provider = self.llm_provider.get()
+        if provider == "Gemini":
+            if not GEMINI_AVAILABLE:
+                return False
+            if not (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")):
+                return False
+            return bool(self.gemini_planner_model.get())
+        # Ollama
+        return bool(self.ollama_planner_model.get())
 
     def _refresh_history_box(self):
         self.history_box.delete("1.0", "end")

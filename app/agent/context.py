@@ -143,7 +143,10 @@ class AppContext:
         def update():
             try:
                 self._app.progress.set(ratio)
-                self._app.progress_label.configure(text=f"進度 {current}/{total}")
+                pct = int(ratio * 100)
+                self._app.progress_label.configure(
+                    text=f"進度 {current}/{total} ({pct}%)"
+                )
             except Exception:
                 pass
 
