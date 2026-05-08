@@ -327,6 +327,80 @@ def make_writable_tools(ctx) -> list:
             func=ctx.suggest_mappings,
         ),
         Tool(
+            name="list_folder_files",
+            description=(
+                "列出任意資料夾中的檔案（用於圖片 / Word / Excel 等批次素材）。"
+                "kind 可為 image / word / excel / pdf / any。"
+                "回傳 {folder, files: [{name, path, size}], count}。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "folder_path": {"type": "string", "description": "資料夾完整路徑"},
+                    "kind": {
+                        "type": "string",
+                        "enum": ["image", "word", "excel", "pdf", "any"],
+                        "description": "檔案類型篩選；預設 image",
+                    },
+                    "max_files": {
+                        "type": "integer",
+                        "description": "回傳上限（0 = 全部）",
+                    },
+                },
+                "required": ["folder_path"],
+            },
+            func=ctx.list_folder_files,
+        ),
+        Tool(
+            name="insert_image_at_anchor",
+            description=(
+                "在 Word 範本中找到 anchor 文字（出現在哪一段），於該段下面新增一行並插入圖片。"
+                "用途：把圖片資料夾的圖貼到 Word 對應位置（如「圖 1：流程圖」下面）。"
+                "width_mm 留 0 時用 UI 的圖片寬度設定。未指定 word_path 用當前設定。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "anchor": {
+                        "type": "string",
+                        "description": "範本中要對齊的文字（圖片插在該段落下方）",
+                    },
+                    "image_path": {
+                        "type": "string",
+                        "description": "圖片完整路徑",
+                    },
+                    "width_mm": {
+                        "type": "integer",
+                        "description": "圖片寬度（mm）；0 = 用 UI 設定",
+                    },
+                    "word_path": {"type": "string"},
+                },
+                "required": ["anchor", "image_path"],
+            },
+            func=ctx.insert_image_at_anchor,
+        ),
+        Tool(
+            name="suggest_image_placements",
+            description=(
+                "讓 planner LLM 看 Word 段落 + 圖片檔名，給出建議的「哪張圖放哪段下面」配對；"
+                "不會自動套用。回傳 {placements:[{image, image_path, anchor, reason}]}。"
+                "得到建議後請用 ask_user 確認，再呼叫 insert_image_at_anchor 套用。"
+                "消耗 1 次 planner 預算。word_path 留空用當前設定。"
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "image_folder": {
+                        "type": "string",
+                        "description": "存放圖片的資料夾路徑",
+                    },
+                    "word_path": {"type": "string"},
+                },
+                "required": ["image_folder"],
+            },
+            func=ctx.suggest_image_placements,
+        ),
+        Tool(
             name="render_docx_pages",
             description=(
                 "將 docx 檔渲染成每頁一張 PNG，供視覺檢查（reviewer 用）。"

@@ -227,6 +227,7 @@ app/
 | **P6 ✓** | Reviewer agent + 失敗搬到 `Failed_Reports/` | 啟用審查時每份自動 VLM 評分；失敗複製到 fail folder |
 | **P7 ✓** | 抽樣 / 預算上限 / 進度 UI / 對話日誌匯出 | 生產級可用 |
 | **P8 ✓** | 自動範本對應（read_docx_text + rename / insert + suggest_mappings）| 「幫我把標籤對好」一句搞定 |
+| **P9 ✓** | 圖片資料夾 → Word 位置（list_folder_files + suggest_image_placements + insert_image_at_anchor）| 「把資料夾的圖貼到對應位置」一句搞定 |
 
 ## 8. 已確認決策（user 2026-05-08）
 

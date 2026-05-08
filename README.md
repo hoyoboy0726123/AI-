@@ -55,17 +55,43 @@ python main.py
 新增「AI 引擎」與「Agent」兩個頁籤：
 
 - **AI 引擎**：選 **Gemini** 或 **Ollama**，列出可用模型、測試連線、設定審查 rubric。
-- **Agent**：自然語言對話，已支援 22 個工具（P2 → P8）：
+- **Agent**：自然語言對話，已支援 25 個工具（P2 → P9）：
   - 查詢：`list_excel_sheets` / `read_excel_columns` / `read_template_variables` / `get_current_settings` / `read_docx_text`
   - 設定：`set_word_path` / `set_excel_path` / `set_sheet_name` / `set_header_row` / `set_output_dir` / `set_filename_template` / `set_image_width_mm`
-  - **範本對應 (P8)**：`suggest_mappings`（一鍵讓 LLM 比對 Word + Excel 給建議）/ `rename_template_variable`（改名 `{{ X }}` → `{{ Y }}`）/ `insert_template_variable`（在某段文字附近插入 `{{ var }}`）
+  - **範本對應 (P8)**：`suggest_mappings` / `rename_template_variable` / `insert_template_variable`
+  - **圖片資料夾 (P9)**：`list_folder_files`（列任意資料夾檔案）/ `suggest_image_placements`（依檔名語意配對 Word 段落）/ `insert_image_at_anchor`（圖片貼到指定段落下面）
   - 驗證：`validate_template`
-  - 執行：`generate_reports`（**啟用審查時** 每份產出後自動由 VLM 評分；失敗的搬到 `Failed_Reports/` 等下一批人工處理）/ `open_output_folder`
-  - 審查：`review_single_docx`（單獨審查任一 docx）/ `render_docx_pages`（docx → 每頁 PNG）
+  - 執行：`generate_reports`（**啟用審查時** 每份產出後自動由 VLM 評分；失敗的搬到 `Failed_Reports/`）/ `open_output_folder`
+  - 審查：`review_single_docx` / `render_docx_pages`（docx → 每頁 PNG）
   - 互動：`ask_user`（含 choices 單選）/ `request_file`（檔案 / 資料夾選取對話框）
   - Agent 缺資料時會主動跳檔案選取或單選對話框，不靠你貼路徑。
-  - 範例：「**幫我把標籤對好**」「全部產出」「驗證範本，有缺欄位再問我」
+  - 範例：「**幫我把標籤對好**」「**把 ./photos 裡的圖貼到範本對應位置**」「全部產出」
   - Ctrl+Enter 送出。
+
+### 圖片資料夾 → Word 位置（P9）
+
+```
+你: 把 D:\photos 裡的圖貼到範本對應位置
+
+[助理 → list_folder_files] 列出 photos/ 下的所有圖片
+[工具回傳] 12 張：圖1_流程圖.png, 圖2_組織架構.jpg, 客戶簽名範本.png, ...
+
+[助理 → read_docx_text] 讀範本段落
+[助理 → suggest_image_placements] LLM 配對檔名 → 段落
+[工具回傳] {
+  "placements": [
+    {"image":"圖1_流程圖.png", "anchor":"圖 1：流程圖", "image_path":"D:\\photos\\圖1_流程圖.png", "reason":"檔名與段落直接對應"},
+    {"image":"圖2_組織架構.jpg", "anchor":"圖 2：組織架構", ...},
+    ...
+  ]
+}
+
+[助理 → ask_user] 「要套用這 8 個配對嗎？」 [全部 / 逐一確認 / 都不要]
+〔你選「全部」〕
+
+[助理 → insert_image_at_anchor × 8]
+[助理] 8 張圖片已貼到範本對應段落下面。DONE
+```
 
 ### 自動範本對應（P8）
 
@@ -140,8 +166,9 @@ API key 採 `.env` 管理：複製 `.env.example` 為 `.env` 並填入 `GEMINI_A
         ├── dialogs.py             # ChoiceDialog（agent 用單選對話框）
         ├── docx_render.py         # docx → PDF (Word COM) → PNG (PyMuPDF) 管線
         ├── reviewer.py            # VLM 審查（review_report + JSON 抽取 + 失敗檔搬移）
-        ├── template_edit.py       # P8: read_docx_text + rename / insert template var
-        ├── mapping_suggester.py   # P8: LLM 自動建議 renames + inserts
+        ├── template_edit.py       # P8 / P9: read_docx_text + rename / insert template var + insert image
+        ├── mapping_suggester.py   # P8 / P9: LLM 自動建議 renames / inserts / image placements
+        ├── folder_scan.py         # P9: list_folder_files（任意資料夾掃描）
         ├── orchestrator.py        # planner loop（單回合 = 跑完所有 tool call；尊重預算）
         └── llm/             # LLM provider 抽象
             ├── base.py      # LLMClient + Message + ToolCall + vision_complete

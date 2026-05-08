@@ -120,6 +120,75 @@ def rename_template_variable(path: str, old: str, new: str) -> dict:
     return {"changed": changed, "from": old, "to": new}
 
 
+def insert_image_at_anchor(
+    path: str,
+    anchor: str,
+    image_path: str,
+    width_mm: int = 80,
+) -> dict:
+    """在 anchor 文字所在段落的下一行新增段落，並插入圖片。
+
+    用於：圖片檔名 → Word 中對應段落（如「圖 1：流程圖」）後面放圖。
+    回傳 {inserted: bool, anchor, image} 或 error。
+    """
+    if not path:
+        return {"error": "未提供 Word 路徑"}
+    if not os.path.isfile(path):
+        return {"error": f"檔案不存在: {path}"}
+    if not path.lower().endswith(".docx"):
+        return {"error": "必須是 .docx"}
+    if not anchor:
+        return {"error": "anchor 不可為空"}
+    if not image_path:
+        return {"error": "未提供圖片路徑"}
+    if not os.path.isfile(image_path):
+        return {"error": f"圖片不存在: {image_path}"}
+
+    try:
+        w = max(1, int(width_mm))
+    except (TypeError, ValueError):
+        w = 80
+
+    try:
+        doc = _open_doc(path)
+    except Exception as e:
+        return {"error": f"無法開啟: {e}"}
+
+    target = None
+    for para in _iter_paragraphs(doc):
+        if anchor in para.text:
+            target = para
+            break
+
+    if target is None:
+        return {"error": f"找不到 anchor: {anchor!r}"}
+
+    try:
+        from docx.oxml import OxmlElement
+        from docx.shared import Mm
+        from docx.text.paragraph import Paragraph
+
+        new_p_elem = OxmlElement("w:p")
+        target._p.addnext(new_p_elem)
+        new_para = Paragraph(new_p_elem, target._parent)
+        run = new_para.add_run()
+        run.add_picture(image_path, width=Mm(w))
+    except Exception as e:
+        return {"error": f"插入圖片失敗: {e}"}
+
+    try:
+        doc.save(path)
+    except Exception as e:
+        return {"error": f"存檔失敗: {e}"}
+
+    return {
+        "inserted": True,
+        "anchor": anchor,
+        "image": image_path,
+        "width_mm": w,
+    }
+
+
 def insert_template_variable(
     path: str,
     anchor: str,

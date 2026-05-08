@@ -460,6 +460,88 @@ class AppContext:
             budget.use_planner()
         return result
 
+    # ---------- 圖片資料夾 → Word 位置（P9） ----------
+
+    def list_folder_files(self, folder_path: str, kind: str = "image", max_files: int = 0) -> dict:
+        from app.agent.folder_scan import list_folder_files as _list
+
+        return _list(folder_path, kind=kind, max_files=max_files)
+
+    def insert_image_at_anchor(
+        self,
+        anchor: str,
+        image_path: str,
+        width_mm: int = 0,
+        word_path: str = "",
+    ) -> dict:
+        from app.agent.template_edit import insert_image_at_anchor as _insert
+
+        path = word_path or self._app.word_path.get()
+        try:
+            w = int(width_mm) if width_mm else self._app._image_width_mm_int()
+        except (TypeError, ValueError):
+            w = self._app._image_width_mm_int()
+        return _insert(path, anchor, image_path, width_mm=w)
+
+    def suggest_image_placements(
+        self,
+        image_folder: str,
+        word_path: str = "",
+    ) -> dict:
+        """讀範本段落 + 列圖片檔名，呼 planner LLM 配對；不會自動套用。
+
+        回傳 {placements:[{image, image_path, anchor, reason}]}，
+        path 已補成完整路徑供後續 insert_image_at_anchor 使用。
+        消耗 1 次 planner 預算（成功時）。
+        """
+        import os as _os
+
+        from app.agent.folder_scan import list_folder_files as _list_files
+        from app.agent.mapping_suggester import (
+            suggest_image_placements as _suggest_imgs,
+        )
+        from app.agent.template_edit import read_docx_text as _read_docx
+
+        wp = word_path or self._app.word_path.get()
+        if not wp:
+            return {"error": "未提供 Word 路徑"}
+        if not image_folder or not _os.path.isdir(image_folder):
+            return {"error": f"資料夾不存在: {image_folder}"}
+
+        rd = _read_docx(wp, max_paragraphs=80)
+        if "error" in rd:
+            return {"error": f"讀範本失敗: {rd['error']}"}
+        paragraphs = rd.get("paragraphs", [])
+
+        listing = _list_files(image_folder, kind="image")
+        if "error" in listing:
+            return {"error": f"列圖片失敗: {listing['error']}"}
+        files = listing.get("files", [])
+        if not files:
+            return {"error": f"資料夾中沒有圖片: {image_folder}"}
+
+        image_names = [f["name"] for f in files]
+
+        llm, model, err = self._build_planner_client()
+        if err:
+            return {"error": err}
+
+        budget = getattr(self._app, "budget", None)
+        if budget is not None and not budget.can_use_planner():
+            return {"error": f"已達 planner 預算上限 {budget.planner_limit}"}
+
+        result = _suggest_imgs(llm, paragraphs, image_names, model)
+        if "error" not in result and budget is not None:
+            budget.use_planner()
+
+        # 補上完整路徑供後續 insert
+        if "placements" in result:
+            name_to_path = {f["name"]: f["path"] for f in files}
+            for p in result["placements"]:
+                p["image_path"] = name_to_path.get(p["image"], "")
+
+        return result
+
     # ---------- 渲染 (P5: docx → image) ----------
 
     def render_docx_pages(self, docx_path: str, dpi: int = 150, max_pages: int = 0) -> dict:

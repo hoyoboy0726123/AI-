@@ -121,3 +121,100 @@ def _normalize_inserts(items):
             }
         )
     return out
+
+
+# ---------- 圖片檔名 → Word 位置（P9） ----------
+
+SUGGEST_IMAGE_SYSTEM = """你是 Word 範本圖片配對助理。會收到：
+1. Word 範本中的段落文字（list of strings）
+2. 圖片檔名清單（只有檔名與副檔名，沒有圖片內容）
+
+任務：根據**檔名語意**，找出該圖片應該插入的 Word 位置。
+- 圖片會插在 anchor 段落下面一行（不是同段落內）。
+- anchor 必須是 Word 範本段落清單中的某段（完整文字或具識別性的子字串）。
+
+例：
+- 圖片「客戶簽名_流程示意.png」 + 段落「圖 1：流程示意」 → anchor=「圖 1：流程示意」、image=「客戶簽名_流程示意.png」
+- 圖片「組織架構.jpg」 + 段落「組織架構圖：」 → anchor=「組織架構圖：」、image=「組織架構.jpg」
+
+回 **單一 JSON 物件**，不要任何其他文字、說明或 markdown 標記：
+{
+  "placements": [
+    {"image": "filename.png", "anchor": "段落文字", "reason": "簡短理由"}
+  ]
+}
+
+規則：
+- 信心不足或圖片找不到對應段落時，**跳過該圖片**（不要硬塞）。
+- 同一段落最多對應一張圖片。
+- 同一張圖片最多放一個位置。
+"""
+
+
+def suggest_image_placements(llm, word_paragraphs, image_filenames, model) -> dict:
+    """LLM 配對圖片檔名與 Word 段落。回傳 {placements} 或 {error}。"""
+    if llm is None or not llm.is_available():
+        return {"error": "LLM client 不可用"}
+    if not model:
+        return {"error": "未指定 planner 模型"}
+
+    paragraphs = list(word_paragraphs or [])
+    if len(paragraphs) > 80:
+        paragraphs = paragraphs[:80] + [
+            f"...（其餘 {len(word_paragraphs) - 80} 段省略）"
+        ]
+    images = list(image_filenames or [])
+    if not images:
+        return {"placements": []}
+
+    user_text = f"""=== Word 範本段落（共 {len(word_paragraphs or [])} 段）===
+{json.dumps(paragraphs, ensure_ascii=False, indent=2)}
+
+=== 圖片檔名 ===
+{json.dumps(images, ensure_ascii=False, indent=2)}
+
+請依規則回 JSON。
+"""
+
+    try:
+        resp = llm.chat(
+            [
+                Message(role="system", text=SUGGEST_IMAGE_SYSTEM),
+                Message(role="user", text=user_text),
+            ],
+            model=model,
+        )
+    except Exception as e:
+        return {"error": f"LLM 呼叫失敗: {e}"}
+
+    text = (resp.text or "").strip()
+    parsed = _extract_json(text)
+    if parsed is None:
+        return {"error": "LLM 回覆非有效 JSON", "raw": text[:500]}
+
+    return {"placements": _normalize_placements(parsed.get("placements"))}
+
+
+def _normalize_placements(items):
+    out = []
+    seen_anchors = set()
+    seen_images = set()
+    for x in items or []:
+        if not isinstance(x, dict):
+            continue
+        img = str(x.get("image") or "").strip()
+        anc = str(x.get("anchor") or "").strip()
+        if not img or not anc:
+            continue
+        if img in seen_images or anc in seen_anchors:
+            continue
+        seen_images.add(img)
+        seen_anchors.add(anc)
+        out.append(
+            {
+                "image": img,
+                "anchor": anc,
+                "reason": str(x.get("reason") or ""),
+            }
+        )
+    return out
