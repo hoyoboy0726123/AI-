@@ -97,8 +97,8 @@
 </head>
 <body>
   <header>
-    <h1>AI 辦公自動化 — 視覺化映射工具 <span style="color:var(--accent)">v3</span></h1>
-    <p>UI/UX 重做 · 對應 tab 左右對照 (Excel ↔ Word) · 拖拉欄位到段落直接標注 · 助理對話支援 markdown 與表格渲染</p>
+    <h1>AI 辦公自動化 — 視覺化映射工具 <span style="color:var(--accent)">v4</span></h1>
+    <p>左右對照 · 拖拉標注 · 雙向高亮 · 多 sheet 切換 · 圖片資料夾預覽 · Agent 自然語言處理 messy 資料 · markdown / 表格 渲染</p>
   </header>
 
   <main>
@@ -181,6 +181,69 @@
         <span class="desc">welcome card + 範例 prompt chips(點擊填入)· 狀態 pill(● 待命)</span>
       </figcaption>
       <img src="img/06_agent_welcome.png" alt="Agent 待命狀態(welcome card)">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">07</span>
+        <h2>多 sheet 切換</h2>
+        <span class="desc">Excel 有多個 sheet 時 OptionMenu 自動出現,切換立刻重抓 Treeview + 欄位 list</span>
+      </figcaption>
+      <img src="img/10_multisheet.png" alt="多 sheet 切換 — Sheet OptionMenu">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">08</span>
+        <h2>切到「供應商」sheet</h2>
+        <span class="desc">資料完全換成供應商欄位(供應商名稱/聯絡窗口/電話/交期),欄位 list 同步更新</span>
+      </figcaption>
+      <img src="img/12_sheet_switched.png" alt="切到供應商 sheet">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">09</span>
+        <h2>反向高亮 · Word 變數 → Excel 欄位</h2>
+        <span class="desc">點 Word pane 中的 {{ 拜訪日期 }} → 對應左側「拜訪日期」row 自動 scroll 到並黃底橘框 flash 2 秒</span>
+      </figcaption>
+      <img src="img/11_reverse_highlight.png" alt="反向高亮 — 拜訪日期 row 黃底橘框">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">10</span>
+        <h2>圖片資料夾預覽</h2>
+        <span class="desc">CTkToplevel 4 欄縮圖 grid · 顯示檔名 + 大小 · 標題列含資料夾路徑與張數</span>
+      </figcaption>
+      <img src="img/13_image_preview.png" alt="圖片資料夾預覽 — thumbnail grid">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">11</span>
+        <h2>Agent E2E · Messy 資料對齊</h2>
+        <span class="desc">Word 變數命名與 Excel 對不齊 → Agent 呼 suggest_mappings + rename + insert + 用 replace 把「(待填)」換成變數 + validate 顯示 missing</span>
+      </figcaption>
+      <img src="img/14_messy_mapping.png" alt="Agent 處理 messy 資料對齊">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">12</span>
+        <h2>Agent E2E · 圖片資料夾混雜</h2>
+        <span class="desc">5 張圖混雜(2 對應 + 3 雜物) → suggest_image_placements 只配相關的 2 張,主動忽略無關圖 · ask_user 確認後 insert_image_at_anchor × 2</span>
+      </figcaption>
+      <img src="img/15_messy_images.png" alt="Agent 處理 messy 圖片資料夾">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">13</span>
+        <h2>Agent E2E · 反問 + 主動提醒</h2>
+        <span class="desc">validate 偵測 {{ 備註 }} 缺對應 Excel 欄 → ask_user 反問是否繼續 · 產出後最終回覆主動加 caveat 並詢問下一步</span>
+      </figcaption>
+      <img src="img/16_messy_generate.png" alt="Agent 反問 + 產出 + 提醒 caveat">
     </figure>
   </main>
 
