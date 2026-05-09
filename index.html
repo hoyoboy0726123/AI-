@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 辦公自動化 — GUI 截圖</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #181b22;
+    --border: #2a2f3a;
+    --fg: #e8eaed;
+    --muted: #9aa0a6;
+    --accent: #4f8cff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, "Segoe UI", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+    line-height: 1.6;
+  }
+  header {
+    text-align: center;
+    padding: 56px 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #181b22 0%, #0f1115 100%);
+  }
+  header h1 {
+    margin: 0 0 8px;
+    font-size: clamp(24px, 4vw, 36px);
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 16px 64px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  figure {
+    margin: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  figcaption {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  figcaption .tag {
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  figcaption h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+  figcaption .desc {
+    color: var(--muted);
+    font-size: 13px;
+    margin-left: auto;
+  }
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #fff;
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    padding: 24px 16px 56px;
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>AI 辦公自動化 — 視覺化映射工具 v1.1</h1>
+    <p>5 個分頁的 GUI 截圖 (Python 3.13 / customtkinter / Gemma-4-31B)</p>
+  </header>
+
+  <main>
+    <figure>
+      <figcaption>
+        <span class="tag">01</span>
+        <h2>設定</h2>
+        <span class="desc">Word 範本 / Excel 數據 / 工作表 / 檔名規則 / 輸出資料夾</span>
+      </figcaption>
+      <img src="img/01_settings.png" alt="設定分頁">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">02</span>
+        <h2>對應</h2>
+        <span class="desc">標籤映射模式 (Ctrl+Shift+M) · 從檔總管插圖 · 多選網格貼入 · 映射歷史</span>
+      </figcaption>
+      <img src="img/02_mapping.png" alt="對應分頁">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">03</span>
+        <h2>產出</h2>
+        <span class="desc">檢查範本變數 vs Excel 欄位 · 批次產出 · 進度條</span>
+      </figcaption>
+      <img src="img/03_generate.png" alt="產出分頁">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">04</span>
+        <h2>AI 引擎</h2>
+        <span class="desc">Gemini Provider · Planner / Reviewer = gemma-4-31b-it · 審查 rubric · 預算上限</span>
+      </figcaption>
+      <img src="img/04_ai_engine.png" alt="AI 引擎分頁">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">05</span>
+        <h2>Agent</h2>
+        <span class="desc">自然語言對話框 · 中止 / 匯出對話 / 新對話 · Ctrl+Enter 送出</span>
+      </figcaption>
+      <img src="img/05_agent.png" alt="Agent 分頁">
+    </figure>
+  </main>
+
+  <footer>
+    Source: <a href="https://github.com/hoyoboy0726123/AI-">github.com/hoyoboy0726123/AI-</a>
+    · branch <code>claude/office-automation-tool-zvTv9</code>
+  </footer>
+</body>
+</html>
