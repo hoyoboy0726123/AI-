@@ -97,8 +97,8 @@
 </head>
 <body>
   <header>
-    <h1>AI 辦公自動化 — 視覺化映射工具 <span style="color:var(--accent)">v2</span></h1>
-    <p>5 個分頁的 GUI 截圖 · UI/UX 重做 · 助理對話支援 markdown 與表格渲染</p>
+    <h1>AI 辦公自動化 — 視覺化映射工具 <span style="color:var(--accent)">v3</span></h1>
+    <p>UI/UX 重做 · 對應 tab 左右對照 (Excel ↔ Word) · 拖拉欄位到段落直接標注 · 助理對話支援 markdown 與表格渲染</p>
   </header>
 
   <main>
@@ -114,10 +114,37 @@
     <figure>
       <figcaption>
         <span class="tag">02</span>
-        <h2>對應</h2>
-        <span class="desc">標籤映射模式 (Ctrl+Shift+M) · 從檔總管插圖 · 多選網格貼入 · 映射歷史</span>
+        <h2>對應 · 左右對照</h2>
+        <span class="desc">左:Excel Treeview 預覽真實資料 + 欄位 list (⋮⋮ 拖拉) · 右:Word 段落 style-aware 渲染 (Title / Heading 2 / Normal)</span>
       </figcaption>
-      <img src="img/02_mapping.png" alt="對應分頁">
+      <img src="img/02_mapping.png" alt="對應分頁 — 左右對照">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">02a</span>
+        <h2>拖拉中</h2>
+        <span class="desc">Drop target 段落黃色高亮 + 浮動 tooltip 跟著游標,顯示要插入的變數名</span>
+      </figcaption>
+      <img src="img/07_mapping_drag.png" alt="拖拉中:drop target 高亮 + tooltip">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">02b</span>
+        <h2>落地後</h2>
+        <span class="desc">「客戶名稱:」段落變成「客戶名稱:{{ 客戶名稱 }}」,變數紫字渲染 · 映射歷史記錄一筆</span>
+      </figcaption>
+      <img src="img/08_mapping_after.png" alt="拖拉落地後:變數已寫入 docx">
+    </figure>
+
+    <figure>
+      <figcaption>
+        <span class="tag">02c</span>
+        <h2>全部標完</h2>
+        <span class="desc">4 次拖拉完成所有欄位映射 · 映射歷史完整紀錄 · docx 真檔已被改寫</span>
+      </figcaption>
+      <img src="img/09_mapping_complete.png" alt="全部標完:4 個欄位完成">
     </figure>
 
     <figure>
