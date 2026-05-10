@@ -5,7 +5,7 @@ COLOR_THEME = "blue"
 
 WINDOW_TITLE = "AI 辦公自動化 - 視覺化映射工具 v1.1"
 WINDOW_HEADER = "Office 視覺化對應與自動生成系統"
-WINDOW_SIZE = "720x800"
+WINDOW_SIZE = "880x920"
 
 HOTKEY = "ctrl+shift+m"
 

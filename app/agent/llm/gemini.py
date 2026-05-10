@@ -6,6 +6,7 @@
 
 import json
 import os
+import time
 
 try:
     from google import genai
@@ -18,6 +19,38 @@ except ImportError:
     genai_types = None
 
 from .base import LLMClient, Message, ToolCall
+
+
+# Gemma 4 在 Gemini API 上 transient 500/503 偏多;包 retry 把成功率拉高。
+# 400/401/404/429 是客戶端 / 配額問題,不重試以免火上加油。
+_RETRY_STATUS_CODES = (500, 502, 503, 504)
+_RETRY_MAX_ATTEMPTS = 5
+_RETRY_BACKOFF = (1.0, 3.0, 7.0, 15.0)  # 累計 26s
+
+
+def _is_retryable_error(exc):
+    code = getattr(exc, "code", None) or getattr(exc, "status_code", None)
+    if code in _RETRY_STATUS_CODES:
+        return True
+    msg = str(exc)
+    for c in _RETRY_STATUS_CODES:
+        if f"{c} " in msg or f"code\": {c}" in msg or f"code': {c}" in msg:
+            return True
+    return False
+
+
+def _retry_call(fn):
+    last_exc = None
+    for attempt in range(_RETRY_MAX_ATTEMPTS):
+        try:
+            return fn()
+        except Exception as e:
+            last_exc = e
+            if attempt >= _RETRY_MAX_ATTEMPTS - 1 or not _is_retryable_error(e):
+                raise
+            time.sleep(_RETRY_BACKOFF[min(attempt, len(_RETRY_BACKOFF) - 1)])
+    if last_exc:
+        raise last_exc
 
 
 def _load_image(img):
@@ -96,15 +129,27 @@ class GeminiClient(LLMClient):
 
         contents = [genai_types.Content(role="user", parts=parts)]
 
+        # Gemma 4 在 Gemini API 上要求 image Parts 在前 + 非空 system。對其他模型也安全。
+        is_gemma = "gemma" in (model or "").lower()
+        sys_text = system or ("你是圖像分析助理。" if is_gemma else None)
         config = genai_types.GenerateContentConfig(
-            system_instruction=system or None,
+            system_instruction=sys_text,
         )
 
-        response = client.models.generate_content(
-            model=model or "gemini-2.5-flash",
-            contents=contents,
-            config=config,
-        )
+        # 同上 — 圖片在前
+        if parts and parts[0].text is not None:
+            text_first = parts[0]
+            image_parts = parts[1:]
+            parts = image_parts + [text_first]
+            contents = [genai_types.Content(role="user", parts=parts)]
+
+        def _call():
+            return client.models.generate_content(
+                model=model or "gemini-2.5-flash",
+                contents=contents,
+                config=config,
+            )
+        response = _retry_call(_call)
 
         return getattr(response, "text", "") or ""
 
@@ -134,11 +179,13 @@ class GeminiClient(LLMClient):
             system_instruction=system_instruction or None,
         )
 
-        response = client.models.generate_content(
-            model=model or "gemini-2.5-flash",
-            contents=contents,
-            config=config,
-        )
+        def _call():
+            return client.models.generate_content(
+                model=model or "gemini-2.5-flash",
+                contents=contents,
+                config=config,
+            )
+        response = _retry_call(_call)
 
         return self._parse_response(response)
 
