@@ -1,0 +1,2841 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="SO-101 開源機械手臂零基礎施工手冊：單臂、力感測、雙臂，含 STL 下載、3D 組裝圖與動畫步驟。">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}:root{color-scheme:light}</style>
+<title>SO-101 施工手冊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: 作業指導書 — 左側固定工序目錄，右側單欄工單卡；每張工單 = 料件 + 動作 + 動畫/3D 圖 + 檢查點 */
+:root{
+  --paper:#EEF2EF; --sheet:#FFFFFF; --ink:#16201B; --ink-2:#4C5C54; --rule:#CFD9D3;
+  --mat:#1D6B4F; --mat-soft:#DCEBE3; --amber:#8F5B00; --amber-soft:#F8EDD6; --red:#AE2A20; --red-soft:#F9E3E1;
+  --code:#E7EDE9; --part:#B9C9C1; --bed:#2B3330; --pcb:#2E6B4A; --pcb-2:#1B4A32; --metal:#9AA6A0;
+  --w-red:#D23B35; --w-black:#262A28; --w-white:#F4F4F0; --w-green:#2F9E57; --w-yellow:#E0B020; --w-blue:#2F6FBF;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-disp:"Barlow Condensed","Noto Sans TC","Arial Narrow",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0D1311; --sheet:#141C19; --ink:#E3EBE6; --ink-2:#9AABA2; --rule:#26322D;
+  --mat:#4CC394; --mat-soft:#16302A; --amber:#E7AE4B; --amber-soft:#2D2413; --red:#F07A70; --red-soft:#341A18;
+  --code:#1A2420; --part:#7E948A; --bed:#3A4440; --pcb:#2F7A52; --pcb-2:#1F563A; --metal:#7D8A84;
+  --w-black:#0E100F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0D1311; --sheet:#141C19; --ink:#E3EBE6; --ink-2:#9AABA2; --rule:#26322D;
+  --mat:#4CC394; --mat-soft:#16302A; --amber:#E7AE4B; --amber-soft:#2D2413; --red:#F07A70; --red-soft:#341A18;
+  --code:#1A2420; --part:#7E948A; --bed:#3A4440; --pcb:#2F7A52; --pcb-2:#1F563A; --metal:#7D8A84;
+  --w-black:#0E100F; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:var(--mat);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--mat);outline-offset:2px;border-radius:4px}
+h1,h2,h3{line-height:1.3;text-wrap:balance;margin:0}
+code,kbd{font-family:var(--f-mono);font-size:.88em}
+p{margin:0}
+.wrap{max-width:1200px;margin:0 auto;padding-inline:clamp(16px,3vw,36px);padding-block:20px 72px}
+
+/* masthead */
+.mast{display:grid;gap:18px;padding-block:8px 28px;border-bottom:2px solid var(--ink)}
+.mast-top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.mast h1{font-family:var(--f-disp);font-weight:700;font-size:clamp(40px,7vw,76px);letter-spacing:.01em;line-height:1}
+.mast h1 small{display:block;font-family:var(--f-body);font-weight:700;font-size:clamp(18px,2.4vw,24px);letter-spacing:.04em;margin-top:8px}
+.docmeta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--ink);background:var(--sheet);font-size:13px}
+.docmeta div{padding:8px 12px;border-left:1px solid var(--rule);min-width:0}
+.docmeta div:first-child{border-left:0}
+.docmeta b{display:block;font-family:var(--f-disp);font-size:12px;letter-spacing:.12em;color:var(--ink-2);text-transform:uppercase}
+@media (max-width:720px){.docmeta{grid-template-columns:repeat(2,minmax(0,1fr))}.docmeta div:nth-child(3){border-left:0}.docmeta div:nth-child(n+3){border-top:1px solid var(--rule)}}
+.lead{max-width:68ch;color:var(--ink-2);font-size:17px}
+.phases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:720px){.phases{grid-template-columns:1fr}}
+.phase-card{display:grid;gap:6px;padding:14px 16px;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;text-decoration:none;color:inherit}
+.phase-card:hover{border-color:var(--mat)}
+.phase-card .tag{font-family:var(--f-disp);font-weight:700;font-size:15px;letter-spacing:.14em;color:var(--mat)}
+.phase-card h3{font-size:18px}
+.phase-card p{font-size:14px;color:var(--ink-2)}
+.meter{height:6px;background:var(--mat-soft);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--mat);transition:width .4s}
+.meter-label{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+/* layout */
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:44px;margin-top:32px}
+@media (max-width:960px){.layout{grid-template-columns:minmax(0,1fr)}}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 14px);align-self:start;max-height:calc(100vh - 28px);overflow:auto;font-size:14px;padding-right:4px}
+@media (max-width:960px){.toc{position:static;max-height:none;border:1px solid var(--rule);background:var(--sheet);border-radius:6px;padding:12px 14px}}
+.toc details{border:0}
+.toc summary{cursor:pointer;font-weight:700;list-style:none}
+@media (min-width:961px){.toc summary{display:none}}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.toc .grp{font-family:var(--f-disp);font-weight:700;letter-spacing:.14em;font-size:13px;color:var(--ink-2);margin-top:14px;padding-bottom:2px;border-bottom:1px solid var(--rule)}
+.toc a{display:flex;gap:8px;padding:3px 6px;border-radius:4px;color:var(--ink);text-decoration:none}
+.toc a span{font-family:var(--f-mono);font-size:11px;color:var(--ink-2);padding-top:3px;min-width:34px}
+.toc a:hover{background:var(--mat-soft)}
+.toc a.on{background:var(--mat);color:var(--sheet)}
+.toc a.on span{color:var(--sheet)}
+.toc a.done::after{content:"✓";margin-left:auto;color:var(--mat);font-weight:700}
+.toc a.on.done::after{color:var(--sheet)}
+main{min-width:0;display:grid;grid-template-columns:minmax(0,1fr);gap:56px}
+.part{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;min-width:0}
+.part-head{display:grid;gap:8px;padding-top:6px;border-top:2px solid var(--ink)}
+.part-head .tag{font-family:var(--f-disp);font-weight:700;letter-spacing:.16em;color:var(--mat);font-size:15px}
+.part-head h2{font-size:clamp(24px,3.4vw,32px)}
+.part-head p{max-width:68ch;color:var(--ink-2)}
+
+/* step card */
+.step{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;display:grid;scroll-margin-top:16px}
+.step>header{display:flex;gap:14px;align-items:baseline;padding:16px 20px 12px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.step .code{font-family:var(--f-disp);font-weight:700;font-size:26px;letter-spacing:.04em;color:var(--mat);font-variant-numeric:tabular-nums;line-height:1}
+.step h3{font-size:20px;flex:1;min-width:12ch}
+.step .body{padding:16px 20px 20px;display:grid;gap:16px;min-width:0}
+.step .body>*{min-width:0}
+.need{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:13px}
+.need b{font-family:var(--f-disp);letter-spacing:.12em;color:var(--ink-2);font-size:13px;margin-right:2px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);white-space:nowrap}
+ol.do,ul.do{margin:0;padding-left:1.4em;display:grid;gap:8px;max-width:72ch}
+ol.do li::marker{font-family:var(--f-disp);font-weight:700;color:var(--mat)}
+.note{display:grid;gap:4px;padding:10px 14px;border-radius:6px;font-size:15px;max-width:72ch}
+.note b.k{font-family:var(--f-disp);font-weight:700;letter-spacing:.14em;font-size:13px}
+.note.warn{background:var(--amber-soft)}.note.warn b.k{color:var(--amber)}
+.note.stop{background:var(--red-soft)}.note.stop b.k{color:var(--red)}
+.note.tip{background:var(--mat-soft)}.note.tip b.k{color:var(--mat)}
+.check{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1.5px dashed var(--mat);border-radius:6px;cursor:pointer;max-width:72ch}
+.check>span{min-width:0;overflow-wrap:anywhere}
+.check input{width:20px;height:20px;margin-top:4px;accent-color:var(--mat);flex:none}
+.check b{font-family:var(--f-disp);letter-spacing:.12em;color:var(--mat);font-size:14px;display:block}
+.check:has(input:checked){background:var(--mat-soft);border-style:solid}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--rule)}
+th{font-family:var(--f-disp);letter-spacing:.1em;font-size:13px;color:var(--ink-2);background:var(--paper);font-weight:700}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tfoot td{font-weight:700;background:var(--paper)}
+
+/* code */
+.codeblk{position:relative;background:var(--code);border-radius:6px;min-width:0}
+.codeblk pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:var(--f-mono);font-size:13.5px;line-height:1.6;white-space:pre}
+.codeblk .cap{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px 0 16px;font-size:12px;color:var(--ink-2);font-family:var(--f-mono)}
+.btn{font:600 13px var(--f-body);padding:5px 12px;border-radius:5px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--mat);color:var(--mat)}
+.btn.primary{background:var(--mat);border-color:var(--mat);color:var(--sheet)}
+.btn.primary:hover{filter:brightness(1.08);color:var(--sheet)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+/* figures */
+figure{margin:0;display:grid;gap:8px;min-width:0}
+figcaption{font-size:13px;color:var(--ink-2)}
+.photo{border:1px solid var(--rule);border-radius:6px;background:var(--paper);overflow:hidden}
+.photo img{display:block;width:100%;height:auto}
+.photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px}
+.anim{border:1px solid var(--rule);border-radius:8px;background:var(--sheet);overflow:hidden}
+.anim .stage{background:var(--paper);border-bottom:1px solid var(--rule)}
+.anim svg{display:block;width:100%;height:auto}
+.anim .ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px}
+.anim .ctrl .sp{flex:1}
+.anim ol.steps{list-style:none;margin:0;padding:0 12px 12px;display:grid;gap:4px;counter-reset:s}
+.anim ol.steps li{counter-increment:s;display:flex;gap:10px;padding:6px 10px;border-radius:5px;cursor:pointer;font-size:14px;color:var(--ink-2)}
+.anim ol.steps li::before{content:counter(s);font-family:var(--f-disp);font-weight:700;color:var(--mat);min-width:1ch}
+.anim ol.steps li.on{background:var(--mat-soft);color:var(--ink)}
+.viewer{border:1px solid var(--rule);border-radius:8px;background:var(--sheet);overflow:hidden;display:grid}
+.viewer .vp{position:relative;aspect-ratio:16/10;max-width:100%;background:radial-gradient(circle at 50% 40%,var(--sheet),var(--paper));touch-action:none}
+.viewer .vp canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block}
+.viewer .vp .hint{position:absolute;left:10px;bottom:8px;font-size:12px;color:var(--ink-2);pointer-events:none}
+.viewer .vp .status{position:absolute;inset:0;display:grid;place-items:center;font-size:14px;color:var(--ink-2);pointer-events:none}
+.viewer .meta{display:flex;flex-wrap:wrap;gap:4px 14px;padding:8px 12px;font-size:13px;border-top:1px solid var(--rule);color:var(--ink-2)}
+.viewer .meta b{color:var(--ink)}
+.viewer .parts{display:grid;gap:10px;padding:10px 12px 12px;border-top:1px solid var(--rule)}
+.viewer .parts .grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.viewer .parts .grp>span{font-family:var(--f-disp);letter-spacing:.12em;font-size:12px;color:var(--ink-2);min-width:7em}
+.viewer .parts button{font:500 13px var(--f-body);padding:4px 10px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer}
+.viewer .parts button[aria-pressed="true"]{background:var(--mat);border-color:var(--mat);color:var(--sheet)}
+@media (max-width:640px){.asmv .vp{aspect-ratio:1/1}}
+.asmv .asm-cap{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:10px 12px 0;font-size:15px}
+.asmv .asm-cap b{font-family:var(--f-disp);letter-spacing:.06em;color:var(--mat);font-size:17px}
+.asmv .ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px}
+.asmv ol.subs{list-style:none;margin:0;padding:0 12px 10px;display:grid;gap:4px;counter-reset:s}
+.asmv ol.subs:empty{display:none}
+.asmv ol.subs li{counter-increment:s;display:flex;gap:10px;padding:6px 10px;border-radius:5px;cursor:pointer;font-size:14px;color:var(--ink-2)}
+.asmv ol.subs li::before{content:counter(s);font-family:var(--f-disp);font-weight:700;color:var(--mat);min-width:1ch}
+.asmv ol.subs li.on{background:var(--amber-soft);color:var(--ink)}
+.asmgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));gap:10px}
+.asmimg{display:grid;gap:0;align-content:start;background:var(--paper);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.asmimg img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:contain}
+.asmimg .ph{aspect-ratio:4/3;display:grid;place-items:center;padding:16px;text-align:center;color:var(--ink-2);font-size:14px;border-bottom:1px dashed var(--rule)}
+.asmimg figcaption{display:flex;gap:8px;padding:8px 10px;font-size:14px;line-height:1.5;border-top:1px solid var(--rule)}
+.asmimg figcaption b{font-family:var(--f-disp);color:var(--amber);font-size:16px;line-height:1.3}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:10px}
+.pimg{gap:4px;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:6px}
+.pimg img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:contain}
+.pimg figcaption{display:grid;gap:0;font-size:12px;line-height:1.4}
+.pimg figcaption b{color:var(--ink);font-size:13px}
+.pimg figcaption code{font-size:11px;word-break:break-all}
+.dl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.dl .msg{font-size:13px;color:var(--ink-2)}
+.kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 16px;font-size:15px}
+.kv dt{font-weight:700}
+.kv dd{margin:0;color:var(--ink-2);min-width:0;overflow-wrap:anywhere}
+.step .body :not(pre)>code{overflow-wrap:anywhere}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:16px}
+.src{font-size:13px;color:var(--ink-2);overflow-wrap:anywhere}
+.fold{border:1px solid var(--rule);border-radius:6px;background:var(--paper);min-width:0}
+.fold>summary{cursor:pointer;padding:10px 14px;font-weight:700;font-size:15px}
+.fold[open]>summary{border-bottom:1px solid var(--rule)}
+.fold>.codeblk{border-radius:0 0 6px 6px}
+.src li{word-break:break-all}
+footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-size:13px;color:var(--ink-2);display:grid;gap:6px}
+
+/* svg scene styling */
+.sv-ink{stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sv-thin{stroke:var(--ink-2);fill:none;stroke-width:1.2}
+.sv-box{fill:var(--sheet);stroke:var(--ink);stroke-width:1.6}
+.sv-part{fill:var(--part);stroke:var(--ink);stroke-width:1.4}
+.sv-servo{fill:var(--w-black);stroke:var(--ink-2);stroke-width:1.2}
+.sv-pcb{fill:var(--pcb);stroke:var(--pcb-2);stroke-width:1.6}
+.sv-metal{fill:var(--metal);stroke:var(--ink);stroke-width:1.2}
+.sv-bed{fill:var(--bed)}
+.sv-accent{fill:var(--mat)}
+.sv-accent-s{stroke:var(--mat);fill:none;stroke-width:2.4;stroke-linecap:round}
+.sv-warn{fill:var(--amber)}
+.sv-red{fill:var(--red)}
+.sv-red-s{stroke:var(--red);fill:none;stroke-width:2;stroke-dasharray:6 5}
+.sv-t{fill:var(--ink);font:600 14px var(--f-body)}
+.sv-ts{fill:var(--ink-2);font:500 12px var(--f-body)}
+.sv-tw{fill:#FFFFFF;font:600 12px var(--f-mono)}
+.sv-tm{fill:var(--ink);font:600 13px var(--f-mono)}
+.sv-big{fill:var(--ink);font:700 28px var(--f-disp)}
+.w{fill:none;stroke-width:4;stroke-linecap:round}
+.w-red{stroke:var(--w-red)}.w-black{stroke:var(--w-black)}.w-white{stroke:var(--w-white)}.w-green{stroke:var(--w-green)}.w-yellow{stroke:var(--w-yellow)}.w-blue{stroke:var(--w-blue)}
+.w-under{fill:none;stroke:var(--ink-2);stroke-width:6.5;stroke-linecap:round}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}.meter i{transition:none}}
+</style>
+
+
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="mast-top">
+      <h1>SO-101 施工手冊<small>開源機械手臂：單臂 → 力感測 → 雙臂</small></h1>
+    </div>
+    <div class="docmeta" role="list">
+      <div role="listitem"><b>文件編號</b>SO101-SOP-01</div>
+      <div role="listitem"><b>版本</b>v1.0　2026-10-14</div>
+      <div role="listitem"><b>適用</b>SO-101 執行臂、主控臂</div>
+      <div role="listitem"><b>圖檔授權</b>Apache-2.0</div>
+    </div>
+    <p class="lead">這份手冊帶零基礎的工程師，從下載開源列印檔開始，一步一步做出 SO-101 機械手臂，再加上 TAL221 荷重元做力量感測，最後補上主控臂做成雙臂遙控。每一張工單都有料件、動作、動畫或 3D 圖，以及「檢查點」。檢查點沒過，不要進下一步。</p>
+    <nav class="phases" aria-label="三個階段">
+      <a class="phase-card" href="#p1"><span class="tag">階段 A</span><h3>單臂：執行臂動起來</h3><p>列印、裝軟體、設定馬達、組裝、校準、測試</p><div class="meter" aria-hidden="true"><i data-meter="A"></i></div><span class="meter-label" data-meter-label="A">0 / 0 完成</span></a>
+      <a class="phase-card" href="#p2"><span class="tag">階段 B</span><h3>力感測：量 1 到 200 克</h3><p>荷重元接線、韌體、治具、砝碼校正、推力控制</p><div class="meter" aria-hidden="true"><i data-meter="B"></i></div><span class="meter-label" data-meter-label="B">0 / 0 完成</span></a>
+      <a class="phase-card" href="#p3"><span class="tag">階段 C</span><h3>雙臂：主控臂遙控</h3><p>主控臂列印組裝、設定、校準、遙控操作</p><div class="meter" aria-hidden="true"><i data-meter="C"></i></div><span class="meter-label" data-meter-label="C">0 / 0 完成</span></a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="toc" aria-label="工序目錄">
+      <details open>
+        <summary>工序目錄</summary>
+        <ol id="toc"></ol>
+      </details>
+    </aside>
+
+    <main id="main">
+<section class="part" id="p1" data-phase="A" data-toc="階段 A　單臂">
+  <div class="part-head">
+    <span class="tag">階段 A</span>
+    <h2>單臂：先讓一隻執行臂動起來</h2>
+    <p>執行臂 Follower 是真正去做事的那隻手臂，6 顆馬達都是 STS3215、7.4V、1/345 減速。這個階段做完，你會有一隻能用電腦控制、已經校準好的手臂。</p>
+  </div>
+  <div class="two">
+    <figure><div class="photo"><img src="assets/img/SO101_Follower.jpg" alt="組裝完成的 SO-101 執行臂，官方照片" width="1600" height="1200" loading="lazy"></div><figcaption>完成品：SO-101 執行臂。照片來源 TheRobotStudio/SO-ARM100，Apache-2.0。</figcaption></figure>
+    <figure class="viewer" data-viewer="overview" data-base="assets/stl64/"><div class="vp"><div class="status">3D 模型會在捲到這裡時載入</div><div class="hint">拖曳旋轉　滾輪或雙指縮放</div></div><div class="meta"><span>零件：<b data-meta="name">-</b></span><span>外框尺寸：<b data-meta="size">-</b></span><span><b data-meta="use"></b></span></div><div class="parts"><div class="grp"><span>完整手臂</span><button type="button" data-file="SO101_Assembly_lite.stl" data-label="SO-101 組裝完成　SO101_Assembly_lite.stl" data-use="官方組裝模型，減面後" aria-pressed="true">SO-101 組裝完成</button></div></div></figure>
+  </div>
+
+  <article class="step" id="a01">
+    <header><span class="code">A-01</span><h3>備齊工具與料件</h3></header>
+    <div class="body">
+      <div class="need"><b>工具</b><span class="chip">3D 印表機，平台至少 220 × 220 mm</span><span class="chip">PLA+ 線材 1 捲</span><span class="chip">十字起子 #0、#1</span><span class="chip">電腦一台，有 USB 孔</span><span class="chip">斜口鉗或刮刀，拆支撐用</span></div>
+      <p>下表是官方 GitHub 列出的單隻執行臂料件，價格和網址都照官方原文。淘寶連結需要透過集運寄到台灣。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>料件</th><th class="num">數量</th><th class="num">美元</th><th class="num">人民幣</th><th>購買連結</th></tr></thead>
+          <tbody>
+            <tr><td>STS3215 伺服馬達 7.4V，1/345 減速，型號 C001</td><td class="num">6</td><td class="num">13.89</td><td class="num">97.72</td><td><a href="https://www.alibaba.com/product-detail/Top-Seller-Low-Cost-Feetech-STS3215_1600999461525.html" target="_blank" rel="noopener">Alibaba</a>　<a href="https://item.taobao.com/item.htm?id=712179366565&amp;skuId=5268252241438" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>馬達驅動板 Bus Servo Adapter</td><td class="num">1</td><td class="num">10.6</td><td class="num">27</td><td><a href="https://www.amazon.com/Waveshare-Integrates-Control-Circuit-Supports/dp/B0CTMM4LWK/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738817173460&amp;skuId=5096283384143" target="_blank" rel="noopener">天貓</a></td></tr>
+            <tr><td>USB-C 傳輸線</td><td class="num">1 組</td><td class="num">7</td><td class="num">23.9</td><td><a href="https://www.amazon.com/Charging-etguuds-Charger-Braided-Compatible/dp/B0B8NWLLW2/?th=1" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=44425281296&amp;skuId=5611379016222" target="_blank" rel="noopener">天貓</a></td></tr>
+            <tr><td>電源供應器</td><td class="num">1</td><td class="num">10</td><td class="num">22.31</td><td><a href="https://www.amazon.com/Facmogu-Switching-Transformer-Compatible-5-5x2-1mm/dp/B087LY41PV/" target="_blank" rel="noopener">Amazon</a>　<a href="https://item.taobao.com/item.htm?id=544824248494&amp;skuId=4974994129990" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>桌夾</td><td class="num">2 個</td><td class="num">5</td><td class="num">7.8</td><td><a href="https://www.amazon.com/Mr-Pen-Carpenter-Clamp-6inch/dp/B092L925J4/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738636473238&amp;skuId=5505939904942" target="_blank" rel="noopener">天貓</a></td></tr>
+            <tr><td>精密起子組</td><td class="num">1</td><td class="num">6</td><td class="num">14.9</td><td><a href="https://www.amazon.com/Precision-Phillips-Screwdriver-Electronics-Computer/dp/B0DB227RTH" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=675684600845&amp;skuId=4856851392176" target="_blank" rel="noopener">天貓</a></td></tr>
+          </tbody>
+          <tfoot><tr><td>合計</td><td></td><td class="num">121.94</td><td class="num">682.23</td><td>約新台幣 3,300 到 3,900 元</td></tr></tfoot>
+        </table>
+      </div>
+      <div class="note tip"><b class="k">也可以買整套</b><p>官方合作的套件商：Seeed <a href="https://www.seeedstudio.com/SO-ARM100-Low-Cost-AI-Arm-Kit.html" target="_blank" rel="noopener">國際官網</a>、<a href="https://item.taobao.com/item.htm?id=878010637397&amp;skuId=5915703371829" target="_blank" rel="noopener">淘寶</a>；WowRobo <a href="https://shop.wowrobo.com/products/so-arm101-diy-kit-assembled-version-1" target="_blank" rel="noopener">國際官網</a>、<a href="https://item.taobao.com/item.htm?ft=t&amp;id=860171734711" target="_blank" rel="noopener">淘寶</a>。買套件的話，A-01 到 A-04 的採購和列印可以跳過，直接從 A-05 開始。</p></div>
+      <div class="note warn"><b class="k">注意馬達版本</b><p>執行臂 6 顆都要買 7.4V、1/345 減速的 C001。主控臂用的是另外三種減速比，階段 C 才會用到，現在不要混在一起。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a01"><span><b>檢查點</b>6 顆 C001 馬達、驅動板、USB-C 線、電源、桌夾和起子都在桌上，數量正確。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a02">
+    <header><span class="code">A-02</span><h3>下載官方列印檔</h3></header>
+    <div class="body">
+      <p>官方已經把執行臂全部零件排好在同一個檔案裡，方向也擺好了。依你的印表機平台大小，下載對應的那一個就好。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>你的印表機</th><th>執行臂整盤檔案</th><th>下載</th></tr></thead>
+          <tbody>
+            <tr><td>Ender 類，平台 220 × 220 mm</td><td><code>Ender_Follower_SO101.stl</code></td><td><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/SO101/Follower/Ender_Follower_SO101.stl" target="_blank" rel="noopener">GitHub 頁面</a>　<a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Follower/Ender_Follower_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+            <tr><td>Prusa 類，平台 205 × 250 mm</td><td><code>Prusa_Follower_SO101.stl</code></td><td><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/SO101/Follower/Prusa_Follower_SO101.stl" target="_blank" rel="noopener">GitHub 頁面</a>　<a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Follower/Prusa_Follower_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+            <tr><td>Bambu Lab A1 mini</td><td><code>BambuLabA1mini_Follower_SO101.stl</code></td><td><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/SO101/Follower/BambuLabA1mini_Follower_SO101.stl" target="_blank" rel="noopener">GitHub 頁面</a>　<a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Follower/BambuLabA1mini_Follower_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>想一個一個零件印，或某個零件印壞了要重印，就用下面的 3D 檢視器確認長相，再到官方的 <a href="https://github.com/TheRobotStudio/SO-ARM100/tree/main/STL/SO101/Individual" target="_blank" rel="noopener">Individual 資料夾</a> 下載單一零件。</p>
+      <figure class="viewer" data-viewer="parts" data-base="assets/stl64/"><div class="vp"><div class="status">3D 模型會在捲到這裡時載入</div><div class="hint">拖曳旋轉　滾輪或雙指縮放</div></div><div class="meta"><span>零件：<b data-meta="name">-</b></span><span>外框尺寸：<b data-meta="size">-</b></span><span><b data-meta="use"></b></span></div><div class="parts"><div class="grp"><span>共用零件</span><button type="button" data-file="Base_SO101.stl" data-label="底座　Base_SO101.stl" data-use="執行臂、主控臂都要" aria-pressed="true">底座</button><button type="button" data-file="Base_motor_holder_SO101.stl" data-label="第一個馬達座，關節 1　Base_motor_holder_SO101.stl" data-use="執行臂、主控臂都要" aria-pressed="false">第一個馬達座，關節 1</button><button type="button" data-file="Motor_holder_SO101_Base.stl" data-label="肩部馬達座，關節 1　Motor_holder_SO101_Base.stl" data-use="執行臂、主控臂都要" aria-pressed="false">肩部馬達座，關節 1</button><button type="button" data-file="Rotation_Pitch_SO101.stl" data-label="肩部零件　Rotation_Pitch_SO101.stl" data-use="執行臂、主控臂都要" aria-pressed="false">肩部零件</button><button type="button" data-file="Upper_arm_SO101.stl" data-label="上臂　Upper_arm_SO101.stl" data-use="執行臂、主控臂都要" aria-pressed="false">上臂</button><button type="button" data-file="Under_arm_SO101.stl" data-label="前臂　Under_arm_SO101.stl" data-use="執行臂、主控臂都要" aria-pressed="false">前臂</button><button type="button" data-file="Motor_holder_SO101_Wrist.stl" data-label="馬達座 4　Motor_holder_SO101_Wrist.stl" data-use="執行臂、主控臂都要" aria-pressed="false">馬達座 4</button><button type="button" data-file="Wrist_Roll_Pitch_SO101.stl" data-label="手腕座　Wrist_Roll_Pitch_SO101.stl" data-use="執行臂、主控臂都要" aria-pressed="false">手腕座</button><button type="button" data-file="WaveShare_Mounting_Plate_SO101.stl" data-label="驅動板固定板 Waveshare　WaveShare_Mounting_Plate_SO101.stl" data-use="依驅動板品牌二選一" aria-pressed="false">驅動板固定板 Waveshare</button><button type="button" data-file="Seeedstudio_Mounting_Plate_SO101.stl" data-label="驅動板固定板 Seeed　Seeedstudio_Mounting_Plate_SO101.stl" data-use="依驅動板品牌二選一" aria-pressed="false">驅動板固定板 Seeed</button></div><div class="grp"><span>執行臂專用</span><button type="button" data-file="Wrist_Roll_Follower_SO101.stl" data-label="夾爪本體　Wrist_Roll_Follower_SO101.stl" data-use="只有執行臂" aria-pressed="false">夾爪本體</button><button type="button" data-file="Moving_Jaw_SO101.stl" data-label="活動爪　Moving_Jaw_SO101.stl" data-use="只有執行臂" aria-pressed="false">活動爪</button></div><div class="grp"><span>主控臂專用</span><button type="button" data-file="Wrist_Roll_SO101.stl" data-label="主控臂手腕座　Wrist_Roll_SO101.stl" data-use="只有主控臂" aria-pressed="false">主控臂手腕座</button><button type="button" data-file="Handle_SO101.stl" data-label="握把　Handle_SO101.stl" data-use="只有主控臂" aria-pressed="false">握把</button><button type="button" data-file="Trigger_SO101.stl" data-label="扳機　Trigger_SO101.stl" data-use="只有主控臂" aria-pressed="false">扳機</button></div></div></figure>
+      <div class="dl"><button class="btn primary" type="button" data-zip="official">下載全部單一零件 STL（zip）</button><span class="msg">內含官方 Apache-2.0 授權檔。</span></div>
+      <label class="check"><input type="checkbox" id="ck-a02"><span><b>檢查點</b>整盤檔案已經下載，用切片軟體打開，零件都平躺在平台範圍內。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a03">
+    <header><span class="code">A-03</span><h3>先印量規，確認尺寸準確</h3></header>
+    <div class="body">
+      <p>馬達要剛好塞進列印件，印表機尺寸偏差一點就會太鬆或塞不進去。所以先花幾分鐘印量規。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>手上有的東西</th><th>要印的量規</th><th>下載</th></tr></thead>
+          <tbody>
+            <tr><td>STS3215 馬達</td><td><code>Gauge_0.STL</code>、<code>Gauge_tight_1.STL</code></td><td><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/Gauges/Gauge_0.STL" target="_blank" rel="noopener">Gauge_0</a>　<a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/Gauges/Gauge_tight_1.STL" target="_blank" rel="noopener">Gauge_tight_1</a></td></tr>
+            <tr><td>標準樂高 4 × 2 積木</td><td><code>Lego_Size_Test_02_zero.STL</code>、<code>Lego_Size_Test_02_minuspoint1.STL</code></td><td><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/Gauges/Lego_Size_Test_02_zero.STL" target="_blank" rel="noopener">zero</a>　<a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/Gauges/Lego_Size_Test_02_minuspoint1.STL" target="_blank" rel="noopener">minus 0.1</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <figure class="anim" data-scene="print"><div class="stage"><svg viewBox="0 0 680 340" role="img" aria-label="列印前準備與切片設定"></svg></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">從頭播放</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><span class="sp"></span></div><ol class="steps"><li>清潔平台，薄塗一層膠</li><li>印量規，用馬達試塞</li><li>照官方設定印整盤零件</li><li>拆掉所有支撐材料</li></ol><figcaption style="padding:0 14px 12px">列印前準備與切片設定：點步驟可以單獨播放那一段。</figcaption></figure>
+      <ol class="do">
+        <li>依照官方建議設定切片：PLA+、0.4 mm 噴嘴配 0.2 mm 層高，或 0.6 mm 噴嘴配 0.4 mm 層高、填充 15%。</li>
+        <li>平台清乾淨，不能有灰塵或油。用水擦過的話要擦乾。印表機建議上膠的話，薄薄塗一層口紅膠。</li>
+        <li>印 <code>Gauge_0</code>，拿馬達去試塞。官方的判斷標準請看 <a href="https://youtu.be/dss8E3DG2rA" target="_blank" rel="noopener">官方示範影片</a>。</li>
+        <li>太緊或太鬆，就調整印表機設定再印一次。調好之前不要印整盤零件。</li>
+      </ol>
+      <label class="check"><input type="checkbox" id="ck-a03"><span><b>檢查點</b>馬達放進 Gauge_0，鬆緊和官方影片差不多：塞得進去、不會晃。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a04">
+    <header><span class="code">A-04</span><h3>印整盤執行臂零件，拆支撐</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li>打開 A-02 下載的整盤檔案，用 A-03 調好的設定切片。</li>
+        <li>支撐設定為「全部區域」，但與水平面夾角大於 45° 的斜面不需要支撐。</li>
+        <li>確認水平方向的螺絲孔裡面<strong>沒有</strong>長支撐，有的話在切片軟體裡把那裡的支撐去掉。</li>
+        <li>印完用刮刀把零件從平台鏟下來，把所有支撐材料拆乾淨，特別是馬達要塞進去的凹槽。</li>
+      </ol>
+      <div class="note tip"><b class="k">線材用量</b><p>從官方 220 × 220 整盤檔算出，執行臂大約用 280 到 360 g PLA，一捲 1 kg 綽綽有餘。</p></div>
+      <figure class="viewer" data-viewer="plates" data-base="assets/stl64/"><div class="vp"><div class="status">3D 模型會在捲到這裡時載入</div><div class="hint">官方 Bambu A1 mini 列印盤排版，減面後</div></div><div class="meta"><span>零件：<b data-meta="name">-</b></span><span>外框尺寸：<b data-meta="size">-</b></span><span><b data-meta="use"></b></span></div><div class="parts"><div class="grp"><span>列印盤</span><button type="button" data-file="BambuLabA1mini_Follower_SO101_lite.stl" data-label="執行臂整盤　BambuLabA1mini_Follower_SO101_lite.stl" data-use="階段 A 列印" aria-pressed="true">執行臂整盤</button><button type="button" data-file="BambuLabA1mini_Leader_SO101_lite.stl" data-label="主控臂整盤　BambuLabA1mini_Leader_SO101_lite.stl" data-use="階段 C 列印" aria-pressed="false">主控臂整盤</button></div></div></figure>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>零件檔名</th><th>用途</th><th class="num">數量</th></tr></thead>
+          <tbody>
+            <tr><td><code>Base_SO101</code></td><td>底座</td><td class="num">1</td></tr>
+            <tr><td><code>Base_motor_holder_SO101</code></td><td>第一個馬達座，關節 1 用，固定在底座上</td><td class="num">1</td></tr>
+            <tr><td><code>Motor_holder_SO101_Base</code></td><td>肩部馬達座，關節 1 時裝上，之後放馬達 2</td><td class="num">1</td></tr>
+            <tr><td><code>Rotation_Pitch_SO101</code></td><td>肩部零件</td><td class="num">1</td></tr>
+            <tr><td><code>Upper_arm_SO101</code></td><td>上臂</td><td class="num">1</td></tr>
+            <tr><td><code>Under_arm_SO101</code></td><td>前臂</td><td class="num">1</td></tr>
+            <tr><td><code>Motor_holder_SO101_Wrist</code></td><td>馬達座 4</td><td class="num">1</td></tr>
+            <tr><td><code>Wrist_Roll_Pitch_SO101</code></td><td>手腕座</td><td class="num">1</td></tr>
+            <tr><td><code>Wrist_Roll_Follower_SO101</code></td><td>夾爪本體，執行臂專用</td><td class="num">1</td></tr>
+            <tr><td><code>Moving_Jaw_SO101</code></td><td>活動爪，執行臂專用</td><td class="num">1</td></tr>
+            <tr><td><code>WaveShare_Mounting_Plate_SO101</code> 或 <code>Seeedstudio_Mounting_Plate_SO101</code></td><td>驅動板固定板，依你買的驅動板品牌選一個</td><td class="num">1</td></tr>
+          </tbody>
+          <tfoot><tr><td>合計</td><td></td><td class="num">11</td></tr></tfoot>
+        </table>
+      </div>
+      <p class="src">檔名與數量照官方 README。中文名稱對應官方組裝文字的叫法，對應關係已用官方 URDF 模型確認：每個檔案和模型裡的零件尺寸、體積都一致。</p>
+      <label class="check"><input type="checkbox" id="ck-a04"><span><b>檢查點</b>11 個零件都在，對照上表與 3D 檢視器確認，馬達凹槽和螺絲孔裡沒有殘留支撐。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a05">
+    <header><span class="code">A-05</span><h3>安裝 LeRobot 軟體</h3></header>
+    <div class="body">
+      <p>LeRobot 是 Hugging Face 的開源機器人軟體，SO-101 的設定、校準和控制都靠它。官方要求 <strong>Python 3.12 以上</strong>，建議用 Miniforge 的 conda 管理環境。以下指令照官方安裝文件，查證版本為 LeRobot 0.6.2。</p>
+      <ol class="do">
+        <li><strong>安裝 Miniforge。</strong>Windows 請到 <a href="https://github.com/conda-forge/miniforge/releases/latest" target="_blank" rel="noopener">Miniforge 下載頁</a> 下載 Windows 安裝程式，裝好後從開始選單打開「Miniforge Prompt」，後面的指令都在這個視窗輸入。macOS 和 Linux 用官方這兩行：</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>macOS / Linux 終端機</span><button class="btn" type="button" data-copy>複製</button></div><pre>wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+bash Miniforge3-$(uname)-$(uname -m).sh</pre></div>
+      <ol class="do" start="2">
+        <li><strong>建立並啟用環境，安裝 ffmpeg。</strong>以後每次開新視窗要用 LeRobot，都要先執行 <code>conda activate lerobot</code>。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>所有系統</span><button class="btn" type="button" data-copy>複製</button></div><pre>conda create -y -n lerobot python=3.12
+conda activate lerobot
+conda install ffmpeg -c conda-forge</pre></div>
+      <ol class="do" start="3">
+        <li><strong>下載 LeRobot 原始碼並安裝。</strong>SO-101 需要兩組額外套件：<code>core_scripts</code> 提供校準與遙控指令，<code>feetech</code> 是 STS3215 馬達的驅動程式。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>所有系統</span><button class="btn" type="button" data-copy>複製</button></div><pre>git clone https://github.com/huggingface/lerobot.git
+cd lerobot
+pip install -e ".[core_scripts]"
+pip install -e ".[feetech]"</pre></div>
+      <div class="note tip"><b class="k">沒有 git 的話</b><p>Windows 可以先在 Miniforge Prompt 執行 <code>conda install git -c conda-forge</code>，再執行上面的指令。</p></div>
+      <div class="note warn"><b class="k">安裝出錯時</b><p>Linux 若出現編譯錯誤，官方建議先裝系統套件：<code>sudo apt-get install cmake build-essential python3-dev pkg-config libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev</code>。ffmpeg 有問題時，官方建議改裝 7.1.1 版：<code>conda install ffmpeg=7.1.1 -c conda-forge</code>。</p></div>
+      <div class="codeblk"><div class="cap"><span>檢查安裝結果</span><button class="btn" type="button" data-copy>複製</button></div><pre>pip show lerobot</pre></div>
+      <label class="check"><input type="checkbox" id="ck-a05"><span><b>檢查點</b>執行 <code>pip show lerobot</code> 會顯示 <code>Name: lerobot</code> 和版本號，沒有錯誤訊息。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a06">
+    <header><span class="code">A-06</span><h3>接上驅動板，找出連接埠</h3></header>
+    <div class="body">
+      <div class="need"><b>料件</b><span class="chip">驅動板</span><span class="chip">電源供應器</span><span class="chip">USB-C 線</span></div>
+      <ol class="do">
+        <li><strong>設定跳線。</strong>如果你的驅動板是 Waveshare，官方說明要把板子上的兩個跳線帽都插在 <strong>B</strong> 那一側，也就是 USB 模式。</li>
+        <li><strong>接電源與 USB。</strong>電源供應器插上驅動板，USB-C 線一端接驅動板、一端接電腦。這時候先不要接馬達。</li>
+        <li><strong>執行找連接埠的指令。</strong>程式會請你拔掉 USB 線再按 Enter，它比較拔線前後的差異，就知道哪一個是驅動板。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>啟用 lerobot 環境後執行</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-find-port</pre></div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>你的系統</th><th>連接埠長相</th><th>額外步驟</th></tr></thead>
+          <tbody>
+            <tr><td>Windows</td><td><code>COM3</code>、<code>COM4</code> 這類名稱</td><td>不需要</td></tr>
+            <tr><td>macOS</td><td><code>/dev/tty.usbmodem585A0076841</code> 這類名稱</td><td>不需要</td></tr>
+            <tr><td>Linux</td><td><code>/dev/ttyACM0</code>、<code>/dev/ttyACM1</code></td><td>官方建議執行 <code>sudo chmod 666 /dev/ttyACM0</code> 給予權限</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note warn"><b class="k">找不到連接埠時</b><p>先換一條 USB-C 線試試。只能充電、不能傳資料的線，電腦不會偵測到驅動板。這是一般經驗，官方文件沒有特別寫。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a06"><span><b>檢查點</b>畫面出現 <code>The port of this MotorsBus is ...</code>，把這個連接埠名稱抄下來，後面每個指令都會用到。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a07">
+    <header><span class="code">A-07</span><h3>設定 6 顆馬達的 ID</h3></header>
+    <div class="body">
+      <p>新馬達出廠時 ID 通常都是 1。同一條線上的馬達 ID 必須不同，電腦才分得出誰是誰。這個步驟一次只接一顆馬達，程式會自動寫入 ID 和通訊速率 1,000,000，寫進馬達的記憶體後就不用再做。</p>
+      <figure class="anim" data-scene="motorid"><div class="stage"><svg viewBox="0 0 680 310" role="img" aria-label="設定 6 顆馬達的 ID"></svg></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">從頭播放</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><span class="sp"></span></div><ol class="steps"><li>驅動板接上電源與 USB-C，在電腦執行設定指令</li><li>照畫面提示一次只接一顆馬達，按 Enter 寫入 ID</li><li>6 顆馬達都完成</li></ol><figcaption style="padding:0 14px 12px">設定 6 顆馬達的 ID：點步驟可以單獨播放那一段。</figcaption></figure>
+      <div class="codeblk"><div class="cap"><span>把 COM3 換成你在 A-06 抄下的連接埠</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-setup-motors --robot.type=so101_follower --robot.port=COM3</pre></div>
+      <ol class="do">
+        <li>程式會先顯示 <code>Connect the controller board to the 'gripper' motor only and press enter.</code>：拿一顆馬達，用 3-pin 線接到驅動板，<strong>只接這一顆</strong>，按 Enter。</li>
+        <li>畫面出現 <code>'gripper' motor id set to 6</code>。拿膠帶在這顆馬達上寫「6 夾爪」。</li>
+        <li>把 3-pin 線從驅動板那一端拔掉，馬達那一端可以留著，之後組裝剛好用得到。換下一顆馬達，用另一條 3-pin 線接到驅動板。</li>
+        <li>照提示依序完成：手腕旋轉 5、手腕俯仰 4、手肘 3、肩部抬升 2、肩部旋轉 1。</li>
+      </ol>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>設定順序</th><th>程式裡的名稱</th><th>關節</th><th class="num">寫入的 ID</th></tr></thead>
+          <tbody>
+            <tr><td>第 1 顆</td><td><code>gripper</code></td><td>夾爪</td><td class="num">6</td></tr>
+            <tr><td>第 2 顆</td><td><code>wrist_roll</code></td><td>手腕旋轉</td><td class="num">5</td></tr>
+            <tr><td>第 3 顆</td><td><code>wrist_flex</code></td><td>手腕俯仰</td><td class="num">4</td></tr>
+            <tr><td>第 4 顆</td><td><code>elbow_flex</code></td><td>手肘</td><td class="num">3</td></tr>
+            <tr><td>第 5 顆</td><td><code>shoulder_lift</code></td><td>肩部抬升</td><td class="num">2</td></tr>
+            <tr><td>第 6 顆</td><td><code>shoulder_pan</code></td><td>肩部旋轉</td><td class="num">1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note tip"><b class="k">官方提醒</b><p>每次按 Enter 前都先檢查接線。換馬達時手會碰到驅動板，電源線很容易被扯鬆。官方的設定示範影片在 <a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/setup_motors_so101_2.mp4" target="_blank" rel="noopener">這裡</a>。</p></div>
+      <div class="note warn"><b class="k">出現錯誤時</b><p>看到 <code>Motor 'xxx' (model 'sts3215') was not found</code>，代表電腦找不到馬達：檢查電源、USB 線、3-pin 線，以及 Waveshare 跳線是否在 B。看到 <code>different than the one expected: '777'</code>，代表同時接了不只一顆馬達，或接到不是 STS3215 的馬達。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a07"><span><b>檢查點</b>畫面依序出現 6 行 <code>motor id set to</code>，ID 6 到 1 都有；每顆馬達都貼上寫了 ID 的膠帶。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a08">
+    <header><span class="code">A-08</span><h3>組裝前：清零件、預接線、備螺絲</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li><strong>清乾淨支撐。</strong>官方建議用小起子伸到支撐底下撬起來，最容易清。</li>
+        <li><strong>先在每顆馬達插一條 3-pin 線。</strong>官方建議馬達裝進零件前就先插好一條，裝進去之後就很難插了。A-07 留在馬達上的線剛好用上。</li>
+        <li><strong>依 ID 擺好馬達。</strong>關節 1 用 ID 1 的馬達，關節 2 用 ID 2，依此類推，夾爪用 ID 6。官方文字寫的「第一顆馬達」「motor 3」指的就是這個編號。</li>
+        <li><strong>準備螺絲。</strong>官方料件表沒有列螺絲，組裝會用到兩種，請先確認馬達附的螺絲包，不夠就另外買。</li>
+      </ol>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>螺絲</th><th>用在哪裡</th><th class="num">執行臂大約數量</th></tr></thead>
+          <tbody>
+            <tr><td><strong>M2 × 6 mm</strong>，最小的那種</td><td>把馬達鎖在列印件上</td><td class="num">24</td></tr>
+            <tr><td><strong>M3 × 6 mm</strong></td><td>舵盤固定、手臂零件鎖在舵盤上</td><td class="num">42 到 50</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src">數量是本手冊依官方組裝文字逐步加總，其中兩處官方寫「兩側各 4 顆」還是「兩側共 4 顆」不夠清楚，所以 M3 給一個範圍。多備幾顆比較保險。</p>
+      <div class="note tip"><b class="k">舵盤是什麼</b><p>馬達出力軸上的圓形塑膠盤，英文叫 horn。每顆馬達有上下兩片，上面那片要用一顆 M3 × 6 鎖住，下面那片官方說不用鎖。</p></div>
+      <p><strong>先看一次完整的組裝順序。</strong>下面的 3D 模型會照官方步驟，把零件一個一個裝上去。可以先整段看完，組裝時再回來對照。</p>
+      <figure class="viewer asmv" data-asm="follower"><div class="vp"><div class="status">3D 組裝模型會在捲到這裡時載入</div><div class="hint">拖曳旋轉　滾輪或雙指縮放</div></div><div class="asm-cap"><b data-asm-step>組裝順序</b><span data-asm-sub>點下方的步驟，看零件一個一個裝上去。</span></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">播放這一步</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><button class="btn" type="button" data-act="all">看完成的手臂</button></div><ol class="subs"></ol><div class="parts"><div class="grp"><span>組裝順序</span><button type="button" data-step="0" aria-pressed="false">1 關節 1</button><button type="button" data-step="1" aria-pressed="false">2 關節 2</button><button type="button" data-step="2" aria-pressed="false">3 關節 3</button><button type="button" data-step="3" aria-pressed="false">4 關節 4</button><button type="button" data-step="4" aria-pressed="false">5 關節 5</button><button type="button" data-step="5" aria-pressed="false">6 夾爪</button><button type="button" data-step="6" aria-pressed="false">7 驅動板</button></div></div><figcaption class="src" style="padding:0 12px 12px">零件位置取自官方 SO-ARM100 的 URDF 模型，橘色是這一步新裝的零件，深色方塊是馬達。動畫只表示零件最後裝在哪裡，實際插入的方向請對照官方影片。</figcaption></figure>
+      <label class="check"><input type="checkbox" id="ck-a08"><span><b>檢查點</b>11 個列印件都清乾淨；6 顆馬達各插好一條 3-pin 線並標好 ID；M2 × 6 和 M3 × 6 螺絲都夠。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a09">
+    <header><span class="code">A-09</span><h3>關節 1：底座與肩部旋轉，馬達 ID 1</h3></header>
+    <div class="body">
+      <div class="pgrid"><figure class="pimg"><img src="assets/img/parts/Base_SO101.png" alt="底座 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>底座</b><code>Base_SO101.stl</code></figcaption></figure><figure class="pimg"><img src="assets/img/parts/Base_motor_holder_SO101.png" alt="第一個馬達座，關節 1 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>第一個馬達座，關節 1</b><code>Base_motor_holder_SO101.stl</code></figcaption></figure><figure class="pimg"><img src="assets/img/parts/Rotation_Pitch_SO101.png" alt="肩部零件 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>肩部零件</b><code>Rotation_Pitch_SO101.stl</code></figcaption></figure><figure class="pimg"><img src="assets/img/parts/Motor_holder_SO101_Base.png" alt="肩部馬達座，關節 1 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>肩部馬達座，關節 1</b><code>Motor_holder_SO101_Base.stl</code></figcaption></figure></div><p class="src" style="margin:0">依官方 URDF 模型確認：第一個馬達座 Base_motor_holder 固定在底座上；肩部馬達座 Motor_holder_SO101_Base 跟著肩部一起轉，關節 2 的馬達就裝在它裡面。</p>
+      <div class="asmgrid"><figure class="asmimg"><img src="assets/img/asm/follower_j1_0.webp" width="720" height="540" loading="lazy" alt="關節 1 第 1 步：底座、馬達 1 的位置，橘色標示"><figcaption><b>1</b>馬達 1 放進底座，上下各 2 顆 M2×6 固定</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/follower_j1_1.webp" width="720" height="540" loading="lazy" alt="關節 1 第 2 步：第一個馬達座 的位置，橘色標示"><figcaption><b>2</b>套上第一個馬達座，左右各 1 顆 M2×6</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/follower_j1_2.webp" width="720" height="540" loading="lazy" alt="關節 1 第 3 步：肩部零件 的位置，橘色標示"><figcaption><b>3</b>裝上肩部零件，上下各 4 顆 M3×6</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/follower_j1_3.webp" width="720" height="540" loading="lazy" alt="關節 1 第 4 步：肩部馬達座 的位置，橘色標示"><figcaption><b>4</b>裝上肩部馬達座</figcaption></figure></div><p class="src" style="margin:0">圖由官方 URDF 模型算繪，橘色是新裝的零件。手臂擺的是校準時的中間姿勢，組裝時你手上的零件角度可能不同。</p>
+      <ol class="do">
+        <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
+        <li>把第一顆馬達放進底座。</li>
+        <li>用 4 顆 M2 × 6 固定馬達：上面 2 顆、下面 2 顆。</li>
+        <li>套上第一個馬達座，兩側各用 1 顆 M2 × 6 固定。</li>
+        <li>裝上肩部零件。</li>
+        <li>肩部零件上面鎖 4 顆 M3 × 6，下面也鎖 4 顆 M3 × 6。</li>
+        <li>裝上肩部馬達座。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint1_v2.mp4" target="_blank" rel="noopener">關節 1 組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a09"><span><b>檢查點</b>用手轉肩部零件，可以順暢左右旋轉，沒有卡住或晃動；所有螺絲都鎖上了。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a10">
+    <header><span class="code">A-10</span><h3>關節 2：肩部抬升，馬達 ID 2</h3></header>
+    <div class="body">
+      <div class="pgrid"><figure class="pimg"><img src="assets/img/parts/Upper_arm_SO101.png" alt="上臂 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>上臂</b><code>Upper_arm_SO101.stl</code></figcaption></figure></div>
+      <div class="asmgrid"><figure class="asmimg"><img src="assets/img/asm/follower_j2_0.webp" width="720" height="540" loading="lazy" alt="關節 2 第 1 步：馬達 2 的位置，橘色標示"><figcaption><b>1</b>馬達 2 從上方滑入，4 顆 M2×6 固定</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/follower_j2_1.webp" width="720" height="540" loading="lazy" alt="關節 2 第 2 步：上臂 的位置，橘色標示"><figcaption><b>2</b>裝上上臂，每側 4 顆 M3×6</figcaption></figure></div><p class="src" style="margin:0">圖由官方 URDF 模型算繪，橘色是新裝的零件。手臂擺的是校準時的中間姿勢，組裝時你手上的零件角度可能不同。</p>
+      <ol class="do">
+        <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
+        <li>把第二顆馬達從上方滑進去。</li>
+        <li>用 4 顆 M2 × 6 固定第二顆馬達。</li>
+        <li>裝上上臂，兩側各用 4 顆 M3 × 6 鎖住。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint2_v2.mp4" target="_blank" rel="noopener">關節 2 組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a10"><span><b>檢查點</b>上臂可以前後擺動，兩側 8 顆 M3 都鎖上。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a11">
+    <header><span class="code">A-11</span><h3>關節 3：手肘，馬達 ID 3</h3></header>
+    <div class="body">
+      <div class="pgrid"><figure class="pimg"><img src="assets/img/parts/Under_arm_SO101.png" alt="前臂 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>前臂</b><code>Under_arm_SO101.stl</code></figcaption></figure></div><p class="src" style="margin:0">官方叫它 forearm，前臂；檔名是 Under_arm。</p>
+      <div class="asmgrid"><figure class="asmimg"><img src="assets/img/asm/follower_j3_0.webp" width="720" height="540" loading="lazy" alt="關節 3 第 1 步：馬達 3 的位置，橘色標示"><figcaption><b>1</b>馬達 3 裝進上臂，4 顆 M2×6 固定</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/follower_j3_1.webp" width="720" height="540" loading="lazy" alt="關節 3 第 2 步：前臂 的位置，橘色標示"><figcaption><b>2</b>前臂接到馬達 3，每側 4 顆 M3×6</figcaption></figure></div><p class="src" style="margin:0">圖由官方 URDF 模型算繪，橘色是新裝的零件。手臂擺的是校準時的中間姿勢，組裝時你手上的零件角度可能不同。</p>
+      <ol class="do">
+        <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
+        <li>放入第三顆馬達，用 4 顆 M2 × 6 固定。</li>
+        <li>把前臂接到第三顆馬達，兩側各用 4 顆 M3 × 6 鎖住。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint3_v2.mp4" target="_blank" rel="noopener">關節 3 組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a11"><span><b>檢查點</b>前臂可以上下擺動，兩側 8 顆 M3 都鎖上。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a12">
+    <header><span class="code">A-12</span><h3>關節 4：手腕俯仰，馬達 ID 4</h3></header>
+    <div class="body">
+      <div class="pgrid"><figure class="pimg"><img src="assets/img/parts/Motor_holder_SO101_Wrist.png" alt="馬達座 4 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>馬達座 4</b><code>Motor_holder_SO101_Wrist.stl</code></figcaption></figure></div><p class="src" style="margin:0">官方叫它「馬達座 4」，已用官方 URDF 模型確認是這個零件。</p>
+      <div class="asmgrid"><figure class="asmimg"><img src="assets/img/asm/follower_j4_0.webp" width="720" height="540" loading="lazy" alt="關節 4 第 1 步：馬達座 4 的位置，橘色標示"><figcaption><b>1</b>套上馬達座 4</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/follower_j4_1.webp" width="720" height="540" loading="lazy" alt="關節 4 第 2 步：馬達 4 的位置，橘色標示"><figcaption><b>2</b>馬達 4 滑入，4 顆 M2×6 固定</figcaption></figure></div><p class="src" style="margin:0">圖由官方 URDF 模型算繪，橘色是新裝的零件。手臂擺的是校準時的中間姿勢，組裝時你手上的零件角度可能不同。</p>
+      <ol class="do">
+        <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
+        <li>套上馬達座 4。</li>
+        <li>把第四顆馬達滑進去。</li>
+        <li>用 4 顆 M2 × 6 固定第四顆馬達。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint4_v2.mp4" target="_blank" rel="noopener">關節 4 組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a12"><span><b>檢查點</b>第四顆馬達穩固不晃，4 顆 M2 都鎖上。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a13">
+    <header><span class="code">A-13</span><h3>關節 5：手腕旋轉，馬達 ID 5</h3></header>
+    <div class="body">
+      <div class="pgrid"><figure class="pimg"><img src="assets/img/parts/Wrist_Roll_Pitch_SO101.png" alt="手腕座 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>手腕座</b><code>Wrist_Roll_Pitch_SO101.stl</code></figcaption></figure></div><p class="src" style="margin:0">官方叫它 wrist holder，手腕座；已用官方 URDF 模型確認是這個零件。</p>
+      <div class="asmgrid"><figure class="asmimg"><img src="assets/img/asm/follower_j5_0.webp" width="720" height="540" loading="lazy" alt="關節 5 第 1 步：手腕座、馬達 5 的位置，橘色標示"><figcaption><b>1</b>馬達 5 裝進手腕座，前面 2 顆 M2×6；只裝 1 個舵盤</figcaption></figure><figure class="asmimg noimg"><div class="ph">整個手腕用 M3×6 鎖到馬達 4 上</div><figcaption><b>2</b>整個手腕用 M3×6 鎖到馬達 4 上</figcaption></figure></div><p class="src" style="margin:0">圖由官方 URDF 模型算繪，橘色是新裝的零件。手臂擺的是校準時的中間姿勢，組裝時你手上的零件角度可能不同。</p>
+      <ol class="do">
+        <li>把第五顆馬達放進手腕座，前面用 2 顆 M2 × 6 固定。</li>
+        <li>這顆馬達<strong>只裝一片舵盤</strong>，用 1 顆 M3 × 6 鎖住。</li>
+        <li>把手腕接到第四顆馬達上，用 M3 × 6 鎖住，官方寫「兩側 4 顆」。請對照影片確認是每側 4 顆還是共 4 顆。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint5_v2.mp4" target="_blank" rel="noopener">關節 5 組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a13"><span><b>檢查點</b>手腕可以上下擺動，第五顆馬達只裝了一片舵盤。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a14">
+    <header><span class="code">A-14</span><h3>夾爪：執行臂版本，馬達 ID 6</h3></header>
+    <div class="body">
+      <div class="pgrid"><figure class="pimg"><img src="assets/img/parts/Wrist_Roll_Follower_SO101.png" alt="夾爪本體 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>夾爪本體</b><code>Wrist_Roll_Follower_SO101.stl</code></figcaption></figure><figure class="pimg"><img src="assets/img/parts/Moving_Jaw_SO101.png" alt="活動爪 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>活動爪</b><code>Moving_Jaw_SO101.stl</code></figcaption></figure></div><p class="src" style="margin:0">官方叫它們 gripper，夾爪本體，和 gripper claw，活動爪；對應檔名已用官方 URDF 模型確認。</p>
+      <div class="asmgrid"><figure class="asmimg"><img src="assets/img/asm/follower_grip_0.webp" width="720" height="540" loading="lazy" alt="夾爪 第 1 步：夾爪本體 的位置，橘色標示"><figcaption><b>1</b>夾爪本體鎖到馬達 5 的舵盤，4 顆 M3×6</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/follower_grip_1.webp" width="720" height="540" loading="lazy" alt="夾爪 第 2 步：馬達 6 的位置，橘色標示"><figcaption><b>2</b>裝入夾爪馬達，每側 2 顆 M2×6</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/follower_grip_2.webp" width="720" height="540" loading="lazy" alt="夾爪 第 3 步：活動爪 的位置，橘色標示"><figcaption><b>3</b>裝上活動爪，用 M3×6 固定</figcaption></figure></div><p class="src" style="margin:0">圖由官方 URDF 模型算繪，橘色是新裝的零件。手臂擺的是校準時的中間姿勢，組裝時你手上的零件角度可能不同。</p>
+      <ol class="do">
+        <li>把夾爪本體裝到第五顆馬達手腕的舵盤上，用 4 顆 M3 × 6 鎖住。</li>
+        <li>放入夾爪馬達，兩側各用 2 顆 M2 × 6 固定。</li>
+        <li>夾爪馬達裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
+        <li>裝上活動爪，用 M3 × 6 鎖住，官方寫「兩側 4 顆」，請對照影片確認。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Gripper_v2.mp4" target="_blank" rel="noopener">夾爪組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a14"><span><b>檢查點</b>用手輕輕開合活動爪，順暢不卡；整隻手臂 6 顆馬達都裝好了。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a15">
+    <header><span class="code">A-15</span><h3>串接馬達線，裝上驅動板，固定在桌邊</h3></header>
+    <div class="body">
+      <figure class="anim" data-scene="chain"><div class="stage"><svg viewBox="0 0 680 330" role="img" aria-label="電源、USB 與馬達串接"></svg></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">從頭播放</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><span class="sp"></span></div><ol class="steps"><li>驅動板接上電源與 USB-C</li><li>6 顆馬達與關節的 ID 對應</li><li>用 3-pin 線把馬達一顆接一顆串起來</li><li>訊號從驅動板一路傳到夾爪</li></ol><figcaption style="padding:0 14px 12px">電源、USB 與馬達串接：點步驟可以單獨播放那一段。</figcaption></figure>
+      <div class="pgrid"><figure class="pimg"><img src="assets/img/parts/WaveShare_Mounting_Plate_SO101.png" alt="驅動板固定板 Waveshare 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>驅動板固定板 Waveshare</b><code>WaveShare_Mounting_Plate_SO101.stl</code></figcaption></figure><figure class="pimg"><img src="assets/img/parts/Seeedstudio_Mounting_Plate_SO101.png" alt="驅動板固定板 Seeed 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>驅動板固定板 Seeed</b><code>Seeedstudio_Mounting_Plate_SO101.stl</code></figcaption></figure></div><p class="src" style="margin:0">依你的驅動板品牌，只用其中一個。</p>
+      <div class="asmgrid"><figure class="asmimg"><img src="assets/img/asm/follower_board_0.webp" width="720" height="540" loading="lazy" alt="驅動板 第 1 步：驅動板固定板 的位置，橘色標示"><figcaption><b>1</b>驅動板固定板裝在底座後方</figcaption></figure></div><p class="src" style="margin:0">圖由官方 URDF 模型算繪，橘色是新裝的零件。手臂擺的是校準時的中間姿勢，組裝時你手上的零件角度可能不同。</p>
+      <ol class="do">
+        <li>每顆馬達都有兩個 3-pin 插座，一個接進來、一個接出去。把每顆馬達接到下一顆，從夾爪 6 一路串到肩部旋轉 1。</li>
+        <li>肩部旋轉 ID 1 那顆馬達，再用一條線接到驅動板。</li>
+        <li>用固定板把驅動板裝在手臂底座上。</li>
+        <li>用桌夾把底座牢牢夾在桌子邊緣。官方校準圖就是這樣擺的，手臂動起來才不會倒。</li>
+        <li>接上電源和 USB-C。</li>
+      </ol>
+      <div class="note warn"><b class="k">電源別插錯</b><p>官方說明：標準的 7.4V 馬達配 5V 電源。只有改買 12V 版馬達的人才換 12V、5A 以上的電源。不要把 12V 電源接到 7.4V 馬達上。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a15"><span><b>檢查點</b>6 顆馬達串成一條線，只有 ID 1 接到驅動板；底座用桌夾固定，搖不動。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a16">
+    <header><span class="code">A-16</span><h3>校準執行臂</h3></header>
+    <div class="body">
+      <p>校準讓電腦知道每個關節的中間位置和兩端極限。之後主控臂和執行臂擺同樣姿勢時，讀數才會一樣。每隻手臂通常只要校準一次。</p>
+      <figure class="anim" data-scene="calibrate"><div class="stage"><svg viewBox="0 0 680 330" role="img" aria-label="校準流程"></svg></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">從頭播放</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><span class="sp"></span></div><ol class="steps"><li>上臂朝上、前臂朝前，擺到中間位置，按 Enter</li><li>除了手腕旋轉，每個關節慢慢轉到兩端</li><li>全部轉完，按 Enter 存檔</li></ol><figcaption style="padding:0 14px 12px">校準流程：點步驟可以單獨播放那一段。</figcaption></figure>
+      <div class="codeblk"><div class="cap"><span>把 COM3 換成你的連接埠，名字可以自訂，但之後要一直用同一個</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-calibrate \
+    --robot.type=so101_follower \
+    --robot.port=COM3 \
+    --robot.id=my_awesome_follower_arm</pre></div>
+      <div class="note stop"><b class="k">不要直接複製官方網頁的校準指令</b><p>官方文件的這段指令在行尾夾了 <code>\ # &lt;- The port of your robot</code> 這種註解，貼進終端機會出錯，指令根本沒有執行。請用上面這段已經拿掉註解的版本。Windows 的命令視窗如果不接受行尾的 <code>\</code>，就把整段寫成一行。</p></div>
+      <ol class="do">
+        <li><strong>擺到中間位置。</strong>官方示意圖的姿勢是：上臂垂直朝上，前臂水平朝前，夾爪和前臂成一直線。擺好後按 Enter。</li>
+        <li><strong>每個關節轉到兩端。</strong>畫面會出現 <code>NAME | MIN | POS | MAX</code> 的即時表格。除了手腕旋轉，其他每個關節都要用手慢慢轉到兩邊的極限。手腕旋轉不需要轉，程式會直接設成整圈。</li>
+        <li><strong>按 Enter 存檔。</strong>畫面出現 <code>Calibration saved to</code>，後面是存檔路徑。</li>
+      </ol>
+      <dl class="kv">
+        <dt>存檔位置</dt><dd><code>~/.cache/huggingface/lerobot/calibration/robots/so_follower/my_awesome_follower_arm.json</code></dd>
+        <dt>官方影片</dt><dd><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/calibrate_so101_2.mp4" target="_blank" rel="noopener">校準示範</a></dd>
+      </dl>
+      <div class="note warn"><b class="k">常見錯誤</b><p>出現 <code>Some motors have the same min and max values</code>，代表有關節沒轉到。重新執行，這次每個關節都要轉。一定要寫 <code>--robot.id</code>，不寫的話檔名會變成 <code>None.json</code>，之後很容易搞混。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a16"><span><b>檢查點</b>畫面出現 <code>Calibration saved to</code>，而且 MIN 和 MAX 在每個關節都不一樣。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a17">
+    <header><span class="code">A-17</span><h3>第一次用 Python 控制手臂</h3></header>
+    <div class="body">
+      <p>這段程式由本手冊撰寫，用的類別名稱、方法和參數都已經對照 LeRobot 0.6.2 原始碼確認。它會讀出每個關節的角度，再讓夾爪慢慢開合一次。</p>
+      <div class="note stop"><b class="k">執行前先擺好手臂</b><p>程式結束時會自動放掉馬達出力，手臂會變軟。如果手臂舉在空中，會直接掉下來。執行前請把手臂收折在桌面上，旁邊不要放東西。</p></div>
+      <div class="codeblk"><div class="cap"><span>first_move.py</span><button class="btn" type="button" data-copy>複製</button></div><pre>import time
+from lerobot.robots.so_follower import SO101Follower, SO101FollowerConfig
+
+config = SO101FollowerConfig(
+    port=&quot;COM3&quot;,                   # 換成 A-06 找到的連接埠
+    id=&quot;my_awesome_follower_arm&quot;,  # 和 A-16 校準時用同一個名字
+    max_relative_target=5.0,       # 每次最多動 5，一定要寫成小數
+)
+robot = SO101Follower(config)
+robot.connect()
+try:
+    obs = robot.get_observation()
+    for name, value in obs.items():
+        print(name, round(value, 1))
+    action = {k: v for k, v in obs.items() if k.endswith(&quot;.pos&quot;)}
+    for target in (50.0, 20.0):    # 夾爪 0 到 100，先到 50 再到 20
+        action[&quot;gripper.pos&quot;] = target
+        for _ in range(20):
+            robot.send_action(action)
+            time.sleep(0.05)
+    print(&quot;負載讀數:&quot;, robot.bus.sync_read(&quot;Present_Load&quot;))
+finally:
+    robot.disconnect()
+</pre></div>
+      <ul class="do">
+        <li>關節 1 到 5 的單位是「度」，0 度是校準時記錄範圍的正中間；夾爪是 0 到 100。</li>
+        <li><code>max_relative_target</code> 必須寫成 <code>5.0</code>，寫成整數 <code>5</code> 程式會報錯。</li>
+        <li>最後印出的負載讀數是馬達的原始數值，官方沒有說明單位，只能拿來比較大小。</li>
+      </ul>
+      <div class="codeblk"><div class="cap"><span>執行</span><button class="btn" type="button" data-copy>複製</button></div><pre>python first_move.py</pre></div>
+      <label class="check"><input type="checkbox" id="ck-a17"><span><b>檢查點</b>畫面印出 <code>shoulder_pan.pos</code> 到 <code>gripper.pos</code> 六個數值，夾爪慢慢開合一次。恭喜，階段 A 完成。</span></label>
+    </div>
+  </article>
+</section>
+
+<section class="part" id="p2" data-phase="B" data-toc="階段 B　力感測">
+  <div class="part-head">
+    <span class="tag">階段 B</span>
+    <h2>力感測：量 1 到 200 克的推力</h2>
+    <p>在夾爪上加一個小型荷重元，讓手臂知道自己推了多大力。荷重元把力量變成很小的電壓，HX711 放大板把它轉成數字，Arduino Nano 再用 USB 傳到電腦。最後用 Python 讓手臂慢慢推遊戲手把的蘑菇頭，推到設定的克數就停。</p>
+  </div>
+  <figure><div class="photo"><img src="assets/force/probe_tool_preview.png" alt="力感測治具組裝預覽：藍色治具座、灰色荷重元、紅色推頭" width="1280" height="760" loading="lazy"></div><figcaption>本手冊設計的治具，組裝預覽。藍色是夾在夾爪裡的治具座，灰色是 TAL221 荷重元，紅色是推頭。右圖箭頭方向就是量力的方向。</figcaption></figure>
+
+  <article class="step" id="b01">
+    <header><span class="code">B-01</span><h3>備齊力感測料件</h3></header>
+    <div class="body">
+      <div class="tbl">
+        <table>
+          <thead><tr><th>料件</th><th class="num">數量</th><th>規格與說明</th></tr></thead>
+          <tbody>
+            <tr><td>TAL221 迷你荷重元 <b>500 g</b></td><td class="num">1</td><td>SparkFun 料號 SEN-14728，<a href="https://www.sparkfun.com/mini-load-cell-500g-straight-bar-tal221.html" target="_blank" rel="noopener">商品頁</a>。尺寸 47 × 12 × 6 mm，4 條細線長約 110 mm。台灣、淘寶可搜尋「TAL221 500g」。</td></tr>
+            <tr><td>HX711 放大板</td><td class="num">1</td><td>SparkFun SEN-13879 紅色板，或常見的綠色通用板，兩種接法本章都有寫。</td></tr>
+            <tr><td>Arduino Nano，ATmega328P</td><td class="num">1</td><td>原廠或相容板都可以。另備一條能傳資料的 USB 線，接頭看你買的 Nano 是哪一種。</td></tr>
+            <tr><td>M3 × 10 螺絲</td><td class="num">2</td><td>把荷重元有線的那一端鎖在治具座上。</td></tr>
+            <tr><td>M3 × 12 螺絲和 M3 螺帽</td><td class="num">各 2</td><td>把推頭鎖在荷重元沒有線的那一端。M3 × 14 也可以。</td></tr>
+            <tr><td>小束帶，寬 3 mm 以下</td><td class="num">2</td><td>一條把治具座綁在兩根夾爪上，一條固定荷重元的細線。</td></tr>
+            <tr><td>杜邦線、排針、熱縮套管</td><td class="num">1 份</td><td>HX711 到 Nano 用 4 條杜邦線。荷重元的細線要焊在排針上再套熱縮管。</td></tr>
+            <tr><td>砝碼 1、10、50、100、200 g</td><td class="num">1 組</td><td>沒有砝碼的話，用 0.01 g 的珠寶秤先秤好幾樣小東西，拿它們當砝碼。</td></tr>
+            <tr><td>游標卡尺、三用電錶、烙鐵</td><td class="num">各 1</td><td>量荷重元孔位、檢查線路、焊接。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note warn"><b class="k">一定要買 500 g，不要買 100 g</b><p>你要量到 200 克。500 g 版推到 200 克只用了 40% 的量程，安全過載是 750 克，原廠標示綜合誤差約正負 0.25 克。100 g 版的安全過載只有 150 克，推到 200 克會壓壞。</p></div>
+      <p class="src">荷重元規格整理自 SparkFun 商品頁、原廠 HT Sensor 規格表與多家通路的資料。這些商品頁在本手冊的撰寫環境裡無法直接開啟，數值是交叉比對搜尋結果後確認的；網址可能因店家改版而變動。</p>
+      <label class="check"><input type="checkbox" id="ck-b01"><span><b>檢查點</b>荷重元上的標示是 500 g；HX711、Nano、螺絲、束帶、砝碼都到齊。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="b02">
+    <header><span class="code">B-02</span><h3>量荷重元、列印治具、組裝</h3></header>
+    <div class="body">
+      <p>治具是本手冊依照 SO-101 官方夾爪模型和 TAL221 尺寸設計的，有兩個零件：夾在夾爪裡的<b>治具座</b>，和鎖在荷重元前端的<b>推頭</b>。兩個檔案都已經轉成列印方向，切片時直接放上平台。</p>
+      <figure class="viewer" data-viewer="jig" data-base="assets/stl64/"><div class="vp"><div class="status">3D 模型會在捲到這裡時載入</div><div class="hint">本手冊設計的治具，已轉成列印方向</div></div><div class="meta"><span>零件：<b data-meta="name">-</b></span><span>外框尺寸：<b data-meta="size">-</b></span><span><b data-meta="use"></b></span></div><div class="parts"><div class="grp"><span>力感測治具</span><button type="button" data-file="probe_block.stl" data-label="治具座　probe_block.stl" data-use="夾在夾爪裡，PLA 或 PETG" aria-pressed="true">治具座</button><button type="button" data-file="probe_tip.stl" data-label="推頭　probe_tip.stl" data-use="鎖在荷重元沒有線的那一端" aria-pressed="false">推頭</button></div></div></figure>
+      <div class="pgrid"><figure class="pimg"><img src="assets/img/parts/probe_block.png" alt="治具座 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>治具座</b><code>probe_block.stl</code></figcaption></figure><figure class="pimg"><img src="assets/img/parts/probe_tip.png" alt="推頭 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>推頭</b><code>probe_tip.stl</code></figcaption></figure></div><p class="src" style="margin:0">治具座長 42 mm、寬 24 mm；推頭高約 15.5 mm。</p>
+      <div class="dl"><button class="btn primary" type="button" data-zip="kit">下載力感測套件（zip）</button><span class="msg">內含治具 STL、OpenSCAD 原始檔、Arduino 韌體與 Python 程式。</span></div>
+      <p><strong>先用游標卡尺量你手上的荷重元。</strong>治具上有幾個尺寸只能從第三方 CAD 模型取得，請實際量過再印：</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>要量的地方</th><th class="num">治具預設值</th><th>來源</th></tr></thead>
+          <tbody>
+            <tr><td>荷重元長、寬、厚</td><td class="num">47 × 12 × 6 mm</td><td>多家商品頁與 CAD 模型一致</td></tr>
+            <tr><td>同一端兩個孔的中心距，橫跨 12 mm 寬度</td><td class="num">6.0 mm</td><td>三個不同作者的配件都是這個值</td></tr>
+            <tr><td>孔中心到荷重元端面的距離</td><td class="num">3.5 mm</td><td>只有一個第三方模型，<b>要量</b></td></tr>
+            <tr><td>兩端實心部分的長度</td><td class="num">7 mm</td><td>只有一個第三方模型，<b>要量</b></td></tr>
+            <tr><td>夾爪閉合時兩爪的間距</td><td class="num">24 mm</td><td>由官方模型量出，正負 1 mm</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note tip"><b class="k">尺寸不一樣怎麼辦</b><p>下載套件裡的 <code>cad/probe_tool.scad</code> 用免費的 OpenSCAD 打開，最上面有 <code>hole_from_end</code>、<code>cell_head_len</code>、<code>hole_pitch</code>、<code>clamp_w</code> 等參數。改成你量到的數字，存檔後依序匯出 <code>part="block"</code> 和 <code>part="tip"</code> 兩個 STL。</p></div>
+      <ol class="do">
+        <li><strong>列印。</strong>PLA 或 PETG，層高 0.2 mm，牆 4 圈，填充 40% 以上。檔案已經擺好方向：治具座的三根小柱子朝上，推頭的尖端朝上。</li>
+        <li><strong>試孔。</strong>拿一顆 M3 螺絲穿過治具上的 4 個孔，要能順順穿過。太緊就用 3.4 mm 鑽頭手轉擴孔。</li>
+        <li><strong>分清荷重元的兩端。</strong>有線的那一端是<b>固定端</b>，孔是 M3 螺紋；沒有線的那一端是<b>受力端</b>，孔是光孔。</li>
+      </ol>
+      <figure class="anim" data-scene="jig"><div class="stage"><svg viewBox="0 0 720 340" role="img" aria-label="治具組裝"></svg></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">從頭播放</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><span class="sp"></span></div><ol class="steps"><li>荷重元有線的那一端，用 2 顆 M3×10 鎖在舌片上</li><li>沒有線的那一端，裝上推頭</li><li>細線穿過固定柱，不讓線受力</li><li>夾爪夾住治具座，再用束帶綁住兩根爪</li></ol><figcaption style="padding:0 14px 12px">治具組裝：點步驟可以單獨播放那一段。</figcaption></figure>
+      <ol class="do" start="4">
+        <li><strong>鎖固定端。</strong>把荷重元有線的那一端貼在治具座伸出來的舌片上，2 顆 M3 × 10 從舌片那一側穿過去，直接鎖進荷重元的螺紋孔。鎖緊即可，不要用力到滑牙。</li>
+        <li><strong>鎖推頭。</strong>推頭的平板貼在荷重元受力端的另一面，也就是和舌片相反的那一面，尖端朝外。2 顆 M3 × 12 穿過平板和荷重元，另一側用螺帽鎖緊。</li>
+        <li><strong>整理細線。</strong>治具座側面有 3 根交錯的小柱子，4 條細線在柱子之間繞 S 形穿過，再用小束帶穿過旁邊的橋形扣固定。這樣拉到線時，力量不會傳到荷重元的出線口。</li>
+        <li><strong>確認中間懸空。</strong>荷重元中間那段，四周都不能碰到治具。拿一張紙從荷重元中段和舌片之間穿過去，要能順利通過。</li>
+      </ol>
+      <div class="note stop"><b class="k">細線很脆弱</b><p>荷重元的線大約只有 0.6 mm 粗，最容易從出線口斷掉，斷了幾乎修不好，只能換一顆。不要用線把荷重元提起來，也不要反覆彎折出線口。</p></div>
+      <label class="check"><input type="checkbox" id="ck-b02"><span><b>檢查點</b>有線的一端鎖在舌片上，推頭鎖在另一端；紙片能從荷重元中段穿過；細線已經繞過小柱子並綁好。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="b03">
+    <header><span class="code">B-03</span><h3>接線：荷重元 → HX711 → Arduino Nano</h3></header>
+    <div class="body">
+      <figure class="anim" data-scene="forcewire"><div class="stage"><svg viewBox="0 0 720 330" role="img" aria-label="荷重元、HX711、Arduino Nano 接線"></svg></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">從頭播放</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><span class="sp"></span></div><ol class="steps"><li>認識三個零件</li><li>荷重元的 4 條線接到 HX711</li><li>HX711 接到 Arduino Nano，Nano 用 USB 接電腦</li><li>Nano 把讀數傳到電腦</li></ol><figcaption style="padding:0 14px 12px">荷重元、HX711、Arduino Nano 接線：點步驟可以單獨播放那一段。</figcaption></figure>
+      <p><strong>第一段：荷重元的 4 條線接到 HX711。</strong>SparkFun 紅色板上印的是線的顏色，通用綠色板印的是訊號名稱。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>荷重元的線</th><th>訊號</th><th>SparkFun 板</th><th>通用綠色板</th></tr></thead>
+          <tbody>
+            <tr><td>紅</td><td>激勵 正</td><td>RED</td><td>E+</td></tr>
+            <tr><td>黑</td><td>激勵 負</td><td>BLK</td><td>E−</td></tr>
+            <tr><td>白</td><td>訊號 負</td><td>WHT</td><td>A−</td></tr>
+            <tr><td>綠</td><td>訊號 正</td><td>GRN</td><td>A+</td></tr>
+            <tr><td>沒有線</td><td></td><td>YLW 空著</td><td>B+、B− 空著</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>第二段：HX711 接到 Nano。</strong></p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>SparkFun 板</th><th>通用綠色板</th><th>接到 Arduino Nano</th></tr></thead>
+          <tbody>
+            <tr><td>VCC</td><td>VCC</td><td>5V</td></tr>
+            <tr><td>VDD</td><td>沒有這個腳</td><td>5V，和 VCC 接同一個腳</td></tr>
+            <tr><td>DAT</td><td>DT</td><td><b>D2</b></td></tr>
+            <tr><td>CLK</td><td>SCK</td><td><b>D3</b></td></tr>
+            <tr><td>GND</td><td>GND</td><td>GND</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note stop"><b class="k">SparkFun 板的 VDD 一定要接</b><p>VCC 供電給荷重元，VDD 決定數位訊號的電壓。VDD 沒接的話，Nano 一個數字都讀不到。</p></div>
+      <div class="note warn"><b class="k">不要照 SparkFun 範例的腳位</b><p>SparkFun 自己的範例程式是 DAT 接 3、CLK 接 2，剛好和本手冊相反。本手冊的韌體固定用 DAT 接 D2、CLK 接 D3。</p></div>
+      <ol class="do">
+        <li>荷重元的細線焊在排針上，每個焊點套熱縮管。不要用螺絲端子夾這麼細的線。</li>
+        <li>HX711 用雙面膠或束帶固定在手腕或前臂上，越靠近荷重元越好。荷重元的線只有 110 mm 長，而且這段線越短雜訊越小。</li>
+        <li>HX711 到 Nano 的 4 條線沿著手臂走到底座，經過手腕的兩個關節時各留一段鬆弛的線圈，讓關節轉動時不會拉扯。線長盡量在 1 公尺以內。</li>
+        <li>訊號線遠離馬達的電源線。Nano 用自己的 USB 線直接接電腦，不要和馬達驅動板共用同一個 USB 集線器。</li>
+      </ol>
+      <div class="note tip"><b class="k">用三用電錶先檢查荷重元</b><p>荷重元先不要接到 HX711，量電阻：紅、黑之間大約 1090 Ω，綠、白之間大約 1000 Ω。顯示 OL 代表有線斷了。</p></div>
+      <p class="src">SparkFun 板的腳位對照，是直接讀 SparkFun 官方 GitHub 上的電路板檔案確認的。少數商店標示的綠、白兩線顏色相反，沒關係，B-05 的校正會自動處理正負號。</p>
+      <label class="check"><input type="checkbox" id="ck-b03"><span><b>檢查點</b>對照兩張表各檢查一次：紅黑白綠 4 條線、5V 兩條、GND、D2、D3 都接對；焊點都套了熱縮管。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="b04">
+    <header><span class="code">B-04</span><h3>燒錄 Arduino 韌體</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li><strong>安裝 Arduino IDE 2。</strong>到 <a href="https://www.arduino.cc/en/software" target="_blank" rel="noopener">Arduino 官網</a> 下載安裝。</li>
+        <li><strong>安裝函式庫。</strong>左側點「程式庫管理員」，搜尋 <code>HX711 Arduino Library</code>，安裝作者是 <b>Bogdan Necula</b> 的那一個，版本 0.7.5。</li>
+        <li><strong>打開韌體。</strong>解開下載的力感測套件，用 Arduino IDE 打開 <code>so101_force/so101_force.ino</code>。下載按鈕不能用的話，就在 Arduino IDE 新增一個草稿，把內容全部刪掉，貼上下方的程式碼，存檔名稱打 <code>so101_force</code>。</li>
+        <li><strong>選板子。</strong>工具 → 開發板選 <code>Arduino Nano</code>，處理器選 <code>ATmega328P</code>，連接埠選 Nano 的那一個。</li>
+        <li><strong>上傳。</strong>按上傳箭頭，下方出現「上傳完成」就成功了。</li>
+        <li><strong>打開序列埠監控視窗。</strong>右上角放大鏡圖示，鮑率選 <code>115200</code>，行尾選「換行」或 Newline。</li>
+      </ol>
+      <div class="note stop"><b class="k">函式庫名字很容易裝錯</b><p>程式庫管理員裡還有一個名字就叫 <code>HX711</code>、作者是 Rob Tillaart 的函式庫。那是另一套，用它編譯會失敗。已經裝錯的話，先移除它，再裝 Bogdan Necula 的版本。</p></div>
+      <div class="note warn"><b class="k">相容板上傳失敗</b><p>處理器改選 <code>ATmega328P (Old Bootloader)</code> 再上傳一次。Windows 如果找不到連接埠，大多是相容板用的 CH340 晶片缺驅動程式，安裝 CH340 驅動後重新插拔 USB。</p></div>
+      <p>上傳成功後，序列埠監控視窗會依序看到這幾行，最後每秒大約 10 行 <code>F,</code> 開頭的資料。因為還沒校正，最後一欄是 <code>nan</code>。</p>
+      <div class="codeblk"><div class="cap"><span>正常的開機畫面</span></div><pre># so101_force v1.0 (TAL221 + HX711, DOUT=D2 SCK=D3)
+# NOT CALIBRATED: send t (no load), put a known weight on the tip, send c&lt;grams&gt;
+# auto-tare at boot: do not touch the probe
+OK,TARE,…
+F,1234,nan
+F,1334,nan</pre></div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>在監控視窗輸入</th><th>作用</th></tr></thead>
+          <tbody>
+            <tr><td><code>t</code></td><td>歸零，推頭上不能有任何東西</td></tr>
+            <tr><td><code>c100</code></td><td>用 100 g 砝碼校正，數字換成你放的克數。結果存在 Nano 裡，斷電也不會消失</td></tr>
+            <tr><td><code>r</code></td><td>印出一筆原始讀數，除錯用</td></tr>
+            <tr><td><code>a8</code></td><td>平均 8 筆資料，數字越大越穩但反應越慢，可設 1 到 16，預設 4</td></tr>
+            <tr><td><code>?</code></td><td>顯示說明和目前設定</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <details class="fold"><summary>韌體完整程式碼 so101_force.ino</summary><div class="codeblk"><div class="cap"><span>so101_force.ino</span><button class="btn" type="button" data-copy>複製</button></div><pre>/*
+ * so101_force.ino  --  TAL221 mini load cell + HX711 + Arduino Nano
+ * Force probe firmware for the SO-101 (LeRobot) thumbstick-pushing jig.
+ *
+ * Library : &quot;HX711 Arduino Library&quot; by Bogdan Necula (github.com/bogde/HX711),
+ *           tested with release 0.7.5.  NOTE: in the Arduino Library Manager
+ *           there is ALSO a library simply called &quot;HX711&quot; by Rob Tillaart -
+ *           that is a DIFFERENT library and this sketch will not build with it.
+ *           arduino-cli:  arduino-cli lib install &quot;HX711 Arduino Library&quot;
+ * Board   : Arduino Nano (ATmega328P)  FQBN arduino:avr:nano
+ *           (clones with the old bootloader: arduino:avr:nano:cpu=atmega328old)
+ *
+ * Wiring (HX711 board -&gt; Nano):
+ *   DAT / DT / DOUT -&gt; D2      CLK / SCK / PD_SCK -&gt; D3
+ *   VCC (and VDD on SparkFun board) -&gt; 5V        GND -&gt; GND
+ *
+ * Serial: 115200 baud, lines end with &quot;\r\n&quot;.
+ *   Data line   : F,&lt;millis&gt;,&lt;grams&gt;        e.g.  F,123456,12.34
+ *                 (grams = &quot;nan&quot; until a calibration is stored)
+ *   Reply lines : OK,...  /  ERR,...  /  R,...
+ *   Info lines  : start with &#x27;#&#x27;  (PC software should ignore them)
+ *
+ * Commands (type in Serial Monitor, newline at the end):
+ *   t          tare: set zero (NOTHING may touch the probe tip)
+ *   c&lt;grams&gt;   calibrate with a known weight resting on the tip, e.g. c100
+ *              (do &#x27;t&#x27; first with no weight). Scale factor is saved to EEPROM.
+ *   r          print one raw reading:  R,&lt;millis&gt;,&lt;raw_avg&gt;,&lt;offset&gt;,&lt;counts_per_gram&gt;
+ *   a&lt;n&gt;       moving-average window, n = 1..16 (default 4, not saved)
+ *   ?          help + current settings
+ *
+ * Sign convention: calibrate with the weight pressing the tip the SAME way the
+ * thumbstick will press back on it. Then pushing = positive grams.
+ */
+
+#include &lt;EEPROM.h&gt;
+#include &lt;math.h&gt;
+#include &lt;stdlib.h&gt;
+#include &quot;HX711.h&quot;
+
+// ---------------- user settings ----------------
+const uint8_t  PIN_DOUT        = 2;      // HX711 DAT/DT/DOUT
+const uint8_t  PIN_SCK         = 3;      // HX711 CLK/SCK
+const long     BAUD            = 115200;
+const uint8_t  DEFAULT_WINDOW  = 4;      // samples in moving average
+const uint8_t  MAX_WINDOW      = 16;
+const uint8_t  TARE_SAMPLES    = 16;     // samples averaged for t and c
+const uint16_t READY_TIMEOUT_MS = 600;   // 10 SPS -&gt; 100 ms per sample
+const float    MIN_COUNTS_PER_G = 50.0;  // below this, calibration is rejected
+
+// ---------------- EEPROM layout ----------------
+const int      EE_ADDR  = 0;
+const uint32_t EE_MAGIC = 0x464F5231UL;  // &quot;FOR1&quot;
+struct CalData {
+  uint32_t magic;
+  float    countsPerGram;
+  uint32_t check;      // magic XOR raw bits of countsPerGram
+};
+
+HX711 scale;
+
+float   countsPerGram = NAN;   // NAN = not calibrated
+long    offsetRaw     = 0;
+long    ring[MAX_WINDOW];
+uint8_t window        = DEFAULT_WINDOW;
+uint8_t ringCount     = 0;
+uint8_t ringPos       = 0;
+unsigned long lastSampleMs = 0;
+unsigned long lastWarnMs   = 0;
+
+char    cmdBuf[24];
+uint8_t cmdLen = 0;
+
+// ------------------------------------------------
+static uint32_t floatBits(float f) {
+  uint32_t u;
+  memcpy(&amp;u, &amp;f, sizeof(u));
+  return u;
+}
+
+static bool loadCalibration() {
+  CalData d;
+  EEPROM.get(EE_ADDR, d);
+  if (d.magic != EE_MAGIC) return false;
+  if (d.check != (d.magic ^ floatBits(d.countsPerGram))) return false;
+  if (isnan(d.countsPerGram) || isinf(d.countsPerGram)) return false;
+  if (fabs(d.countsPerGram) &lt; MIN_COUNTS_PER_G) return false;
+  countsPerGram = d.countsPerGram;
+  return true;
+}
+
+static void saveCalibration(float cpg) {
+  CalData d;
+  d.magic = EE_MAGIC;
+  d.countsPerGram = cpg;
+  d.check = d.magic ^ floatBits(cpg);
+  EEPROM.put(EE_ADDR, d);   // put() only rewrites bytes that changed
+}
+
+// Read one raw sample, waiting at most READY_TIMEOUT_MS. Returns false on timeout.
+static bool readRaw(long &amp;out) {
+  if (!scale.wait_ready_timeout(READY_TIMEOUT_MS, 1)) return false;
+  out = scale.read();
+  lastSampleMs = millis();   // keeps loop() from warning after a long t / c / r
+  return true;
+}
+
+// Average n raw samples (blocking, with timeout). Returns false on timeout.
+static bool readRawAverage(uint8_t n, long &amp;out) {
+  long long sum = 0;
+  for (uint8_t i = 0; i &lt; n; i++) {
+    long v;
+    if (!readRaw(v)) return false;
+    sum += v;
+  }
+  out = (long)(sum / n);
+  return true;
+}
+
+static void resetRing() {
+  ringCount = 0;
+  ringPos = 0;
+}
+
+static void pushRing(long v) {
+  ring[ringPos] = v;
+  ringPos = (ringPos + 1) % window;
+  if (ringCount &lt; window) ringCount++;
+}
+
+static long ringAverage() {
+  long long sum = 0;
+  for (uint8_t i = 0; i &lt; ringCount; i++) sum += ring[i];
+  return ringCount ? (long)(sum / ringCount) : 0;
+}
+
+static void printHelp() {
+  Serial.println(F(&quot;# so101_force  commands: t=tare  c&lt;grams&gt;=calibrate  r=raw  a&lt;n&gt;=avg window  ?=help&quot;));
+  Serial.print(F(&quot;# counts_per_gram=&quot;));
+  if (isnan(countsPerGram)) Serial.println(F(&quot;NOT_CALIBRATED&quot;));
+  else Serial.println(countsPerGram, 3);
+  Serial.print(F(&quot;# offset_raw=&quot;));
+  Serial.print(offsetRaw);
+  Serial.print(F(&quot; window=&quot;));
+  Serial.println(window);
+}
+
+static void doTare() {
+  long avg;
+  if (!readRawAverage(TARE_SAMPLES, avg)) {
+    Serial.println(F(&quot;ERR,TARE,HX711_NOT_READY&quot;));
+    return;
+  }
+  offsetRaw = avg;
+  resetRing();
+  Serial.print(F(&quot;OK,TARE,&quot;));
+  Serial.println(offsetRaw);
+}
+
+static void doCalibrate(const char *arg) {
+  float grams = atof(arg);
+  if (!(grams &gt; 0.0f)) {
+    Serial.println(F(&quot;ERR,CAL,USAGE: c&lt;grams&gt;  e.g. c100&quot;));
+    return;
+  }
+  long avg;
+  if (!readRawAverage(TARE_SAMPLES, avg)) {
+    Serial.println(F(&quot;ERR,CAL,HX711_NOT_READY&quot;));
+    return;
+  }
+  float cpg = (float)(avg - offsetRaw) / grams;
+  if (fabs(cpg) &lt; MIN_COUNTS_PER_G) {
+    Serial.print(F(&quot;ERR,CAL,SIGNAL_TOO_SMALL,&quot;));
+    Serial.println(cpg, 3);
+    Serial.println(F(&quot;# Did you tare (t) with no weight first? Is the weight on the TIP? Check wiring.&quot;));
+    return;
+  }
+  countsPerGram = cpg;
+  saveCalibration(cpg);
+  resetRing();
+  Serial.print(F(&quot;OK,CAL,&quot;));
+  Serial.println(countsPerGram, 3);
+}
+
+static void doRaw() {
+  long avg;
+  if (!readRawAverage(window, avg)) {
+    Serial.println(F(&quot;ERR,RAW,HX711_NOT_READY&quot;));
+    return;
+  }
+  Serial.print(F(&quot;R,&quot;));
+  Serial.print(millis());
+  Serial.print(&#x27;,&#x27;);
+  Serial.print(avg);
+  Serial.print(&#x27;,&#x27;);
+  Serial.print(offsetRaw);
+  Serial.print(&#x27;,&#x27;);
+  if (isnan(countsPerGram)) Serial.println(F(&quot;nan&quot;));
+  else Serial.println(countsPerGram, 3);
+}
+
+static void handleCommand(char *s) {
+  while (*s == &#x27; &#x27;) s++;
+  if (*s == &#x27;\0&#x27;) return;
+  char c = *s;
+  if (c &gt;= &#x27;A&#x27; &amp;&amp; c &lt;= &#x27;Z&#x27;) c = c - &#x27;A&#x27; + &#x27;a&#x27;;
+  char *arg = s + 1;
+  while (*arg == &#x27; &#x27;) arg++;
+  switch (c) {
+    case &#x27;t&#x27;: doTare(); break;
+    case &#x27;c&#x27;: doCalibrate(arg); break;
+    case &#x27;r&#x27;: doRaw(); break;
+    case &#x27;a&#x27;: {
+      int n = atoi(arg);
+      if (n &lt; 1 || n &gt; MAX_WINDOW) {
+        Serial.println(F(&quot;ERR,AVG,RANGE_1_16&quot;));
+      } else {
+        window = (uint8_t)n;
+        resetRing();
+        Serial.print(F(&quot;OK,AVG,&quot;));
+        Serial.println(window);
+      }
+      break;
+    }
+    case &#x27;?&#x27;: case &#x27;h&#x27;: printHelp(); break;
+    default:
+      Serial.print(F(&quot;ERR,UNKNOWN,&quot;));
+      Serial.println(s);
+  }
+}
+
+static void pollSerial() {
+  while (Serial.available() &gt; 0) {
+    char ch = (char)Serial.read();
+    if (ch == &#x27;\n&#x27; || ch == &#x27;\r&#x27;) {
+      cmdBuf[cmdLen] = &#x27;\0&#x27;;
+      handleCommand(cmdBuf);
+      cmdLen = 0;
+    } else if (cmdLen &lt; sizeof(cmdBuf) - 1) {
+      cmdBuf[cmdLen++] = ch;
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(BAUD);
+  scale.begin(PIN_DOUT, PIN_SCK);      // channel A, gain 128
+  // Library 0.7.5 leaves DOUT as plain INPUT on AVR; a pull-up makes a
+  // disconnected HX711 read as &quot;not ready&quot; instead of random numbers.
+  pinMode(PIN_DOUT, INPUT_PULLUP);
+
+  Serial.println(F(&quot;# so101_force v1.0 (TAL221 + HX711, DOUT=D2 SCK=D3)&quot;));
+  if (loadCalibration()) {
+    Serial.print(F(&quot;# calibration loaded from EEPROM, counts_per_gram=&quot;));
+    Serial.println(countsPerGram, 3);
+  } else {
+    Serial.println(F(&quot;# NOT CALIBRATED: send t (no load), put a known weight on the tip, send c&lt;grams&gt;&quot;));
+  }
+  delay(400);                          // let HX711 settle after power-up
+  Serial.println(F(&quot;# auto-tare at boot: do not touch the probe&quot;));
+  doTare();
+  lastSampleMs = millis();
+}
+
+void loop() {
+  pollSerial();
+
+  if (scale.is_ready()) {
+    long v = scale.read();
+    lastSampleMs = millis();
+    if (v &gt;= 8388607L || v &lt;= -8388608L) {
+      // ADC at full scale: open/broken wire or huge overload
+      if (millis() - lastWarnMs &gt; 1000) {
+        Serial.println(F(&quot;# WARN,ADC_SATURATED (check load-cell wires)&quot;));
+        lastWarnMs = millis();
+      }
+    }
+    pushRing(v);
+    float grams = (float)(ringAverage() - offsetRaw) / countsPerGram;  // NAN if not calibrated
+    Serial.print(F(&quot;F,&quot;));
+    Serial.print(lastSampleMs);
+    Serial.print(&#x27;,&#x27;);
+    if (isnan(grams)) Serial.println(F(&quot;nan&quot;));
+    else Serial.println(grams, 2);
+  } else if (millis() - lastSampleMs &gt; READY_TIMEOUT_MS &amp;&amp; millis() - lastWarnMs &gt; 1000) {
+    Serial.println(F(&quot;# WARN,HX711_NOT_READY (check DAT-&gt;D2, CLK-&gt;D3, VCC, GND)&quot;));
+    lastWarnMs = millis();
+  }
+}
+</pre></div></details>
+      <p class="src">這份韌體由本手冊撰寫，已用 arduino-cli 對 <code>arduino:avr:nano</code> 編譯成功，用了 9464 bytes，約 30%。也用模擬程式測過歸零、校正、存檔、斷線警告等情境，但還沒有在實體 Nano 上跑過。</p>
+      <label class="check"><input type="checkbox" id="ck-b04"><span><b>檢查點</b>序列埠監控視窗一直出現 <code>F,…,nan</code>，沒有 <code>WARN,HX711_NOT_READY</code>。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="b05">
+    <header><span class="code">B-05</span><h3>用砝碼校正</h3></header>
+    <div class="body">
+      <figure class="anim" data-scene="weights"><div class="stage"><svg viewBox="0 0 680 340" role="img" aria-label="砝碼校正"></svg></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">從頭播放</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><span class="sp"></span></div><ol class="steps"><li>不放東西，先歸零</li><li>依序放 1、10、50、100、200 g 砝碼，記下讀數</li><li>讀數要連成一條直線</li></ol><figcaption style="padding:0 14px 12px">砝碼校正：點步驟可以單獨播放那一段。</figcaption></figure>
+      <ol class="do">
+        <li><strong>先暖機 10 分鐘。</strong>Nano 插上 USB 放著。HX711 和荷重元剛通電時會慢慢升溫，零點會漂。</li>
+        <li><strong>把治具座固定在桌上，推頭尖端朝正上方。</strong>治具座側躺，用小虎鉗、夾子或膠帶固定。這時候荷重元是水平的，中間懸空。砝碼放在推頭上，壓的方向就和之後蘑菇頭頂回來的方向一樣，推力讀數才會是正的。</li>
+        <li><strong>想放紙杯當托盤，就現在放。</strong>用膠帶把小紙杯貼在推頭上，放砝碼比較穩。之後的歸零會把紙杯一起扣掉。</li>
+        <li><strong>歸零。</strong>推頭上不放砝碼，在監控視窗輸入 <code>t</code>，等出現 <code>OK,TARE,</code> 開頭的回覆。</li>
+        <li><strong>校正。</strong>輕輕放上 100 g 砝碼，等 3 秒，輸入 <code>c100</code>。用 200 g 就輸入 <code>c200</code>。</li>
+        <li><strong>看回覆。</strong>應該出現 <code>OK,CAL,</code> 後面接一個數字，500 g 荷重元大約在 2360 到 3650 之間。差很多就是砝碼克數打錯、荷重元不是 500 g，或線接錯。</li>
+        <li><strong>拿掉砝碼。</strong>讀數要回到 0，誤差在正負 0.3 g 以內。回不去就重新做第 4 到第 6 步。</li>
+      </ol>
+      <p><strong>線性檢查。</strong>先輸入 <code>t</code> 歸零，再依序放 1、10、50、100、200 g，每次等 3 秒，看 10 筆左右的平均，填進下表。每拿掉一個砝碼，都要確認讀數回到 0 再放下一個。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th class="num">砝碼</th><th class="num">讀數</th><th class="num">誤差 = 讀數 − 砝碼</th><th class="num">建議的合格範圍</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1 g</td><td class="num"></td><td class="num"></td><td class="num">±0.5 g</td></tr>
+            <tr><td class="num">10 g</td><td class="num"></td><td class="num"></td><td class="num">±0.5 g</td></tr>
+            <tr><td class="num">50 g</td><td class="num"></td><td class="num"></td><td class="num">±0.5 g</td></tr>
+            <tr><td class="num">100 g</td><td class="num"></td><td class="num"></td><td class="num">±1 g</td></tr>
+            <tr><td class="num">200 g</td><td class="num"></td><td class="num"></td><td class="num">±2 g</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src">合格範圍是本手冊建議的標準：誤差不超過 0.5 g 或砝碼的 1%，取較大的那個。這不是原廠規格。</p>
+      <p>也可以用電腦程式記錄，比看監控視窗方便。先關掉 Arduino 的序列埠監控視窗，同一個連接埠一次只能給一個程式用。</p>
+      <div class="codeblk"><div class="cap"><span>在 lerobot 環境裡執行，COM5 換成 Nano 的連接埠</span><button class="btn" type="button" data-copy>複製</button></div><pre>conda activate lerobot
+pip install pyserial
+python force_probe.py monitor --port COM5 --seconds 5 --csv check_100g.csv</pre></div>
+      <dl class="kv">
+        <dt>歸零</dt><dd><code>python force_probe.py tare --port COM5</code></dd>
+        <dt>校正</dt><dd><code>python force_probe.py cal 100 --port COM5</code></dd>
+        <dt>原始讀數</dt><dd><code>python force_probe.py raw --port COM5</code></dd>
+      </dl>
+      <div class="note tip"><b class="k">找不到 Nano 是哪個連接埠</b><p>執行 <code>lerobot-find-port</code>，照提示拔掉 Nano 的 USB 再按 Enter，它會告訴你是哪一個。手臂驅動板在 A-06 也是這樣找的，兩個連接埠不要搞混。</p></div>
+      <label class="check"><input type="checkbox" id="ck-b05"><span><b>檢查點</b>出現 <code>OK,CAL,</code> 而且數字在 2360 到 3650 之間；5 個砝碼的誤差都在建議範圍內；拿掉砝碼會回到 0。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="b06">
+    <header><span class="code">B-06</span><h3>讓手臂推蘑菇頭，推到目標力量就停</h3></header>
+    <div class="body">
+      <figure class="anim" data-scene="push"><div class="stage"><svg viewBox="0 0 680 330" role="img" aria-label="用力量控制推蘑菇頭"></svg></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">從頭播放</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><span class="sp"></span></div><ol class="steps"><li>手臂帶著治具慢慢接近蘑菇頭</li><li>接觸後一點一點推，讀數上升</li><li>到達目標力量立刻停止</li></ol><figcaption style="padding:0 14px 12px">用力量控制推蘑菇頭：點步驟可以單獨播放那一段。</figcaption></figure>
+      <ol class="do">
+        <li><strong>確認執行臂已經校準。</strong>就是 A-16 那一步，而且要記得當時用的 <code>--robot.id</code>。</li>
+        <li><strong>把治具裝進夾爪。</strong>治具座 24 mm 寬的兩面讓兩根爪夾住，治具座前緣和爪尖對齊，舌片和荷重元要伸出爪子外面。再用小束帶穿過治具座上的溝槽，把治具座和兩根爪綁在一起。</li>
+        <li><strong>固定手把。</strong>把遊戲手把用夾子或膠帶固定在桌上，不能被推走。</li>
+        <li><strong>擺好起始位置。</strong>用手把手臂帶到推頭尖端離蘑菇頭幾毫米的地方，推頭的方向對準蘑菇頭。手腕旋轉保持在 0 度附近時，手腕上下彎曲的關節剛好會讓推頭沿著量力的方向移動。</li>
+        <li><strong>先用小力量試跑。</strong>一手扶著手臂，手不要碰到推頭和荷重元，執行下面第一段指令。畫面要你按 Enter 時按下去，程式會先歸零，再讓馬達出力。看到 <code>start wrist_flex.pos = …</code> 代表馬達已經撐住手臂，這時才慢慢放手。</li>
+        <li><strong>方向錯了就反過來。</strong>手臂往遠離蘑菇頭的方向動，或讀數變成負的，就把指令裡的 <code>--direction 1</code> 改成 <code>--direction -1</code>。</li>
+        <li><strong>正式推 50 g。</strong>試跑正常，再執行第二段指令。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>試跑：目標 20 g、最多移動 5 度。COM5 是 Nano，COM3 是手臂</span><button class="btn" type="button" data-copy>複製</button></div><pre>python force_probe.py push --port COM5 --robot-port COM3 --robot-id my_awesome_follower_arm --joint wrist_flex --direction 1 --target 20 --max-travel 5</pre></div>
+      <div class="codeblk"><div class="cap"><span>正式：目標 50 g、安全上限 300 g</span><button class="btn" type="button" data-copy>複製</button></div><pre>python force_probe.py push --port COM5 --robot-port COM3 --robot-id my_awesome_follower_arm --joint wrist_flex --direction 1 --target 50 --limit 300</pre></div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>程式會自動停下來的情況</th><th>畫面訊息</th></tr></thead>
+          <tbody>
+            <tr><td>到達目標力量，維持 2 秒後退回起點</td><td><code>target reached</code></td></tr>
+            <tr><td>超過安全上限，立刻後退 3 度</td><td><code>HARD LIMIT</code></td></tr>
+            <tr><td>讀數小於 −20 g，方向錯了</td><td><code>negative force</code></td></tr>
+            <tr><td>移動超過 15 度還沒碰到東西</td><td><code>without reaching the target</code></td></tr>
+            <tr><td>超過 0.6 秒沒收到力量資料</td><td><code>force sensor silent</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note stop"><b class="k">緊急停止</b><p>按一次 Ctrl+C：停止並退回起點。再按一次 Ctrl+C：馬達立刻斷電，手臂會軟掉往下掉。所以手臂下方不要放東西，手要放在電源開關旁邊。</p></div>
+      <ul class="do">
+        <li>程式每 0.1 秒移動一次。還沒接觸時每次 0.2 度，推頭尖端大約前進 0.75 mm；碰到東西之後步伐會自動變小。</li>
+        <li>每一筆力量和角度都會存進 <code>push_log.csv</code>，可以用 Excel 打開畫圖。</li>
+        <li>LeRobot 預設把夾爪的力氣限制在一半左右，所以治具座一定要用束帶綁住，只靠夾爪夾會滑掉。</li>
+        <li>結束後馬達預設會繼續出力，撐住手臂。加上 <code>--release-torque</code>，結束時就會放掉出力。</li>
+      </ul>
+      <div class="note tip"><b class="k">最後的實際驗證</b><p>把蘑菇頭換成廚房用電子秤，讓推頭往秤面推 50 g，比較秤上的數字和程式顯示的數字。兩個接近，就代表整套系統可以用了。</p></div>
+      <details class="fold"><summary>電腦端完整程式碼 force_probe.py</summary><div class="codeblk"><div class="cap"><span>force_probe.py</span><button class="btn" type="button" data-copy>複製</button></div><pre>#!/usr/bin/env python3
+&quot;&quot;&quot;
+force_probe.py - PC side of the SO-101 force probe (TAL221 + HX711 + Arduino Nano).
+
+The Nano (firmware so101_force.ino) streams lines at 115200 baud:
+    F,&lt;millis&gt;,&lt;grams&gt;      force sample (&quot;nan&quot; until calibrated)
+    OK,... / ERR,... / R,... replies to commands
+    # ...                    info lines
+Commands sent to the Nano: t (tare), c&lt;grams&gt; (calibrate), r (raw), a&lt;n&gt; (avg window).
+
+Requirements: Python &gt;= 3.10, pyserial  (pip install pyserial)
+The &quot;push&quot; example additionally needs LeRobot installed and a calibrated SO-101 follower.
+
+Examples
+    python force_probe.py monitor --port /dev/ttyUSB0
+    python force_probe.py tare    --port /dev/ttyUSB0
+    python force_probe.py cal 100 --port /dev/ttyUSB0          # 100 g weight resting on the tip
+    python force_probe.py raw     --port /dev/ttyUSB0
+    python force_probe.py push --port /dev/ttyUSB0 --robot-port /dev/ttyACM0 \\
+        --robot-id my_awesome_follower_arm --joint wrist_flex --direction 1 --target 50 --limit 300
+
+Safety (push): stops at --target, backs off immediately at --limit, stops if the sensor goes
+silent, reads a negative force, or the joint travelled --max-travel degrees. First Ctrl+C =
+controlled stop and retreat to the start pose; second Ctrl+C = emergency: torque OFF (arm goes limp!).
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import argparse
+import csv
+import math
+import queue
+import signal
+import sys
+import threading
+import time
+from dataclasses import dataclass
+
+try:
+    import serial  # pyserial
+except ImportError:  # pragma: no cover
+    sys.exit(&quot;pyserial is missing:  pip install pyserial&quot;)
+
+BAUD = 115200
+
+
+@dataclass(frozen=True)
+class Sample:
+    seq: int          # running sample counter (PC side)
+    t_host: float     # time.monotonic() when the line arrived
+    millis: int       # Nano millis()
+    grams: float      # nan if the Nano is not calibrated
+
+
+class ForceProbe:
+    &quot;&quot;&quot;Reads the Nano CSV stream in a background thread.&quot;&quot;&quot;
+
+    def __init__(self, port: str, baud: int = BAUD, boot_timeout: float = 4.0, verbose: bool = False):
+        # Opening the port resets a Nano (DTR). The firmware then prints a banner and auto-tares.
+        self.ser = serial.Serial(port, baud, timeout=0.1)
+        self.verbose = verbose
+        self._latest: Sample | None = None
+        self._seq = 0
+        self._cv = threading.Condition()
+        self._replies: queue.Queue[str] = queue.Queue()
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._reader, daemon=True)
+        self._thread.start()
+        if self.wait_new(-1, boot_timeout) is None:
+            self.close()
+            raise RuntimeError(f&quot;No &#x27;F,&#x27; data from {port} within {boot_timeout:.0f} s. &quot;
+                               &quot;Wrong port? Firmware not uploaded? Baud must be 115200.&quot;)
+
+    # ---------- reading ----------
+    def _reader(self) -&gt; None:
+        while not self._stop.is_set():
+            try:
+                raw = self.ser.readline()
+            except (serial.SerialException, OSError) as e:
+                print(f&quot;[force] serial error: {e}&quot;, file=sys.stderr)
+                break
+            if not raw:
+                continue
+            line = raw.decode(&quot;ascii&quot;, errors=&quot;replace&quot;).strip()
+            if line.startswith(&quot;F,&quot;):
+                parts = line.split(&quot;,&quot;)
+                if len(parts) != 3:
+                    continue
+                try:
+                    millis, grams = int(parts[1]), float(parts[2])
+                except ValueError:
+                    continue  # partial line right after reset
+                with self._cv:
+                    self._seq += 1
+                    self._latest = Sample(self._seq, time.monotonic(), millis, grams)
+                    self._cv.notify_all()
+            elif line.startswith((&quot;OK,&quot;, &quot;ERR,&quot;, &quot;R,&quot;)):
+                self._replies.put(line)
+            elif line.startswith(&quot;#&quot;):
+                if self.verbose or &quot;WARN&quot; in line or &quot;NOT CALIBRATED&quot; in line:
+                    print(f&quot;[force] {line}&quot;)
+
+    def latest(self) -&gt; Sample | None:
+        with self._cv:
+            return self._latest
+
+    def wait_new(self, after_seq: int, timeout: float) -&gt; Sample | None:
+        &quot;&quot;&quot;Block until a sample with seq &gt; after_seq arrives (or timeout).&quot;&quot;&quot;
+        deadline = time.monotonic() + timeout
+        with self._cv:
+            while self._latest is None or self._latest.seq &lt;= after_seq:
+                left = deadline - time.monotonic()
+                if left &lt;= 0:
+                    return None
+                self._cv.wait(left)
+            return self._latest
+
+    # ---------- commands ----------
+    def command(self, cmd: str, timeout: float = 6.0) -&gt; str:
+        while not self._replies.empty():
+            self._replies.get_nowait()
+        self.ser.write((cmd + &quot;\n&quot;).encode(&quot;ascii&quot;))
+        self.ser.flush()
+        try:
+            reply = self._replies.get(timeout=timeout)
+        except queue.Empty:
+            raise RuntimeError(f&quot;no reply to &#x27;{cmd}&#x27;&quot;) from None
+        if reply.startswith(&quot;ERR&quot;):
+            raise RuntimeError(f&quot;Nano replied {reply}&quot;)
+        return reply
+
+    def tare(self) -&gt; str:
+        return self.command(&quot;t&quot;)
+
+    def calibrate(self, grams: float) -&gt; str:
+        return self.command(f&quot;c{grams:g}&quot;)
+
+    def raw(self) -&gt; str:
+        return self.command(&quot;r&quot;)
+
+    def set_window(self, n: int) -&gt; str:
+        return self.command(f&quot;a{int(n)}&quot;)
+
+    def close(self) -&gt; None:
+        self._stop.set()
+        self._thread.join(timeout=1.0)
+        try:
+            self.ser.close()
+        except Exception:
+            pass
+
+
+# ======================= LeRobot SO-101 example =======================
+def import_so101():
+    &quot;&quot;&quot;LeRobot &gt;= 0.4: lerobot.robots.so_follower ; LeRobot 0.3.x: lerobot.robots.so101_follower.&quot;&quot;&quot;
+    try:
+        from lerobot.robots.so_follower import SO101Follower, SO101FollowerConfig
+    except ImportError:
+        try:
+            from lerobot.robots.so101_follower import SO101Follower, SO101FollowerConfig
+        except ImportError:
+            sys.exit(&quot;LeRobot is not installed in this Python environment (activate the lerobot env).&quot;)
+    return SO101Follower, SO101FollowerConfig
+
+
+class StopFlag:
+    &quot;&quot;&quot;1st Ctrl+C -&gt; graceful stop; 2nd Ctrl+C -&gt; KeyboardInterrupt (emergency).&quot;&quot;&quot;
+
+    def __init__(self) -&gt; None:
+        self.event = threading.Event()
+        self._old = signal.signal(signal.SIGINT, self._handler)
+
+    def _handler(self, signum, frame) -&gt; None:
+        if self.event.is_set():
+            raise KeyboardInterrupt
+        print(&quot;\n[Ctrl+C] stopping -&gt; retreat to start pose. Press Ctrl+C again for EMERGENCY torque off.&quot;)
+        self.event.set()
+
+    def restore(self) -&gt; None:
+        signal.signal(signal.SIGINT, self._old)
+
+
+def move_joint_to(robot, goal: dict, key: str, target: float, step: float, period: float) -&gt; None:
+    &quot;&quot;&quot;Ramp one joint to `target` in increments of `step` degrees.&quot;&quot;&quot;
+    while abs(goal[key] - target) &gt; 1e-6:
+        delta = target - goal[key]
+        goal[key] += max(-step, min(step, delta))
+        robot.send_action(dict(goal))
+        time.sleep(period)
+
+
+def push(args) -&gt; int:
+    if args.limit &gt; args.capacity:
+        sys.exit(f&quot;--limit {args.limit} g is above the load-cell capacity {args.capacity} g. &quot;
+                 &quot;For a 100 g TAL221 use e.g. --capacity 100 --limit 100 --target 50.&quot;)
+    if not 0 &lt; args.target &lt; args.limit:
+        sys.exit(&quot;need 0 &lt; --target &lt; --limit&quot;)
+    SO101Follower, SO101FollowerConfig = import_so101()
+
+    probe = stop = robot = None
+    goal: dict | None = None
+    start: dict = {}
+    key = &quot;&quot;
+    log_f = open(args.log, &quot;w&quot;, newline=&quot;&quot;) if args.log else None
+    log = csv.writer(log_f) if log_f else None
+    if log:
+        log.writerow([&quot;t_s&quot;, &quot;nano_ms&quot;, &quot;force_g&quot;, &quot;goal_deg&quot;, &quot;phase&quot;])
+    exit_code = 1
+    try:
+        probe = ForceProbe(args.port, verbose=args.verbose)
+        s = probe.latest()
+        if s is None or math.isnan(s.grams):
+            raise RuntimeError(&quot;Force sensor NOT calibrated. Run:  tare, then  cal &lt;grams&gt;  first.&quot;)
+        probe.set_window(args.avg)
+        input(&quot;Make sure NOTHING touches the probe tip, then press ENTER to tare... &quot;)
+        print(&quot;[force]&quot;, probe.tare())
+        stop = StopFlag()   # from here on: 1st Ctrl+C = graceful stop, 2nd = emergency torque off
+
+        cfg = SO101FollowerConfig(
+            port=args.robot_port,
+            id=args.robot_id,
+            use_degrees=True,                                # joint values in degrees (all LeRobot versions)
+            max_relative_target=float(args.max_rel),         # must be float (LeRobot raises TypeError on int)
+            disable_torque_on_disconnect=args.release_torque,
+        )
+        robot = SO101Follower(cfg)
+        robot.connect(calibrate=False)                       # never start the interactive calibration here
+        if not robot.is_calibrated:
+            raise RuntimeError(&quot;SO-101 is not calibrated for id &quot;
+                               f&quot;&#x27;{args.robot_id}&#x27;. Run lerobot-calibrate --robot.type=so101_follower &quot;
+                               f&quot;--robot.port={args.robot_port} --robot.id={args.robot_id}&quot;)
+        obs = robot.get_observation()
+        start = {k: float(v) for k, v in obs.items() if k.endswith(&quot;.pos&quot;)}
+        key = f&quot;{args.joint}.pos&quot;
+        if key not in start:
+            raise RuntimeError(f&quot;unknown joint &#x27;{args.joint}&#x27;. Valid: {[k[:-4] for k in start]}&quot;)
+        goal = dict(start)
+        if args.gripper_goal is not None and &quot;gripper.pos&quot; in goal:
+            goal[&quot;gripper.pos&quot;] = float(args.gripper_goal)   # squeeze the block (0..100 scale)
+        robot.send_action(dict(goal))    # hold the current pose (connect() does not set goals)
+        print(f&quot;start {key} = {start[key]:.2f} deg, gripper.pos = {start.get(&#x27;gripper.pos&#x27;, float(&#x27;nan&#x27;)):.1f} &quot;
+              f&quot;(goal {goal.get(&#x27;gripper.pos&#x27;, float(&#x27;nan&#x27;)):.1f}); target {args.target} g, hard limit {args.limit} g&quot;)
+
+        t0 = time.monotonic()
+        reason, reached, emergency = &quot;stopped by user&quot;, False, False
+        while not stop.event.is_set():
+            t_loop = time.monotonic()
+            s = probe.latest()
+            if s is None or t_loop - s.t_host &gt; args.stale:
+                reason = &quot;force sensor silent (cable? Nano reset?)&quot;
+                break
+            f = s.grams
+            if log:
+                log.writerow([f&quot;{t_loop - t0:.3f}&quot;, s.millis, f&quot;{f:.2f}&quot;, f&quot;{goal[key]:.3f}&quot;, &quot;push&quot;])
+            if math.isnan(f):
+                reason = &quot;force is nan (calibration lost?)&quot;
+                break
+            if f &gt;= args.limit:
+                reason, emergency = f&quot;HARD LIMIT: {f:.1f} g &gt;= {args.limit} g&quot;, True
+                break
+            if f &lt;= -args.neg_limit:
+                reason = (f&quot;negative force {f:.1f} g: wrong --direction, probe pushed from the wrong side, &quot;
+                          &quot;or calibrate again with the weight pressing the tip the pushing way&quot;)
+                break
+            if f &gt;= args.target:
+                reason, reached = f&quot;target reached: {f:.1f} g&quot;, True
+                break
+            # big steps in free air, smaller steps once in contact (proportional to remaining force)
+            step = args.step if f &lt; args.contact else max(args.min_step, args.step * (args.target - f) / args.target)
+            new = goal[key] + args.direction * step
+            if abs(new - start[key]) &gt; args.max_travel:
+                reason = f&quot;moved {args.max_travel} deg without reaching the target (no contact?)&quot;
+                break
+            goal[key] = new
+            sent = robot.send_action(dict(goal))   # may be clipped by max_relative_target
+            goal[key] = float(sent.get(key, new))
+            print(f&quot;\r{key}={goal[key]:8.2f} deg  force={f:7.2f} g &quot;, end=&quot;&quot;, flush=True)
+            time.sleep(max(0.0, args.period - (time.monotonic() - t_loop)))
+        print(f&quot;\n-&gt; {reason}&quot;)
+
+        if emergency:
+            goal[key] -= args.direction * args.backoff     # immediate back-off
+            robot.send_action(dict(goal))
+        elif reached and args.hold &gt; 0:
+            t_end = time.monotonic() + args.hold
+            while time.monotonic() &lt; t_end and not stop.event.is_set():
+                s = probe.latest()
+                if s is None or time.monotonic() - s.t_host &gt; args.stale or s.grams &gt;= args.limit:
+                    print(&quot;hold aborted (limit or sensor silent)&quot;)
+                    break
+                if log:
+                    log.writerow([f&quot;{time.monotonic() - t0:.3f}&quot;, s.millis, f&quot;{s.grams:.2f}&quot;, f&quot;{goal[key]:.3f}&quot;, &quot;hold&quot;])
+                print(f&quot;\rholding: force={s.grams:7.2f} g &quot;, end=&quot;&quot;, flush=True)
+                time.sleep(args.period)
+            print()
+        exit_code = 0 if reached else 2
+    except KeyboardInterrupt:
+        print(&quot;\nEMERGENCY: disabling torque (arm will go limp)&quot;)
+        if robot is not None:
+            robot.config.disable_torque_on_disconnect = True
+            try:
+                robot.disconnect()
+            except Exception as e:
+                print(&quot;disconnect failed:&quot;, e)
+            robot = None
+        exit_code = 3
+    except (RuntimeError, serial.SerialException) as e:
+        print(&quot;ERROR:&quot;, e)
+    finally:
+        if robot is not None and robot.is_connected:
+            if goal is not None:
+                try:
+                    print(&quot;retreating to start pose ...&quot;)
+                    move_joint_to(robot, goal, key, start[key], step=1.0, period=0.05)
+                except BaseException as e:  # bus error or 2nd Ctrl+C -&gt; stop pushing at any cost
+                    print(&quot;retreat failed/aborted:&quot;, repr(e), &quot;-&gt; torque OFF (arm goes limp)&quot;)
+                    robot.config.disable_torque_on_disconnect = True
+            try:
+                robot.disconnect()
+            except Exception as e:
+                print(&quot;disconnect failed:&quot;, e)
+        if stop is not None:
+            stop.restore()
+        if probe is not None:
+            probe.close()
+        if log_f:
+            log_f.close()
+    return exit_code
+
+
+# ======================= CLI =======================
+def main(argv: list[str] | None = None) -&gt; int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest=&quot;cmd&quot;, required=True)
+
+    def add_port(p):
+        p.add_argument(&quot;--port&quot;, required=True, help=&quot;Nano serial port, e.g. /dev/ttyUSB0 or COM5&quot;)
+        p.add_argument(&quot;--verbose&quot;, action=&quot;store_true&quot;, help=&quot;also print &#x27;#&#x27; info lines&quot;)
+
+    p = sub.add_parser(&quot;monitor&quot;, help=&quot;print force values&quot;)
+    add_port(p)
+    p.add_argument(&quot;--seconds&quot;, type=float, default=0, help=&quot;stop after N s (0 = until Ctrl+C)&quot;)
+    p.add_argument(&quot;--csv&quot;, help=&quot;also save samples to this CSV file&quot;)
+    add_port(sub.add_parser(&quot;tare&quot;, help=&quot;zero the sensor (nothing on the tip)&quot;))
+    p = sub.add_parser(&quot;cal&quot;, help=&quot;calibrate: known weight resting on the tip&quot;)
+    p.add_argument(&quot;grams&quot;, type=float)
+    add_port(p)
+    add_port(sub.add_parser(&quot;raw&quot;, help=&quot;print one raw HX711 reading&quot;))
+
+    p = sub.add_parser(&quot;push&quot;, help=&quot;SO-101 example: move one joint until force reaches target&quot;)
+    add_port(p)
+    p.add_argument(&quot;--robot-port&quot;, required=True, help=&quot;SO-101 follower bus port (lerobot-find-port)&quot;)
+    p.add_argument(&quot;--robot-id&quot;, default=&quot;my_awesome_follower_arm&quot;, help=&quot;same id as used for lerobot-calibrate&quot;)
+    p.add_argument(&quot;--joint&quot;, default=&quot;wrist_flex&quot;,
+                   choices=[&quot;shoulder_pan&quot;, &quot;shoulder_lift&quot;, &quot;elbow_flex&quot;, &quot;wrist_flex&quot;, &quot;wrist_roll&quot;])
+    p.add_argument(&quot;--direction&quot;, type=int, choices=[-1, 1], default=1, help=&quot;+1 or -1: which way pushes&quot;)
+    p.add_argument(&quot;--target&quot;, type=float, default=50.0, help=&quot;stop when force &gt;= this (g)&quot;)
+    p.add_argument(&quot;--limit&quot;, type=float, default=300.0, help=&quot;hard safety limit (g)&quot;)
+    p.add_argument(&quot;--capacity&quot;, type=float, default=500.0, help=&quot;load-cell capacity (g): 500 or 100&quot;)
+    p.add_argument(&quot;--contact&quot;, type=float, default=3.0, help=&quot;force (g) that counts as contact&quot;)
+    p.add_argument(&quot;--neg-limit&quot;, type=float, default=20.0, help=&quot;stop if force &lt;= -this (g)&quot;)
+    p.add_argument(&quot;--step&quot;, type=float, default=0.2, help=&quot;step in free air (deg)&quot;)
+    p.add_argument(&quot;--min-step&quot;, type=float, default=0.03, help=&quot;smallest step near target (deg)&quot;)
+    p.add_argument(&quot;--period&quot;, type=float, default=0.1, help=&quot;control period (s)&quot;)
+    p.add_argument(&quot;--max-travel&quot;, type=float, default=15.0, help=&quot;max joint travel from start (deg)&quot;)
+    p.add_argument(&quot;--max-rel&quot;, type=float, default=5.0, help=&quot;LeRobot max_relative_target (deg)&quot;)
+    p.add_argument(&quot;--backoff&quot;, type=float, default=3.0, help=&quot;immediate back-off at hard limit (deg)&quot;)
+    p.add_argument(&quot;--stale&quot;, type=float, default=0.6, help=&quot;max age of a force sample (s)&quot;)
+    p.add_argument(&quot;--avg&quot;, type=int, default=2, help=&quot;firmware moving-average window during push&quot;)
+    p.add_argument(&quot;--hold&quot;, type=float, default=2.0, help=&quot;hold at target for N s before retreat&quot;)
+    p.add_argument(&quot;--gripper-goal&quot;, type=float, default=None,
+                   help=&quot;gripper goal (0..100) to keep squeezing the probe block; default: hold present value. &quot;
+                        &quot;Strap the block to the fingers with a zip tie anyway.&quot;)
+    p.add_argument(&quot;--release-torque&quot;, action=&quot;store_true&quot;,
+                   help=&quot;disable torque at the end (arm goes limp!) - default keeps holding the start pose&quot;)
+    p.add_argument(&quot;--log&quot;, default=&quot;push_log.csv&quot;, help=&quot;CSV log file (&#x27;&#x27; to disable)&quot;)
+
+    args = ap.parse_args(argv)
+    if args.cmd == &quot;push&quot;:
+        return push(args)
+
+    try:
+        probe = ForceProbe(args.port, verbose=args.verbose)
+    except (RuntimeError, serial.SerialException) as e:
+        print(&quot;ERROR:&quot;, e)
+        return 1
+    try:
+        if args.cmd == &quot;tare&quot;:
+            print(probe.tare())
+        elif args.cmd == &quot;cal&quot;:
+            print(probe.calibrate(args.grams))
+        elif args.cmd == &quot;raw&quot;:
+            print(probe.raw())
+        elif args.cmd == &quot;monitor&quot;:
+            writer, fh = None, None
+            if args.csv:
+                fh = open(args.csv, &quot;w&quot;, newline=&quot;&quot;)
+                writer = csv.writer(fh)
+                writer.writerow([&quot;nano_ms&quot;, &quot;force_g&quot;])
+            t_end = time.monotonic() + args.seconds if args.seconds &gt; 0 else math.inf
+            seq = -1
+            try:
+                while time.monotonic() &lt; t_end:
+                    s = probe.wait_new(seq, 1.0)
+                    if s is None:
+                        print(&quot;no data ...&quot;)
+                        continue
+                    seq = s.seq
+                    print(f&quot;{s.millis:&gt;10d} ms  {s.grams:9.2f} g&quot;)
+                    if writer:
+                        writer.writerow([s.millis, s.grams])
+            except KeyboardInterrupt:
+                pass
+            finally:
+                if fh:
+                    fh.close()
+    except RuntimeError as e:
+        print(&quot;ERROR:&quot;, e)
+        return 1
+    finally:
+        probe.close()
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())
+</pre></div></details>
+      <p class="src">這支程式由本手冊撰寫，類別和參數已對照 LeRobot 0.6.2 原始碼確認，也在模擬的 Nano 和模擬手臂上測過到達目標、超過上限、方向相反、感測器斷線、連按兩次 Ctrl+C 等 7 種情境。還沒有在實體手臂上跑過，第一次請一定用上面的試跑指令。</p>
+      <label class="check"><input type="checkbox" id="ck-b06"><span><b>檢查點</b>試跑出現 <code>target reached</code>，手臂退回起點；正式推 50 g 時，電子秤上的數字和程式顯示接近。恭喜，階段 B 完成。</span></label>
+    </div>
+  </article>
+</section>
+
+<section class="part" id="p3" data-phase="C" data-toc="階段 C　雙臂">
+  <div class="part-head">
+    <span class="tag">階段 C</span>
+    <h2>雙臂：做主控臂，用手遙控執行臂</h2>
+    <p>主控臂 Leader 是你用手拿著帶動的那一隻。它用三種不同減速比的馬達：要夠輕好推，又要撐得住自己的重量。做好之後，你推主控臂，執行臂就會同步跟著動，之後也能用來錄示範資料訓練 AI。</p>
+  </div>
+  <div class="two">
+    <figure><div class="photo"><img src="assets/img/SO101_Leader.jpg" alt="組裝完成的 SO-101 主控臂，官方照片" width="1600" height="1200" loading="lazy"></div><figcaption>完成品：SO-101 主控臂，多了握把和扳機。</figcaption></figure>
+    <figure><div class="photo"><img src="assets/img/Leader_And_Follower_SO100.jpg" alt="主控臂與執行臂並排，官方照片" width="1600" height="1200" loading="lazy"></div><figcaption>主控臂和執行臂成對使用的樣子，照片是前一代 SO-100。來源 TheRobotStudio/SO-ARM100。</figcaption></figure>
+  </div>
+
+  <article class="step" id="c01">
+    <header><span class="code">C-01</span><h3>補齊主控臂料件，列印主控臂零件</h3></header>
+    <div class="body">
+      <div class="tbl">
+        <table>
+          <thead><tr><th>要加買的料件</th><th class="num">數量</th><th>購買連結</th></tr></thead>
+          <tbody>
+            <tr><td>主控臂 6 顆 STS3215 套組：1/147 C046 三顆、1/191 C044 兩顆、1/345 C001 一顆</td><td class="num">1 組</td><td><a href="https://www.alibaba.com/product-detail/6PCS-7-4V-STS3215-Servos-for_1601428584027.html" target="_blank" rel="noopener">Alibaba 套組</a></td></tr>
+            <tr><td>馬達驅動板</td><td class="num">1</td><td><a href="https://www.amazon.com/Waveshare-Integrates-Control-Circuit-Supports/dp/B0CTMM4LWK/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738817173460&amp;skuId=5096283384143" target="_blank" rel="noopener">天貓</a></td></tr>
+            <tr><td>電源供應器</td><td class="num">1</td><td><a href="https://www.amazon.com/Facmogu-Switching-Transformer-Compatible-5-5x2-1mm/dp/B087LY41PV/" target="_blank" rel="noopener">Amazon</a>　<a href="https://item.taobao.com/item.htm?id=544824248494&amp;skuId=4974994129990" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>桌夾</td><td class="num">2</td><td><a href="https://www.amazon.com/Mr-Pen-Carpenter-Clamp-6inch/dp/B092L925J4/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738636473238&amp;skuId=5505939904942" target="_blank" rel="noopener">天貓</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>官方說明主控臂一律用 7.4V 馬達。列印用主控臂的整盤檔：</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>你的印表機</th><th>主控臂整盤檔案</th><th>下載</th></tr></thead>
+          <tbody>
+            <tr><td>Ender 類，220 × 220 mm</td><td><code>Ender_Leader_SO101.stl</code></td><td><a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Leader/Ender_Leader_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+            <tr><td>Prusa 類，205 × 250 mm</td><td><code>Prusa_Leader_SO101.stl</code></td><td><a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Leader/Prusa_Leader_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+            <tr><td>Bambu Lab A1 mini</td><td><code>BambuLabA1mini_Leader_SO101.stl</code></td><td><a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Leader/BambuLabA1mini_Leader_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>列印設定和 A-03、A-04 完全一樣。主控臂共 12 個零件：8 個和執行臂相同的零件、1 片驅動板固定板，再加上這 3 個主控臂專用零件：</p>
+      <div class="pgrid"><figure class="pimg"><img src="assets/img/parts/Wrist_Roll_SO101.png" alt="主控臂手腕座 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>主控臂手腕座</b><code>Wrist_Roll_SO101.stl</code></figcaption></figure><figure class="pimg"><img src="assets/img/parts/Handle_SO101.png" alt="握把 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>握把</b><code>Handle_SO101.stl</code></figcaption></figure><figure class="pimg"><img src="assets/img/parts/Trigger_SO101.png" alt="扳機 的 3D 算繪圖" width="800" height="600" loading="lazy"><figcaption><b>扳機</b><code>Trigger_SO101.stl</code></figcaption></figure></div>
+      <label class="check"><input type="checkbox" id="ck-c01"><span><b>檢查點</b>主控臂 6 顆馬達到貨，三種型號分開放好並標示；12 個零件印好並清完支撐。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="c02">
+    <header><span class="code">C-02</span><h3>設定主控臂馬達 ID：每顆的型號都不同</h3></header>
+    <div class="body">
+      <p>步驟和 A-07 一樣，但主控臂每個關節用的馬達型號不同。程式叫你接哪個關節，就要拿對應型號的那顆。拿錯的話 ID 會寫到錯的馬達上，裝好之後推起來會太重或撐不住。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>設定順序</th><th>程式提示</th><th>關節</th><th class="num">ID</th><th>拿這種馬達</th></tr></thead>
+          <tbody>
+            <tr><td>第 1 顆</td><td><code>gripper</code></td><td>夾爪</td><td class="num">6</td><td>1/147　C046</td></tr>
+            <tr><td>第 2 顆</td><td><code>wrist_roll</code></td><td>手腕旋轉</td><td class="num">5</td><td>1/147　C046</td></tr>
+            <tr><td>第 3 顆</td><td><code>wrist_flex</code></td><td>手腕俯仰</td><td class="num">4</td><td>1/147　C046</td></tr>
+            <tr><td>第 4 顆</td><td><code>elbow_flex</code></td><td>手肘</td><td class="num">3</td><td>1/191　C044</td></tr>
+            <tr><td>第 5 顆</td><td><code>shoulder_lift</code></td><td>肩部抬升</td><td class="num">2</td><td>1/345　C001</td></tr>
+            <tr><td>第 6 顆</td><td><code>shoulder_pan</code></td><td>肩部旋轉</td><td class="num">1</td><td>1/191　C044</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note warn"><b class="k">先分好再開始</b><p>官方文件沒有說明三種型號外觀怎麼分辨，拆箱時就要分開放、做好標示。主控臂的驅動板要用另一個連接埠，先重做一次 A-06 找出來。</p></div>
+      <div class="codeblk"><div class="cap"><span>把 COM4 換成主控臂驅動板的連接埠</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-setup-motors --teleop.type=so101_leader --teleop.port=COM4</pre></div>
+      <label class="check"><input type="checkbox" id="ck-c02"><span><b>檢查點</b>6 行 <code>motor id set to</code> 都出現，每顆馬達貼上「ID + 型號」的標示。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="c03">
+    <header><span class="code">C-03</span><h3>組裝主控臂</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li><strong>關節 1 到 5：</strong>照 <a href="#a09">A-09</a> 到 <a href="#a13">A-13</a> 一模一樣的步驟，只是馬達換成上表對應 ID 的那顆。</li>
+        <li><strong>握把與扳機：</strong>主控臂沒有夾爪，改成下面這四步。</li>
+      </ol>
+      <ol class="do">
+        <li>把主控臂手腕座裝到手腕上，用 4 顆 M3 × 6 鎖住。</li>
+        <li>用 1 顆 M2 × 6 把握把裝到手腕座上。</li>
+        <li>放入夾爪馬達 ID 6，兩側各用 2 顆 M2 × 6 固定，裝一片舵盤並用 1 顆 M3 × 6 鎖住。</li>
+        <li>用 4 顆 M3 × 6 裝上扳機。官方原文寫「follower trigger」，官方主控臂 URDF 模型裡裝在這個位置的是 Trigger_SO101，也就是主控臂的扳機。</li>
+      </ol>
+      <div class="asmgrid"><figure class="asmimg"><img src="assets/img/asm/leader_handle_0.webp" width="720" height="540" loading="lazy" alt="握把與扳機 第 1 步：主控臂手腕座 的位置，橘色標示"><figcaption><b>1</b>主控臂手腕座鎖到手腕，4 顆 M3×6</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/leader_handle_1.webp" width="720" height="540" loading="lazy" alt="握把與扳機 第 2 步：握把 的位置，橘色標示"><figcaption><b>2</b>握把用 1 顆 M2×6 鎖上</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/leader_handle_2.webp" width="720" height="540" loading="lazy" alt="握把與扳機 第 3 步：馬達 6 的位置，橘色標示"><figcaption><b>3</b>裝入夾爪馬達，每側 2 顆 M2×6，裝上舵盤</figcaption></figure><figure class="asmimg"><img src="assets/img/asm/leader_handle_3.webp" width="720" height="540" loading="lazy" alt="握把與扳機 第 4 步：扳機 的位置，橘色標示"><figcaption><b>4</b>扳機用 4 顆 M3×6 鎖上</figcaption></figure></div><p class="src" style="margin:0">圖由官方 URDF 模型算繪，橘色是新裝的零件。手臂擺的是校準時的中間姿勢，組裝時你手上的零件角度可能不同。</p>
+      <figure class="viewer asmv" data-asm="leader"><div class="vp"><div class="status">3D 組裝模型會在捲到這裡時載入</div><div class="hint">拖曳旋轉　滾輪或雙指縮放</div></div><div class="asm-cap"><b data-asm-step>組裝順序</b><span data-asm-sub>點下方的步驟，看零件一個一個裝上去。</span></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">播放這一步</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><button class="btn" type="button" data-act="all">看完成的手臂</button></div><ol class="subs"></ol><div class="parts"><div class="grp"><span>組裝順序</span><button type="button" data-step="0" aria-pressed="false">1 關節 1</button><button type="button" data-step="1" aria-pressed="false">2 關節 2</button><button type="button" data-step="2" aria-pressed="false">3 關節 3</button><button type="button" data-step="3" aria-pressed="false">4 關節 4</button><button type="button" data-step="4" aria-pressed="false">5 關節 5</button><button type="button" data-step="5" aria-pressed="false">6 握把與扳機</button><button type="button" data-step="6" aria-pressed="false">7 驅動板</button></div></div><figcaption class="src" style="padding:0 12px 12px">零件位置取自官方 SO-ARM100 的 URDF 模型，橘色是這一步新裝的零件，深色方塊是馬達。動畫只表示零件最後裝在哪裡，實際插入的方向請對照官方影片。</figcaption></figure>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Leader_v2.mp4" target="_blank" rel="noopener">主控臂握把組裝</a></p>
+      <ol class="do" start="3">
+        <li><strong>串線與固定：</strong>照 <a href="#a15">A-15</a> 串接馬達線、裝上驅動板、用桌夾固定在桌邊。</li>
+      </ol>
+      <label class="check"><input type="checkbox" id="ck-c03"><span><b>檢查點</b>用手推主控臂每個關節都很輕，放手後手臂撐得住自己，不會自己往下掉。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="c04">
+    <header><span class="code">C-04</span><h3>校準主控臂</h3></header>
+    <div class="body">
+      <p>流程和 A-16 一樣：上臂朝上、前臂朝前擺到中間位置按 Enter，除了手腕旋轉之外每個關節轉到兩端，再按 Enter 存檔。</p>
+      <div class="codeblk"><div class="cap"><span>主控臂的連接埠與名字</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-calibrate \
+    --teleop.type=so101_leader \
+    --teleop.port=COM4 \
+    --teleop.id=my_awesome_leader_arm</pre></div>
+      <p class="src">存檔位置：<code>~/.cache/huggingface/lerobot/calibration/teleoperators/so_leader/my_awesome_leader_arm.json</code></p>
+      <label class="check"><input type="checkbox" id="ck-c04"><span><b>檢查點</b>畫面出現 <code>Calibration saved to</code>。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="c05">
+    <header><span class="code">C-05</span><h3>雙臂遙控</h3></header>
+    <div class="body">
+      <figure class="anim" data-scene="teleop"><div class="stage"><svg viewBox="0 0 680 330" role="img" aria-label="雙臂遙控"></svg></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">從頭播放</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><span class="sp"></span></div><ol class="steps"><li>兩隻手臂都用 USB 接上同一台電腦</li><li>用手帶動主控臂，執行臂同步跟著動</li></ol><figcaption style="padding:0 14px 12px">雙臂遙控：點步驟可以單獨播放那一段。</figcaption></figure>
+      <div class="codeblk"><div class="cap"><span>兩隻手臂都接上電腦後執行，名字要和校準時一樣</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-teleoperate \
+    --robot.type=so101_follower \
+    --robot.port=COM3 \
+    --robot.id=my_awesome_follower_arm \
+    --teleop.type=so101_leader \
+    --teleop.port=COM4 \
+    --teleop.id=my_awesome_leader_arm</pre></div>
+      <ol class="do">
+        <li>執行前，先把兩隻手臂擺成差不多的姿勢，避免執行臂一開始就大幅度跳動。</li>
+        <li>慢慢推主控臂，確認執行臂跟著動。扣主控臂的扳機，執行臂的夾爪會跟著開合。</li>
+        <li>要停止就按 <kbd>Ctrl</kbd> + <kbd>C</kbd>，程式會斷開兩隻手臂。執行臂會放掉出力，記得先扶好或讓它停在桌面附近。</li>
+      </ol>
+      <div class="note tip"><b class="k">名字很重要</b><p>官方說明：LeRobot 用 <code>id</code> 找校準檔。遙控、錄資料、跑 AI 都要用同一組名字，不然它會以為還沒校準，又要求你重新校準。</p></div>
+      <label class="check"><input type="checkbox" id="ck-c05"><span><b>檢查點</b>推主控臂時，執行臂同步做出一樣的動作，夾爪跟著扳機開合。恭喜，整套雙臂完成。</span></label>
+    </div>
+  </article>
+</section>
+
+<section class="part" id="p4" data-phase="Z" data-toc="附錄">
+  <div class="part-head">
+    <span class="tag">附錄</span>
+    <h2>故障排除與資料來源</h2>
+    <p>錯誤訊息照程式原文列出，方便你直接比對畫面上的文字。</p>
+  </div>
+
+  <article class="step" id="z01">
+    <header><span class="code">Z-01</span><h3>看到這些訊息時怎麼辦</h3></header>
+    <div class="body">
+      <div class="tbl">
+        <table>
+          <thead><tr><th>畫面上的訊息</th><th>原因</th><th>處理方式</th></tr></thead>
+          <tbody>
+            <tr><td><code>Could not connect on port '...'</code></td><td>連接埠寫錯，或驅動板沒接好</td><td>重新執行 <code>lerobot-find-port</code>，確認 USB 和電源都插好</td></tr>
+            <tr><td><code>Motor '...' (model 'sts3215') was not found</code></td><td>設定 ID 時找不到馬達</td><td>檢查電源、USB、3-pin 線；Waveshare 跳線要在 B</td></tr>
+            <tr><td><code>... different than the one expected: '777'</code></td><td>設定 ID 時同時接了不只一顆馬達</td><td>一次只接一顆馬達</td></tr>
+            <tr><td><code>Missing motor IDs</code></td><td>組裝後有馬達沒回應</td><td>多半是串接的 3-pin 線鬆了，或那顆馬達沒設定過 ID</td></tr>
+            <tr><td><code>Some Motors use different firmware versions</code></td><td>馬達韌體版本不一致</td><td>用飛特官方的 Windows 軟體更新韌體，<a href="https://www.feetechrc.com/software" target="_blank" rel="noopener">下載頁</a>；更新時絕對不能斷電或拔 USB</td></tr>
+            <tr><td><code>Some motors have the same min and max values</code></td><td>校準時有關節沒轉到</td><td>重新校準，手腕旋轉以外的關節都要轉到兩端</td></tr>
+            <tr><td><code>Mismatch between calibration values ...</code></td><td>找不到對應名字的校準檔</td><td>確認 <code>--robot.id</code>、<code>--teleop.id</code> 和校準時一樣</td></tr>
+            <tr><td><code>Incorrect status packet!</code></td><td>匯流排偶爾傳錯資料，多個關節同時動時比較常見</td><td>程式預設會重試 2 次；常出現時可以加 <code>--robot.num_read_retries=5</code></td></tr>
+            <tr><td><code>'feetech-servo-sdk' is required but not installed</code></td><td>少裝套件</td><td>在 lerobot 資料夾執行 <code>pip install -e ".[feetech]"</code></td></tr>
+            <tr><td><code>'pyserial' is required ...</code></td><td>少裝套件</td><td>執行 <code>pip install -e ".[core_scripts]"</code></td></tr>
+            <tr><td>Linux 上 <code>Permission denied</code></td><td>沒有連接埠權限</td><td><code>sudo chmod 666 /dev/ttyACM0</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>還是解決不了，可以到官方 <a href="https://discord.com/invite/s3KuuzsPFb" target="_blank" rel="noopener">LeRobot Discord</a> 發問。</p>
+    </div>
+  </article>
+
+  <article class="step" id="z02">
+    <header><span class="code">Z-02</span><h3>資料來源與授權</h3></header>
+    <div class="body">
+      <p>本手冊所有指令、步驟和料件都對照以下版本的原始檔查證，日期 2026-10-14。官方之後若更新，以官方為準。</p>
+      <ul class="src do">
+        <li>SO-101 硬體：<a href="https://github.com/TheRobotStudio/SO-ARM100" target="_blank" rel="noopener">TheRobotStudio/SO-ARM100</a>，commit a758567，Apache-2.0。列印檔、照片、料件表、列印設定都來自這裡。</li>
+        <li>LeRobot 軟體 0.6.2：<a href="https://github.com/huggingface/lerobot" target="_blank" rel="noopener">huggingface/lerobot</a>，commit ae2b57f，Apache-2.0。安裝、設定馬達、校準、遙控的指令與程式介面來自 <code>docs/source/so101.mdx</code>、<code>installation.mdx</code>、<code>il_robots.mdx</code> 與原始碼。</li>
+        <li>官方線上組裝說明：<a href="https://huggingface.co/docs/lerobot/so101" target="_blank" rel="noopener">huggingface.co/docs/lerobot/so101</a>。</li>
+        <li>力感測：TAL221 荷重元、HX711、<a href="https://github.com/bogde/HX711" target="_blank" rel="noopener">bogde/HX711</a> 函式庫，細節列在階段 B。</li>
+        <li>零件圖：由本手冊用官方 STL 算繪；3D 檢視器載入的也是官方 STL 原檔，組裝總圖為減面版本。</li>
+      </ul>
+    </div>
+  </article>
+</section>
+
+    </main>
+  </div>
+
+  <footer>
+    <p>手臂圖檔、照片與 3D 模型取自 TheRobotStudio/SO-ARM100，Apache-2.0 授權；軟體與指令取自 huggingface/lerobot，Apache-2.0 授權。力感測治具與範例程式為本手冊自製。</p>
+    <p>勾選的進度只存在你這台瀏覽器裡，換電腦或清除瀏覽資料就會消失。</p>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/STLLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+window.__SO101_ZIPS = {"official": {"name": "SO-101-official-STL.zip", "folder": "SO-101-official-STL", "files": [["assets/stl64/Base_SO101.stl.txt", "Individual/Base_SO101.stl"], ["assets/stl64/Base_motor_holder_SO101.stl.txt", "Individual/Base_motor_holder_SO101.stl"], ["assets/stl64/Handle_SO101.stl.txt", "Individual/Handle_SO101.stl"], ["assets/stl64/Motor_holder_SO101_Base.stl.txt", "Individual/Motor_holder_SO101_Base.stl"], ["assets/stl64/Motor_holder_SO101_Wrist.stl.txt", "Individual/Motor_holder_SO101_Wrist.stl"], ["assets/stl64/Moving_Jaw_SO101.stl.txt", "Individual/Moving_Jaw_SO101.stl"], ["assets/stl64/Rotation_Pitch_SO101.stl.txt", "Individual/Rotation_Pitch_SO101.stl"], ["assets/stl64/Seeedstudio_Mounting_Plate_SO101.stl.txt", "Individual/Seeedstudio_Mounting_Plate_SO101.stl"], ["assets/stl64/Trigger_SO101.stl.txt", "Individual/Trigger_SO101.stl"], ["assets/stl64/Under_arm_SO101.stl.txt", "Individual/Under_arm_SO101.stl"], ["assets/stl64/Upper_arm_SO101.stl.txt", "Individual/Upper_arm_SO101.stl"], ["assets/stl64/WaveShare_Mounting_Plate_SO101.stl.txt", "Individual/WaveShare_Mounting_Plate_SO101.stl"], ["assets/stl64/Wrist_Roll_Follower_SO101.stl.txt", "Individual/Wrist_Roll_Follower_SO101.stl"], ["assets/stl64/Wrist_Roll_Pitch_SO101.stl.txt", "Individual/Wrist_Roll_Pitch_SO101.stl"], ["assets/stl64/Wrist_Roll_SO101.stl.txt", "Individual/Wrist_Roll_SO101.stl"], ["assets/stl64/Gauge_0.STL.txt", "Gauges/Gauge_0.STL"], ["assets/stl64/Gauge_tight_1.STL.txt", "Gauges/Gauge_tight_1.STL"], ["assets/stl64/Lego_Size_Test_02_minuspoint1.STL.txt", "Gauges/Lego_Size_Test_02_minuspoint1.STL"], ["assets/stl64/Lego_Size_Test_02_zero.STL.txt", "Gauges/Lego_Size_Test_02_zero.STL"], ["assets/LICENSE-SO-ARM100.txt", "LICENSE"]], "text": [["README.txt", "SO-101 official STL files (unmodified copies)\n\nSource: https://github.com/TheRobotStudio/SO-ARM100\nCommit: a758567c3978dfeefe282ede0500085a48fe8f78 (2026-10-06)\nPaths: STL/SO101/Individual/*.stl and STL/Gauges/*.STL\nLicense: Apache License 2.0, see LICENSE in this folder.\nFull print plates (Ender / Prusa / Bambu A1 mini) are in STL/SO101/Follower and STL/SO101/Leader of the source repository.\n"]]}, "kit": {"name": "SO-101-force-kit.zip", "folder": "SO-101-force-kit", "files": [["assets/force/so101_force/so101_force.ino.txt", "so101_force/so101_force.ino"], ["assets/force/force_probe.py.txt", "force_probe.py"], ["assets/stl64/probe_block.stl.txt", "stl/probe_block.stl"], ["assets/stl64/probe_tip.stl.txt", "stl/probe_tip.stl"], ["assets/force/probe_tool.scad.txt", "cad/probe_tool.scad"], ["assets/force/gen_probe_tool.py.txt", "cad/gen_probe_tool.py"], ["assets/scripts/first_move.py.txt", "first_move.py"]], "text": [["README.txt", "SO-101 force kit (TAL221 500 g + HX711 + Arduino Nano)\n\nso101_force/so101_force.ino  Arduino Nano firmware. Library: \"HX711 Arduino Library\" by Bogdan Necula 0.7.5. Serial 115200.\nforce_probe.py               PC script: monitor / tare / cal / raw / push. Needs: pip install pyserial (push also needs LeRobot).\nstl/probe_block.stl          Clamp block (gripped by the SO-101 jaws). PLA or PETG, 0.2 mm layers, 4 walls, 40% infill or more.\nstl/probe_tip.stl            Probe tip, screwed to the free end (no wires) of the TAL221.\ncad/probe_tool.scad          Same jig in OpenSCAD. Measure your load cell and edit hole_pitch, hole_from_end, cell_head_len, clamp_w.\ncad/gen_probe_tool.py        Python generator for the same jig (manifold3d + trimesh).\nfirst_move.py                First LeRobot test for the SO-101 follower.\n\nScrews: 2 x M3x10 (fixed end), 2 x M3x12 + 2 x M3 nuts (probe tip). One small zip tie for the jaws, one for the wires.\nThese files were written for the SO-101 SOP. Firmware compiled for arduino:avr:nano; scripts tested offline only, not on real hardware.\n"]]}};
+window.__SO101_ASM = {"source":"TheRobotStudio/SO-ARM100 Simulation/SO101 (URDF, zero pose)","arms":{"follower":{"parts":{"holder1":{"mesh":"asm_base_motor_holder_so101_v1","m":[-4e-06,1.0,0.0,0.0,4e-06,0.0,1.0,0.0,1.0,4e-06,-4e-06,0.0,-6.36471,-0.099441,-2.4,1.0],"motor":false,"label":"第一個馬達座"},"base":{"mesh":"asm_base_so101_v2","m":[-4e-06,1.0,0.0,0.0,4e-06,0.0,1.0,0.0,1.0,4e-06,-4e-06,0.0,-6.36471,-9e-06,-2.4,1.0],"motor":false,"label":"底座"},"motor1":{"mesh":"asm_sts3215_03a_v1","m":[1.0,0.0,-0.0,0.0,-0.0,1.0,-0.0,0.0,0.0,0.0,1.0,0.0,26.3353,-9e-06,43.7,1.0],"motor":true,"label":"馬達 1"},"plate":{"mesh":"asm_waveshare_mounting_plate_so101_v2","m":[-4e-06,1.0,0.0,0.0,4e-06,0.0,1.0,0.0,1.0,4e-06,-4e-06,0.0,-30.9827,-0.199441,47.4,1.0],"motor":false,"label":"驅動板固定板"},"motor2":{"mesh":"asm_sts3215_03a_v1","m":[4e-06,-3e-06,1.0,0.0,-1.0,-6e-06,4e-06,0.0,6e-06,-1.0,-3e-06,0.0,69.234499,0.422202,104.100001,1.0],"motor":true,"label":"馬達 2"},"holder2":{"mesh":"asm_motor_holder_so101_base_v1","m":[4e-06,3e-06,-1.0,0.0,1.0,-1e-06,4e-06,0.0,-1e-06,-1.0,-3e-06,0.0,106.4345,-0.177547,46.5501,1.0],"motor":false,"label":"肩部馬達座"},"shoulder":{"mesh":"asm_rotation_pitch_so101_v1","m":[-1.0,-3e-06,-0.0,0.0,0.0,-6e-06,1.0,0.0,-3e-06,1.0,6e-06,0.0,26.6345,0.022323,16.0,1.0],"motor":false,"label":"肩部零件"},"motor3":{"mesh":"asm_sts3215_03a_v1","m":[1.0,6e-06,7e-06,0.0,-7e-06,-5e-06,1.0,0.0,6e-06,-1.0,-5e-06,0.0,84.734017,0.421927,229.170058,1.0],"motor":true,"label":"馬達 3"},"upper_arm":{"mesh":"asm_upper_arm_so101_v1","m":[4e-06,3e-06,-1.0,0.0,1.0,9e-06,4e-06,0.0,9e-06,-1.0,-3e-06,0.0,57.234194,-0.078121,181.684956,1.0],"motor":false,"label":"上臂"},"forearm":{"mesh":"asm_under_arm_so101_v1","m":[-1.0,-6e-06,-0.0,0.0,-0.0,5e-06,-1.0,0.0,6e-06,-1.0,-5e-06,0.0,162.08392,-0.077498,197.170103,1.0],"motor":false,"label":"前臂"},"holder4":{"mesh":"asm_motor_holder_so101_wrist_v1","m":[-1.0,-6e-06,-0.0,0.0,0.0,-0.0,-1.0,0.0,6e-06,-1.0,0.0,0.0,162.083921,-0.277498,197.170102,1.0],"motor":false,"label":"馬達座 4"},"motor4":{"mesh":"asm_sts3215_03a_v1","m":[1.0,6e-06,-3e-06,0.0,3e-06,-5e-06,1.0,0.0,6e-06,-1.0,-5e-06,0.0,219.634017,0.422767,234.370104,1.0],"motor":true,"label":"馬達 4"},"motor5":{"mesh":"asm_sts3215_03a_no_horn_v1","m":[6e-06,-1.0,1e-06,0.0,7e-06,-1e-06,-1.0,0.0,1.0,6e-06,7e-06,0.0,274.533941,12.323114,234.370291,1.0],"motor":true,"label":"馬達 5"},"wrist":{"mesh":"asm_wrist_roll_pitch_so101_v2","m":[-6e-06,1.0,6e-06,0.0,7e-06,6e-06,-1.0,0.0,-1.0,-6e-06,-7e-06,0.0,260.13402,-0.176977,234.370205,1.0],"motor":false,"label":"手腕座"},"motor6":{"mesh":"asm_sts3215_03a_v1","m":[-6e-06,-0.048663,0.998815,0.0,1.0,6e-06,6e-06,0.0,-7e-06,0.998815,0.048663,0.0,316.633973,-0.451357,242.066223,1.0],"motor":true,"label":"馬達 6"},"gripper_body":{"mesh":"asm_wrist_roll_follower_so101_v1","m":[-6e-06,-0.048663,0.998815,0.0,1.3e-05,-0.998815,-0.048663,0.0,1.0,1.3e-05,7e-06,0.0,292.284317,-0.394732,234.359702,1.0],"motor":false,"label":"夾爪本體"},"jaw":{"mesh":"asm_moving_jaw_so101_v1","m":[-6e-06,-0.048663,0.998815,0.0,-1.0,-1.4e-05,-7e-06,0.0,1.4e-05,-0.998815,-0.048663,0.0,316.63397,-1.259406,254.541681,1.0],"motor":false,"label":"活動爪"}},"steps":[{"id":"j1","title":"關節 1","subs":[{"parts":["base","motor1"],"text":"馬達 1 放進底座，上下各 2 顆 M2×6 固定"},{"parts":["holder1"],"text":"套上第一個馬達座，左右各 1 顆 M2×6"},{"parts":["shoulder"],"text":"裝上肩部零件，上下各 4 顆 M3×6"},{"parts":["holder2"],"text":"裝上肩部馬達座"}]},{"id":"j2","title":"關節 2","subs":[{"parts":["motor2"],"text":"馬達 2 從上方滑入，4 顆 M2×6 固定"},{"parts":["upper_arm"],"text":"裝上上臂，每側 4 顆 M3×6"}]},{"id":"j3","title":"關節 3","subs":[{"parts":["motor3"],"text":"馬達 3 裝進上臂，4 顆 M2×6 固定"},{"parts":["forearm"],"text":"前臂接到馬達 3，每側 4 顆 M3×6"}]},{"id":"j4","title":"關節 4","subs":[{"parts":["holder4"],"text":"套上馬達座 4"},{"parts":["motor4"],"text":"馬達 4 滑入，4 顆 M2×6 固定"}]},{"id":"j5","title":"關節 5","subs":[{"parts":["wrist","motor5"],"text":"馬達 5 裝進手腕座，前面 2 顆 M2×6；只裝 1 個舵盤"},{"parts":[],"text":"整個手腕用 M3×6 鎖到馬達 4 上"}]},{"id":"grip","title":"夾爪","subs":[{"parts":["gripper_body"],"text":"夾爪本體鎖到馬達 5 的舵盤，4 顆 M3×6"},{"parts":["motor6"],"text":"裝入夾爪馬達，每側 2 顆 M2×6"},{"parts":["jaw"],"text":"裝上活動爪，用 M3×6 固定"}]},{"id":"board","title":"驅動板","subs":[{"parts":["plate"],"text":"驅動板固定板裝在底座後方"}]}]},"leader":{"parts":{"holder1":{"mesh":"asm_base_motor_holder_so101_v1","m":[-4e-06,1.0,0.0,0.0,4e-06,0.0,1.0,0.0,1.0,4e-06,-4e-06,0.0,-6.36471,-0.099441,-2.4,1.0],"motor":false,"label":"第一個馬達座"},"base":{"mesh":"asm_base_so101_v2","m":[-4e-06,1.0,0.0,0.0,4e-06,0.0,1.0,0.0,1.0,4e-06,-4e-06,0.0,-6.36471,-9e-06,-2.4,1.0],"motor":false,"label":"底座"},"motor1":{"mesh":"asm_sts3215_03a_v1","m":[1.0,0.0,-0.0,0.0,-0.0,1.0,-0.0,0.0,0.0,0.0,1.0,0.0,26.3353,-9e-06,43.7,1.0],"motor":true,"label":"馬達 1"},"plate":{"mesh":"asm_waveshare_mounting_plate_so101_v2","m":[-4e-06,1.0,0.0,0.0,4e-06,0.0,1.0,0.0,1.0,4e-06,-4e-06,0.0,-30.9827,-0.199441,47.4,1.0],"motor":false,"label":"驅動板固定板"},"motor2":{"mesh":"asm_sts3215_03a_v1","m":[4e-06,-3e-06,1.0,0.0,-1.0,-6e-06,4e-06,0.0,6e-06,-1.0,-3e-06,0.0,69.234499,0.422202,104.100001,1.0],"motor":true,"label":"馬達 2"},"holder2":{"mesh":"asm_motor_holder_so101_base_v1","m":[4e-06,3e-06,-1.0,0.0,1.0,-1e-06,4e-06,0.0,-1e-06,-1.0,-3e-06,0.0,106.4345,-0.177547,46.5501,1.0],"motor":false,"label":"肩部馬達座"},"shoulder":{"mesh":"asm_rotation_pitch_so101_v1","m":[-1.0,-3e-06,-0.0,0.0,0.0,-6e-06,1.0,0.0,-3e-06,1.0,6e-06,0.0,26.6345,0.022323,16.0,1.0],"motor":false,"label":"肩部零件"},"motor3":{"mesh":"asm_sts3215_03a_v1","m":[1.0,6e-06,7e-06,0.0,-7e-06,-5e-06,1.0,0.0,6e-06,-1.0,-5e-06,0.0,84.734017,0.421927,229.170058,1.0],"motor":true,"label":"馬達 3"},"upper_arm":{"mesh":"asm_upper_arm_so101_v1","m":[4e-06,3e-06,-1.0,0.0,1.0,9e-06,4e-06,0.0,9e-06,-1.0,-3e-06,0.0,57.234194,-0.078121,181.684956,1.0],"motor":false,"label":"上臂"},"forearm":{"mesh":"asm_under_arm_so101_v1","m":[-1.0,-6e-06,-0.0,0.0,-0.0,5e-06,-1.0,0.0,6e-06,-1.0,-5e-06,0.0,162.08392,-0.077498,197.170103,1.0],"motor":false,"label":"前臂"},"holder4":{"mesh":"asm_motor_holder_so101_wrist_v1","m":[-1.0,-6e-06,-0.0,0.0,0.0,-0.0,-1.0,0.0,6e-06,-1.0,0.0,0.0,162.083921,-0.277498,197.170102,1.0],"motor":false,"label":"馬達座 4"},"motor4":{"mesh":"asm_sts3215_03a_v1","m":[1.0,6e-06,-3e-06,0.0,3e-06,-5e-06,1.0,0.0,6e-06,-1.0,-5e-06,0.0,219.634017,0.422767,234.370104,1.0],"motor":true,"label":"馬達 4"},"motor5":{"mesh":"asm_sts3215_03a_no_horn_v1","m":[6e-06,-1.0,1e-06,0.0,7e-06,-1e-06,-1.0,0.0,1.0,6e-06,7e-06,0.0,274.533941,12.323114,234.370291,1.0],"motor":true,"label":"馬達 5"},"wrist":{"mesh":"asm_wrist_roll_pitch_so101_v2","m":[-6e-06,1.0,6e-06,0.0,7e-06,6e-06,-1.0,0.0,-1.0,-6e-06,-7e-06,0.0,260.13402,-0.176977,234.370205,1.0],"motor":false,"label":"手腕座"},"motor6":{"mesh":"asm_sts3215_03a_v1","m":[-6e-06,-0.048663,0.998815,0.0,1.0,6e-06,6e-06,0.0,-7e-06,0.998815,0.048663,0.0,316.633973,-0.451357,242.066223,1.0],"motor":true,"label":"馬達 6"},"leader_holder":{"mesh":"asm_Wrist_Roll_SO101","m":[-6e-06,-0.048663,0.998815,0.0,1e-05,-0.998815,-0.048663,0.0,1.0,1e-05,7e-06,0.0,293.23402,-0.176767,234.370327,1.0],"motor":false,"label":"主控臂手腕座"},"handle":{"mesh":"asm_Handle_SO101","m":[-6e-06,-0.048663,0.998815,0.0,1e-05,-0.998815,-0.048663,0.0,1.0,1e-05,7e-06,0.0,293.23402,-0.176767,234.370327,1.0],"motor":false,"label":"握把"},"trigger":{"mesh":"asm_Trigger_SO101","m":[-0.642783,0.037269,-0.765141,0.0,-0.766048,-0.03129,0.642021,0.0,-1.4e-05,0.998815,0.048663,0.0,316.633705,17.618202,255.46141,1.0],"motor":false,"label":"扳機"}},"steps":[{"id":"j1","title":"關節 1","subs":[{"parts":["base","motor1"],"text":"馬達 1 放進底座，上下各 2 顆 M2×6 固定"},{"parts":["holder1"],"text":"套上第一個馬達座，左右各 1 顆 M2×6"},{"parts":["shoulder"],"text":"裝上肩部零件，上下各 4 顆 M3×6"},{"parts":["holder2"],"text":"裝上肩部馬達座"}]},{"id":"j2","title":"關節 2","subs":[{"parts":["motor2"],"text":"馬達 2 從上方滑入，4 顆 M2×6 固定"},{"parts":["upper_arm"],"text":"裝上上臂，每側 4 顆 M3×6"}]},{"id":"j3","title":"關節 3","subs":[{"parts":["motor3"],"text":"馬達 3 裝進上臂，4 顆 M2×6 固定"},{"parts":["forearm"],"text":"前臂接到馬達 3，每側 4 顆 M3×6"}]},{"id":"j4","title":"關節 4","subs":[{"parts":["holder4"],"text":"套上馬達座 4"},{"parts":["motor4"],"text":"馬達 4 滑入，4 顆 M2×6 固定"}]},{"id":"j5","title":"關節 5","subs":[{"parts":["wrist","motor5"],"text":"馬達 5 裝進手腕座，前面 2 顆 M2×6；只裝 1 個舵盤"},{"parts":[],"text":"整個手腕用 M3×6 鎖到馬達 4 上"}]},{"id":"handle","title":"握把與扳機","subs":[{"parts":["leader_holder"],"text":"主控臂手腕座鎖到手腕，4 顆 M3×6"},{"parts":["handle"],"text":"握把用 1 顆 M2×6 鎖上"},{"parts":["motor6"],"text":"裝入夾爪馬達，每側 2 顆 M2×6，裝上舵盤"},{"parts":["trigger"],"text":"扳機用 4 顆 M3×6 鎖上"}]},{"id":"board","title":"驅動板","subs":[{"parts":["plate"],"text":"驅動板固定板裝在底座後方"}]}]}},"labels":{"base":"底座","motor1":"馬達 1","holder1":"第一個馬達座","plate":"驅動板固定板","shoulder":"肩部零件","holder2":"肩部馬達座","motor2":"馬達 2","upper_arm":"上臂","motor3":"馬達 3","forearm":"前臂","holder4":"馬達座 4","motor4":"馬達 4","wrist":"手腕座","motor5":"馬達 5","motor6":"馬達 6","gripper_body":"夾爪本體","jaw":"活動爪","leader_holder":"主控臂手腕座","handle":"握把","trigger":"扳機"}};
+(function(){
+"use strict";
+var REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var STORE_KEY = "so101-sop-progress-v1";
+
+/* ---------- storage (per viewer, optional) ---------- */
+function loadState(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); }catch(e){ return {}; } }
+function saveState(s){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }catch(e){} }
+
+/* ---------- table of contents + progress ---------- */
+function buildToc(){
+  var toc = document.getElementById("toc");
+  if(!toc) return;
+  var groups = document.querySelectorAll("main .part");
+  groups.forEach(function(part){
+    var g = document.createElement("li");
+    g.className = "grp";
+    g.textContent = part.getAttribute("data-toc") || "";
+    toc.appendChild(g);
+    part.querySelectorAll(".step").forEach(function(step){
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.href = "#" + step.id;
+      var code = step.querySelector(".code");
+      var h = step.querySelector("h3");
+      var sp = document.createElement("span");
+      sp.textContent = code ? code.textContent : "";
+      a.appendChild(sp);
+      a.appendChild(document.createTextNode(h ? h.textContent : step.id));
+      a.setAttribute("data-step", step.id);
+      li.appendChild(a);
+      toc.appendChild(li);
+    });
+  });
+  var links = toc.querySelectorAll("a[data-step]");
+  if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          links.forEach(function(l){ l.classList.toggle("on", l.getAttribute("data-step") === en.target.id); });
+        }
+      });
+    }, {rootMargin:"-20% 0px -70% 0px"});
+    document.querySelectorAll("main .step").forEach(function(s){ io.observe(s); });
+  }
+}
+function initChecks(){
+  var state = loadState();
+  var boxes = document.querySelectorAll(".check input[type=checkbox]");
+  boxes.forEach(function(b){
+    if(state[b.id]) b.checked = true;
+    b.addEventListener("change", function(){
+      var s = loadState(); s[b.id] = b.checked; saveState(s); refresh();
+    });
+  });
+  function refresh(){
+    ["A","B","C"].forEach(function(ph){
+      var all = document.querySelectorAll('.part[data-phase="'+ph+'"] .check input');
+      var done = 0; all.forEach(function(b){ if(b.checked) done++; });
+      var m = document.querySelector('[data-meter="'+ph+'"]');
+      var l = document.querySelector('[data-meter-label="'+ph+'"]');
+      if(m) m.style.width = (all.length ? (100*done/all.length) : 0) + "%";
+      if(l) l.textContent = done + " / " + all.length + " 完成";
+    });
+    document.querySelectorAll("#toc a[data-step]").forEach(function(a){
+      var st = document.getElementById(a.getAttribute("data-step"));
+      var b = st && st.querySelector(".check input");
+      a.classList.toggle("done", !!(b && b.checked));
+    });
+  }
+  refresh();
+}
+
+/* ---------- copy buttons ---------- */
+function initCopy(){
+  document.querySelectorAll(".codeblk").forEach(function(blk){
+    var btn = blk.querySelector("[data-copy]");
+    var pre = blk.querySelector("pre");
+    if(!btn || !pre) return;
+    btn.addEventListener("click", function(){
+      var txt = pre.innerText;
+      function ok(){ btn.textContent = "已複製"; setTimeout(function(){ btn.textContent = "複製"; }, 1600); }
+      function fallback(){
+        var r = document.createRange(); r.selectNodeContents(pre);
+        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        btn.textContent = "已選取，請按 Ctrl+C";
+        setTimeout(function(){ btn.textContent = "複製"; }, 2400);
+      }
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok, fallback); }
+        else fallback();
+      }catch(e){ fallback(); }
+    });
+  });
+}
+
+/* ---------- binary files published as base64 text ---------- */
+function fetchBin(url){
+  return fetch(url).then(function(r){ if(!r.ok) throw {code:"fetch"}; return r.text(); }).then(function(b64){
+    var bin = atob(b64.trim()); var u = new Uint8Array(bin.length);
+    for(var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return u.buffer;
+  });
+}
+function fetchAny(url){
+  if(/\/stl64\//.test(url)) return fetchBin(url);
+  return fetch(url).then(function(r){ if(!r.ok) throw {code:"fetch"}; return r.arrayBuffer(); });
+}
+
+/* ---------- downloads (zip bundles built in the browser) ---------- */
+var ZIPS = window.__SO101_ZIPS || {};
+function buildZip(spec){
+  if(!window.JSZip) return Promise.reject({code:"nozip"});
+  var zip = new JSZip();
+  var root = zip.folder(spec.folder);
+  (spec.text || []).forEach(function(t){ root.file(t[0], t[1]); });
+  return Promise.all(spec.files.map(function(f){
+    return fetchAny(f[0]).then(function(buf){ root.file(f[1], buf); });
+  })).then(function(){ return zip.generateAsync({type:"blob", compression:"DEFLATE", compressionOptions:{level:6}}); });
+}
+function initDownloads(){
+  var btns = document.querySelectorAll("[data-zip]");
+  if(!btns.length) return;
+  var inClaude = !!(window.claude && typeof window.claude.use === "function");
+  var dlPromise = inClaude ? window.claude.use("downloads") : Promise.resolve(null);
+  /* outside claude.ai, e.g. GitHub Pages: a plain browser download */
+  function saveLocal(blob, name){
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 60000);
+  }
+  btns.forEach(function(btn){
+    var msg = btn.parentElement.querySelector(".msg");
+    var spec = ZIPS[btn.getAttribute("data-zip")];
+    if(!spec){ btn.hidden = true; return; }
+    btn.addEventListener("click", function(){
+      btn.disabled = true;
+      if(msg) msg.textContent = "打包中，檔案較多請稍候…";
+      dlPromise.then(function(dl){
+        if(!dl && inClaude){ throw {code:"unavailable"}; }
+        return buildZip(spec).then(function(blob){
+          if(!dl) return saveLocal(blob, spec.name);
+          return dl.save({filename: spec.name, data: blob});
+        });
+      }).then(function(){
+        if(msg) msg.textContent = "已交給瀏覽器下載。";
+      }).catch(function(err){
+        var c = err && err.code;
+        if(msg){
+          if(c === "declined") msg.textContent = "你取消了下載。";
+          else if(c === "rate_limited") msg.textContent = "已經有一個下載視窗開著，請先處理它。";
+          else if(c === "fetch" || c === "nozip") msg.textContent = "打包失敗，請重新整理頁面再試，或改用 GitHub 連結下載。";
+          else msg.textContent = "這個檢視模式不能下載。請在 claude.ai 開啟本頁，或改用 GitHub 連結與程式碼複製。";
+        }
+      }).then(function(){ btn.disabled = false; });
+    });
+  });
+}
+
+/* ---------- 3D STL viewer ---------- */
+function cssVar(name, fallback){
+  var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
+var viewers = [];
+function initViewers(){
+  var roots = document.querySelectorAll(".viewer[data-viewer]");
+  if(!roots.length) return;
+  if(!window.THREE || !THREE.STLLoader || !THREE.OrbitControls){
+    roots.forEach(function(r){ var s = r.querySelector(".status"); if(s) s.textContent = "3D 檢視器載入失敗，請重新整理頁面。"; });
+    return;
+  }
+  roots.forEach(function(root){
+    var started = false;
+    function start(){ if(started) return; started = true; viewers.push(makeViewer(root)); }
+    if("IntersectionObserver" in window){
+      var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ start(); io.disconnect(); } }); }, {rootMargin:"200px"});
+      io.observe(root);
+    } else start();
+  });
+  var mq = window.matchMedia("(prefers-color-scheme: dark)");
+  var recolor = function(){ viewers.forEach(function(v){ v.recolor(); }); };
+  if(mq.addEventListener) mq.addEventListener("change", recolor);
+  new MutationObserver(recolor).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+}
+function makeViewer(root){
+  var vp = root.querySelector(".vp");
+  var status = root.querySelector(".status");
+  var metaName = root.querySelector("[data-meta=name]");
+  var metaSize = root.querySelector("[data-meta=size]");
+  var metaUse = root.querySelector("[data-meta=use]");
+  var renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  vp.appendChild(renderer.domElement);
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(32, 1, 0.1, 10000);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x556a60, 0.95));
+  var key = new THREE.DirectionalLight(0xffffff, 0.75); key.position.set(1, 1.6, 1.2); scene.add(key);
+  var rim = new THREE.DirectionalLight(0xffffff, 0.35); rim.position.set(-1.2, 0.4, -1); scene.add(rim);
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  var loader = new THREE.STLLoader();
+  var mesh = null, edges = null, visible = false, raf = 0;
+  var cache = {};
+  function material(){ return new THREE.MeshStandardMaterial({color: new THREE.Color(cssVar("--part", "#b9c9c1")), roughness:0.62, metalness:0.04}); }
+  function resize(){
+    var w = vp.clientWidth, h = vp.clientHeight;
+    if(!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  function loop(){ raf = requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); }
+  function setVisible(v){ visible = v; if(v && !raf) loop(); if(!v && raf){ cancelAnimationFrame(raf); raf = 0; } }
+  if("ResizeObserver" in window) new ResizeObserver(resize).observe(vp); else window.addEventListener("resize", resize);
+  if("IntersectionObserver" in window){
+    new IntersectionObserver(function(es){ es.forEach(function(e){ setVisible(e.isIntersecting); }); }).observe(root);
+  } else setVisible(true);
+  resize();
+  function show(btn){
+    var file = btn.getAttribute("data-file");
+    root.querySelectorAll(".parts button").forEach(function(b){ b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
+    if(metaName) metaName.textContent = btn.getAttribute("data-label") || btn.textContent;
+    if(metaUse) metaUse.textContent = btn.getAttribute("data-use") || "";
+    status.textContent = "載入 3D 模型中…";
+    var base = btn.getAttribute("data-base") || root.getAttribute("data-base") || "assets/stl/";
+    var url = base + encodeURIComponent(file) + (base.indexOf("stl64") >= 0 ? ".txt" : "");
+    var p = cache[file] || (cache[file] = fetchAny(url).then(function(buf){ return loader.parse(buf); }));
+    p.then(function(geo){
+      if(mesh){ scene.remove(mesh); }
+      if(!geo.attributes.normal) geo.computeVertexNormals();
+      geo.computeBoundingBox();
+      var bb = geo.boundingBox, size = new THREE.Vector3(); bb.getSize(size);
+      var c = new THREE.Vector3(); bb.getCenter(c);
+      mesh = new THREE.Mesh(geo, material());
+      mesh.position.set(-c.x, -c.y, -c.z);
+      var holder = new THREE.Group(); holder.add(mesh); holder.rotation.x = -Math.PI / 2;
+      if(edges) scene.remove(edges);
+      edges = holder; scene.add(holder);
+      var r = Math.max(size.x, size.y, size.z) * 0.5;
+      var d = r / Math.tan(camera.fov * Math.PI / 360) * 1.35;
+      camera.near = d / 100; camera.far = d * 20; camera.updateProjectionMatrix();
+      camera.position.set(d * 0.62, d * 0.55, d * 0.62);
+      controls.target.set(0, 0, 0); controls.update();
+      if(metaSize) metaSize.textContent = size.x.toFixed(0) + " × " + size.y.toFixed(0) + " × " + size.z.toFixed(0) + " mm";
+      status.textContent = "";
+      if(!raf && visible) loop();
+      renderer.render(scene, camera);
+    }).catch(function(){ status.textContent = "這個模型載入失敗，請用下方 GitHub 連結下載查看。"; });
+  }
+  root.querySelectorAll(".parts button").forEach(function(b){ b.addEventListener("click", function(){ show(b); }); });
+  var first = root.querySelector(".parts button[aria-pressed=true]") || root.querySelector(".parts button");
+  if(first) show(first);
+  return { recolor: function(){ if(mesh){ mesh.material.color = new THREE.Color(cssVar("--part", "#b9c9c1")); } } };
+}
+
+/* ---------- SVG helpers ---------- */
+var NS = "http://www.w3.org/2000/svg";
+function E(tag, attrs, parent){
+  var e = document.createElementNS(NS, tag);
+  if(attrs) for(var k in attrs){ if(attrs[k] !== undefined && attrs[k] !== null) e.setAttribute(k, attrs[k]); }
+  if(parent) parent.appendChild(e);
+  return e;
+}
+function T(parent, x, y, str, cls, anchor){
+  var t = E("text", {x:x, y:y, "class":cls || "sv-t", "text-anchor":anchor || "middle"}, parent);
+  t.textContent = str; return t;
+}
+function G(parent, attrs){ return E("g", attrs || {}, parent); }
+function drawPath(el){ var L = el.getTotalLength ? el.getTotalLength() : 300; el.style.strokeDasharray = L + " " + L; return L; }
+function tlDraw(tl, el, opts, pos){ var L = drawPath(el); tl.fromTo(el, {strokeDashoffset:L}, Object.assign({strokeDashoffset:0, duration:0.8, ease:"power1.inOut"}, opts || {}), pos); }
+function pinRow(parent, x, y, labels, side, gap){
+  var pts = {};
+  labels.forEach(function(lb, i){
+    var yy = y + i * (gap || 22);
+    E("circle", {cx:x, cy:yy, r:4.5, fill:"var(--w-yellow)", stroke:"var(--ink)", "stroke-width":1}, parent);
+    T(parent, side === "left" ? x + 10 : x - 10, yy + 4, lb, "sv-tw", side === "left" ? "start" : "end");
+    pts[lb] = [x, yy];
+  });
+  return pts;
+}
+function curve(a, b, bend){
+  var mx = (a[0] + b[0]) / 2;
+  return "M" + a[0] + "," + a[1] + " C" + (mx + (bend||0)) + "," + a[1] + " " + (mx - (bend||0)) + "," + b[1] + " " + b[0] + "," + b[1];
+}
+
+/* ---------- scene engine ---------- */
+var SCENES = {};
+function initScenes(){
+  if(!window.gsap){
+    document.querySelectorAll(".anim .ctrl").forEach(function(c){ c.innerHTML = '<span class="msg" style="font-size:13px;color:var(--ink-2)">動畫函式庫沒有載入，下面的步驟文字仍然完整。</span>'; });
+  }
+  document.querySelectorAll(".anim[data-scene]").forEach(function(fig){
+    var name = fig.getAttribute("data-scene");
+    var builder = SCENES[name];
+    var svg = fig.querySelector("svg");
+    if(!builder || !svg) return;
+    var captions = Array.prototype.slice.call(fig.querySelectorAll("ol.steps li"));
+    if(!window.gsap){ builder(svg, null, function(){}); return; }
+    var tl = gsap.timeline({paused:true});
+    var labels = [];
+    builder(svg, tl, function(lbl){ labels.push(lbl); tl.addLabel(lbl); });
+    var times = labels.map(function(l){ return tl.labels[l]; });
+    function idxAt(t){ var i = 0; for(var k = 0; k < times.length; k++){ if(t >= times[k] - 1e-3) i = k; } return i; }
+    function mark(i){ captions.forEach(function(li, k){ li.classList.toggle("on", k === i); }); }
+    tl.eventCallback("onUpdate", function(){ mark(idxAt(tl.time())); });
+    tl.progress(1).pause();
+    mark(captions.length - 1);
+    var cur = labels.length - 1;
+    function seg(i){
+      cur = Math.max(0, Math.min(labels.length - 1, i));
+      var a = times[cur], b = cur + 1 < times.length ? times[cur + 1] : tl.duration();
+      mark(cur);
+      if(REDUCED){ tl.pause(); tl.seek(b - 0.001 > a ? b - 0.001 : b); mark(cur); }
+      else tl.tweenFromTo(a, b);
+    }
+    var bPlay = fig.querySelector("[data-act=play]"), bPrev = fig.querySelector("[data-act=prev]"), bNext = fig.querySelector("[data-act=next]");
+    if(bPlay) bPlay.addEventListener("click", function(){ if(REDUCED){ tl.progress(1); mark(captions.length - 1); } else tl.restart(); });
+    if(bPrev) bPrev.addEventListener("click", function(){ seg(cur - 1); });
+    if(bNext) bNext.addEventListener("click", function(){ seg(tl.progress() >= 0.999 ? 0 : cur + 1); });
+    captions.forEach(function(li, k){
+      li.setAttribute("tabindex", "0");
+      li.addEventListener("click", function(){ seg(k); });
+      li.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); seg(k); } });
+    });
+    if(!REDUCED && "IntersectionObserver" in window){
+      var played = false;
+      var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting && !played){ played = true; tl.restart(); io.disconnect(); } }); }, {threshold:0.45});
+      io.observe(fig);
+    }
+  });
+}
+
+/* ===== scene: print ===== */
+SCENES.print = function(svg, tl, step){
+  E("rect", {x:0, y:0, width:680, height:340, fill:"transparent"}, svg);
+  var bed = E("rect", {x:30, y:36, width:360, height:270, rx:8, "class":"sv-bed"}, svg);
+  for(var i = 1; i < 6; i++) E("line", {x1:30 + i * 60, y1:40, x2:30 + i * 60, y2:302, stroke:"rgba(255,255,255,.08)"}, svg);
+  T(svg, 210, 26, "列印平台 220 × 220 mm 以上", "sv-ts");
+  var glue = E("rect", {x:44, y:50, width:332, height:242, rx:4, fill:"var(--w-blue)", opacity:0.22}, svg);
+  var gauge = G(svg);
+  E("rect", {x:60, y:66, width:84, height:58, rx:4, "class":"sv-part"}, gauge);
+  E("rect", {x:76, y:80, width:52, height:30, rx:2, fill:"var(--bed)"}, gauge);
+  T(gauge, 102, 140, "量規", "sv-ts");
+  var servo = G(svg);
+  E("rect", {x:76, y:80, width:52, height:30, rx:3, "class":"sv-servo"}, servo);
+  T(servo, 102, 99, "STS3215", "sv-tw");
+  var ok = G(svg);
+  E("circle", {cx:150, cy:70, r:12, "class":"sv-accent"}, ok);
+  E("path", {d:"M144,70 l4,5 l8,-9", stroke:"#fff", "stroke-width":3, fill:"none", "stroke-linecap":"round"}, ok);
+  var parts = G(svg);
+  var shapes = [
+    "M178,70 h70 a10,10 0 0 1 10,10 v40 a10,10 0 0 1 -10,10 h-70 a10,10 0 0 1 -10,-10 v-40 a10,10 0 0 1 10,-10z",
+    "M280,64 h80 v34 h-40 v40 h-40z",
+    "M70,160 h120 a14,14 0 0 1 14,14 v30 a14,14 0 0 1 -14,14 h-120z",
+    "M226,160 h134 v28 h-134z",
+    "M226,204 h84 l40,30 h-124z",
+    "M70,236 h60 v50 h-60z",
+    "M150,240 h52 a26,26 0 0 1 0,46 h-52z"
+  ];
+  var partEls = shapes.map(function(d){ return E("path", {d:d, "class":"sv-part"}, parts); });
+  var hatch = G(svg);
+  for(var k = 0; k < 7; k++) E("line", {x1:236 + k * 16, y1:236, x2:236 + k * 16, y2:262, stroke:"var(--amber)", "stroke-width":3}, hatch);
+  T(hatch, 290, 280, "支撐", "sv-ts");
+  var nozzle = G(svg);
+  E("path", {d:"M-12,-26 h24 v14 l-8,12 h-8 l-8,-12z", "class":"sv-metal"}, nozzle);
+  var panel = G(svg);
+  var rows = [["材料", "PLA+"], ["噴嘴／層高", "0.4 mm／0.2 mm"], ["填充", "15%"], ["支撐", "全部開啟"], ["斜面門檻", "45°"], ["水平螺絲孔", "不要支撐"]];
+  E("rect", {x:410, y:36, width:250, height:270, rx:8, "class":"sv-box"}, panel);
+  T(panel, 426, 64, "切片設定（官方建議）", "sv-t", "start");
+  var rowEls = rows.map(function(r, i){ var g = G(panel); T(g, 426, 100 + i * 34, r[0], "sv-ts", "start"); T(g, 644, 100 + i * 34, r[1], "sv-tm", "end"); return g; });
+  if(!tl) return;
+  step("s1");
+  tl.from(glue, {scaleX:0, transformOrigin:"0% 50%", duration:0.9, ease:"power1.inOut"});
+  step("s2");
+  tl.from(gauge, {opacity:0, duration:0.4});
+  tl.from(servo, {y:-60, opacity:0, duration:0.7, ease:"bounce.out"});
+  tl.from(ok, {scale:0, transformOrigin:"50% 50%", duration:0.35, ease:"back.out(2)"});
+  step("s3");
+  tl.from(rowEls, {opacity:0, x:12, stagger:0.12, duration:0.3});
+  tl.set(nozzle, {x:180, y:70});
+  partEls.forEach(function(p, i){
+    var bb = {x:[178,280,70,226,226,70,150][i], y:[70,64,160,160,204,236,240][i]};
+    tl.to(nozzle, {x:bb.x + 30, y:bb.y + 20, duration:0.18, ease:"none"});
+    tl.from(p, {opacity:0, scaleY:0, transformOrigin:"50% 100%", duration:0.3}, "<");
+  });
+  tl.from(hatch, {opacity:0, duration:0.3});
+  tl.to(nozzle, {x:350, y:30, duration:0.3});
+  step("s4");
+  tl.to(hatch, {y:30, opacity:0, duration:0.7, ease:"power2.in"});
+};
+
+/* ===== scene: chain (servo daisy chain) ===== */
+SCENES.chain = function(svg, tl, step){
+  var psu = G(svg);
+  E("rect", {x:30, y:30, width:110, height:46, rx:6, "class":"sv-box"}, psu);
+  T(psu, 85, 58, "電源", "sv-t");
+  var board = G(svg);
+  E("rect", {x:30, y:136, width:130, height:74, rx:6, "class":"sv-pcb"}, board);
+  T(board, 95, 168, "驅動板", "sv-tw"); T(board, 95, 190, "Bus Servo", "sv-tw");
+  var pc = G(svg);
+  E("rect", {x:30, y:254, width:110, height:52, rx:5, "class":"sv-box"}, pc);
+  E("rect", {x:20, y:306, width:130, height:8, rx:3, "class":"sv-box"}, pc);
+  T(pc, 85, 286, "電腦", "sv-t");
+  var pPower = E("path", {d:"M85,76 L85,136", "class":"w w-red"}, svg);
+  var pUsb = E("path", {d:"M85,210 L85,254", "class":"w w-blue"}, svg);
+  var names = ["肩部旋轉","肩部抬升","手肘","手腕俯仰","手腕旋轉","夾爪"];
+  var xs = [222, 296, 370, 444, 518, 592], y = 160;
+  T(svg, 407, 70, "每顆馬達有兩個插座：一個接進來、一個接出去", "sv-ts");
+  var motors = xs.map(function(x, i){
+    var g = G(svg);
+    E("rect", {x:x - 26, y:y, width:52, height:40, rx:5, "class":"sv-servo"}, g);
+    E("circle", {cx:x - 14, cy:y + 6, r:3.2, fill:"var(--w-yellow)"}, g);
+    E("circle", {cx:x + 14, cy:y + 6, r:3.2, fill:"var(--w-yellow)"}, g);
+    T(g, x, y + 28, "ID " + (i + 1), "sv-tw");
+    T(g, x, y + 62, names[i], "sv-ts");
+    return g;
+  });
+  var ds = ["M160,173 C180,173 186,166 " + (xs[0] - 14) + ",166"];
+  for(var i = 0; i < xs.length - 1; i++){
+    var a = xs[i] + 14, b = xs[i + 1] - 14;
+    ds.push("M" + a + "," + (y + 6) + " C" + a + "," + (y - 40) + " " + b + "," + (y - 40) + " " + b + "," + (y + 6));
+  }
+  var wires = ds.map(function(d){
+    var u = E("path", {d:d, "class":"w-under"}, svg);
+    var w = E("path", {d:d, "class":"w w-black"}, svg);
+    w.__under = u; return w;
+  });
+  motors.forEach(function(m){ svg.appendChild(m); });
+  T(svg, 407, 262, "只有 ID 1 接到驅動板，其他馬達一顆接一顆", "sv-ts");
+  var pulse = E("circle", {r:5, fill:"var(--w-yellow)", stroke:"var(--ink)", "stroke-width":1, opacity:0}, svg);
+  if(!tl) return;
+  step("s1");
+  tl.from([psu, board, pc], {opacity:0, y:10, stagger:0.15, duration:0.4});
+  tlDraw(tl, pPower, {duration:0.4});
+  tlDraw(tl, pUsb, {duration:0.4});
+  step("s2");
+  tl.from(motors, {opacity:0, scale:0.6, transformOrigin:"50% 50%", stagger:0.12, duration:0.3});
+  step("s3");
+  wires.forEach(function(w){ tlDraw(tl, w.__under, {duration:0.35}); tlDraw(tl, w, {duration:0.35}, "<"); });
+  step("s4");
+  tl.set(pulse, {opacity:1});
+  wires.forEach(function(w){
+    var L = w.getTotalLength(); var o = {t:0};
+    tl.to(o, {t:1, duration:0.28, ease:"none", onUpdate:function(){ var pt = w.getPointAtLength(o.t * L); pulse.setAttribute("cx", pt.x); pulse.setAttribute("cy", pt.y); }});
+  });
+  tl.to(pulse, {opacity:0, duration:0.2});
+};
+
+/* ===== arm drawing (side view) ===== */
+function makeArm(parent, ox, oy, s){
+  s = s || 1;
+  var root = G(parent, {transform:"translate(" + ox + "," + oy + ") scale(" + s + ")"});
+  E("rect", {x:-50, y:-6, width:100, height:16, rx:4, "class":"sv-part"}, root);
+  E("rect", {x:-22, y:-46, width:44, height:42, rx:6, "class":"sv-servo"}, root);
+  var upper = G(root);
+  E("rect", {x:-10, y:-166, width:20, height:130, rx:9, "class":"sv-part"}, upper);
+  E("circle", {cx:0, cy:-36, r:9, "class":"sv-metal"}, upper);
+  var fore = G(upper);
+  E("rect", {x:-2, y:-174, width:122, height:18, rx:8, "class":"sv-part"}, fore);
+  E("circle", {cx:0, cy:-166, r:9, "class":"sv-metal"}, fore);
+  var wrist = G(fore);
+  E("rect", {x:112, y:-178, width:52, height:24, rx:6, "class":"sv-servo"}, wrist);
+  E("circle", {cx:120, cy:-166, r:7, "class":"sv-metal"}, wrist);
+  E("path", {d:"M164,-176 l34,6 v6 l-34,0z", "class":"sv-part"}, wrist);
+  var jaw = G(wrist);
+  E("path", {d:"M164,-156 l34,-2 v6 l-34,8z", "class":"sv-part"}, jaw);
+  var st = {lift:0, elbow:0, wrist:0, jaw:0};
+  function render(){
+    upper.setAttribute("transform", "rotate(" + st.lift + " 0 -36)");
+    fore.setAttribute("transform", "rotate(" + st.elbow + " 0 -166)");
+    wrist.setAttribute("transform", "rotate(" + st.wrist + " 120 -166)");
+    jaw.setAttribute("transform", "rotate(" + st.jaw + " 164 -152)");
+  }
+  render();
+  return {root:root, state:st, render:render};
+}
+
+/* ===== scene: calibrate ===== */
+SCENES.calibrate = function(svg, tl, step){
+  T(svg, 20, 28, "側視圖", "sv-ts", "start");
+  var arm = makeArm(svg, 200, 300, 1);
+  var inset = G(svg);
+  E("rect", {x:430, y:36, width:236, height:150, rx:8, "class":"sv-box"}, inset);
+  T(inset, 548, 58, "俯視", "sv-ts");
+  E("circle", {cx:500, cy:110, r:32, "class":"sv-thin"}, inset);
+  var pan = E("line", {x1:500, y1:110, x2:532, y2:110, "class":"sv-accent-s"}, inset);
+  E("circle", {cx:610, cy:110, r:26, "class":"sv-thin"}, inset);
+  var roll = E("line", {x1:610, y1:110, x2:636, y2:110, "class":"sv-accent-s"}, inset);
+  T(inset, 500, 158, "1 肩部旋轉", "sv-ts"); T(inset, 500, 175, "要轉到兩端", "sv-ts"); T(inset, 610, 158, "5 手腕旋轉", "sv-ts"); T(inset, 610, 175, "不用轉", "sv-ts");
+  var key = G(svg);
+  E("rect", {x:500, y:220, width:120, height:56, rx:8, "class":"sv-box"}, key);
+  T(key, 560, 254, "Enter", "sv-tm");
+  T(svg, 560, 300, "依畫面提示按 Enter", "sv-ts");
+  var label = T(svg, 200, 28, "", "sv-t", "start");
+  var st = arm.state;
+  st.lift = -28; st.elbow = 40; st.wrist = -50; arm.render();
+  if(!tl){ st.lift = 0; st.elbow = 0; st.wrist = 0; arm.render(); return; }
+  var r = arm.render;
+  step("s1");
+  tl.call(function(){ label.textContent = "所有關節轉到行程中間"; });
+  tl.to(st, {lift:0, elbow:0, wrist:0, jaw:0, duration:1.2, ease:"power2.inOut", onUpdate:r});
+  tl.fromTo(key, {scale:1}, {scale:0.92, transformOrigin:"50% 50%", duration:0.12, yoyo:true, repeat:1});
+  step("s2");
+  tl.call(function(){ label.textContent = "除了手腕旋轉，每個關節轉到兩端"; });
+  tl.to(pan, {rotation:-120, svgOrigin:"500 110", duration:0.6}).to(pan, {rotation:120, svgOrigin:"500 110", duration:0.9}).to(pan, {rotation:0, svgOrigin:"500 110", duration:0.5});
+  tl.to(st, {lift:-55, duration:0.6, onUpdate:r}).to(st, {lift:45, duration:0.9, onUpdate:r}).to(st, {lift:0, duration:0.5, onUpdate:r});
+  tl.to(st, {elbow:-60, duration:0.6, onUpdate:r}).to(st, {elbow:75, duration:0.9, onUpdate:r}).to(st, {elbow:0, duration:0.5, onUpdate:r});
+  tl.to(st, {wrist:-80, duration:0.5, onUpdate:r}).to(st, {wrist:80, duration:0.8, onUpdate:r}).to(st, {wrist:0, duration:0.4, onUpdate:r});
+  tl.to(st, {jaw:24, duration:0.4, onUpdate:r}).to(st, {jaw:0, duration:0.4, onUpdate:r});
+  step("s3");
+  tl.call(function(){ label.textContent = "完成後再按 Enter 存檔"; });
+  tl.fromTo(key, {scale:1}, {scale:0.92, transformOrigin:"50% 50%", duration:0.12, yoyo:true, repeat:1});
+};
+
+/* ===== scene: teleop ===== */
+SCENES.teleop = function(svg, tl, step){
+  T(svg, 150, 26, "主控臂 Leader：用手帶動", "sv-t");
+  T(svg, 500, 26, "執行臂 Follower：跟著動", "sv-t");
+  var L = makeArm(svg, 150, 250, 0.85);
+  var F = makeArm(svg, 500, 250, 0.85);
+  var hand = E("circle", {r:13, fill:"var(--amber)", opacity:0.85}, L.root);
+  var pc = G(svg);
+  E("rect", {x:290, y:268, width:90, height:50, rx:5, "class":"sv-box"}, pc);
+  T(pc, 335, 298, "電腦", "sv-t");
+  var u1 = E("path", {d:"M190,270 C240,300 260,292 290,292", "class":"w w-blue"}, svg);
+  var u2 = E("path", {d:"M380,292 C420,292 440,300 460,270", "class":"w w-blue"}, svg);
+  function place(){ var a = L.state; hand.setAttribute("cx", 180 - a.lift * 0.4); hand.setAttribute("cy", -166 - a.elbow * 0.6); }
+  place();
+  if(!tl) return;
+  function both(){ L.render(); place(); }
+  var lag = 0.18;
+  step("s1");
+  tlDraw(tl, u1, {duration:0.4}); tlDraw(tl, u2, {duration:0.4});
+  step("s2");
+  var poses = [{lift:-30, elbow:30, wrist:-20, jaw:20}, {lift:25, elbow:-40, wrist:40, jaw:0}, {lift:-10, elbow:55, wrist:-50, jaw:22}, {lift:0, elbow:0, wrist:0, jaw:0}];
+  poses.forEach(function(p){
+    tl.to(L.state, Object.assign({duration:0.9, ease:"power1.inOut", onUpdate:both}, p));
+    tl.to(F.state, Object.assign({duration:0.9, ease:"power1.inOut", onUpdate:F.render}, p), "<" + lag);
+  });
+};
+
+window.__SO101 = {E:E, T:T, G:G, tlDraw:tlDraw, pinRow:pinRow, curve:curve, SCENES:SCENES, makeArm:makeArm,
+  fetchAny:fetchAny, cssVar:cssVar, viewers:viewers, REDUCED:REDUCED};
+
+/* ---------- boot ---------- */
+function boot(){
+  buildToc(); initChecks(); initCopy(); initDownloads(); initViewers();
+  if(window.__SO101_EXTRA) window.__SO101_EXTRA();
+  initScenes();
+}
+if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+})();
+
+(function(){
+"use strict";
+var X = window.__SO101; if(!X) return;
+var E = X.E, T = X.T, G = X.G, tlDraw = X.tlDraw, SC = X.SCENES;
+
+/* ===== scene: weights (calibration with known weights) ===== */
+SC.weights = function(svg, tl, step){
+  var tool = G(svg);
+  E("rect", {x:40, y:214, width:70, height:60, rx:5, "class":"sv-part"}, tool);
+  T(tool, 75, 296, "固定座", "sv-ts");
+  E("rect", {x:104, y:226, width:150, height:16, rx:3, "class":"sv-metal"}, tool);
+  T(tool, 179, 262, "TAL221", "sv-ts");
+  E("rect", {x:232, y:204, width:24, height:22, rx:3, "class":"sv-part"}, tool);
+  var stack = G(svg);
+  var wts = [{g:1, h:6, w:20}, {g:10, h:10, w:28}, {g:50, h:16, w:36}, {g:100, h:20, w:42}, {g:200, h:26, w:48}];
+  var wEls = wts.map(function(w){
+    var g = G(stack);
+    E("rect", {x:244 - w.w / 2, y:204 - w.h, width:w.w, height:w.h, rx:3, "class":"sv-servo"}, g);
+    T(g, 244, 204 - w.h / 2 + 4, w.g + "g", "sv-tw");
+    g.style.opacity = 0;
+    return g;
+  });
+  var disp = G(svg);
+  E("rect", {x:40, y:40, width:200, height:70, rx:8, "class":"sv-box"}, disp);
+  T(disp, 56, 64, "序列埠讀數", "sv-ts", "start");
+  var val = T(disp, 224, 98, "0.0 g", "sv-big", "end");
+  var ch = G(svg);
+  var x0 = 340, y0 = 290, W = 300, H = 230;
+  E("line", {x1:x0, y1:y0, x2:x0 + W, y2:y0, "class":"sv-thin"}, ch);
+  E("line", {x1:x0, y1:y0, x2:x0, y2:y0 - H, "class":"sv-thin"}, ch);
+  [0, 50, 100, 150, 200].forEach(function(v){
+    var x = x0 + v / 200 * W, y = y0 - v / 200 * H;
+    T(ch, x, y0 + 18, String(v), "sv-ts");
+    T(ch, x0 - 8, y + 4, String(v), "sv-ts", "end");
+    if(v) E("line", {x1:x0, y1:y, x2:x0 + W, y2:y, stroke:"var(--rule)"}, ch);
+  });
+  T(ch, x0 + W / 2, y0 + 38, "放上的砝碼（g）", "sv-ts");
+  T(ch, x0, y0 - H - 12, "讀數（g）", "sv-ts", "start");
+  var line = E("path", {d:"M" + x0 + "," + y0 + " L" + (x0 + W) + "," + (y0 - H), "class":"sv-accent-s"}, ch);
+  var dots = wts.map(function(w){ return E("circle", {cx:x0 + w.g / 200 * W, cy:y0 - w.g / 200 * H, r:5.5, "class":"sv-accent"}, ch); });
+  var zero = T(svg, 140, 140, "先歸零：送出 t", "sv-t");
+  if(!tl){ wEls.forEach(function(g){ g.style.opacity = 1; }); val.textContent = "200.0 g"; return; }
+  var o = {v:0};
+  function show(){ val.textContent = o.v.toFixed(1) + " g"; }
+  step("s1");
+  tl.from(zero, {opacity:0, y:6, duration:0.3});
+  tl.to(o, {v:0, duration:0.4, onUpdate:show});
+  step("s2");
+  var total = 0;
+  wts.forEach(function(w, i){
+    total = w.g;
+    tl.set(wEls, {opacity:0});
+    tl.fromTo(wEls[i], {opacity:0, y:-50}, {opacity:1, y:0, duration:0.45, ease:"bounce.out"});
+    tl.to(o, {v:total, duration:0.5, ease:"power1.out", onUpdate:show}, "<0.2");
+    tl.from(dots[i], {scale:0, transformOrigin:"50% 50%", duration:0.25}, ">-0.1");
+    tl.to({}, {duration:0.35});
+  });
+  step("s3");
+  tlDraw(tl, line, {duration:0.8});
+};
+
+/* ===== scene: push (thumbstick force control) ===== */
+SC.push = function(svg, tl, step){
+  var pad = G(svg);
+  E("path", {d:"M60,250 h300 a20,20 0 0 1 20,20 v30 h-340 v-30 a20,20 0 0 1 20,-20z", "class":"sv-part"}, pad);
+  T(pad, 210, 290, "遊戲手把（用治具固定）", "sv-ts");
+  var stick = G(svg);
+  E("circle", {cx:210, cy:250, r:16, "class":"sv-servo"}, stick);
+  E("rect", {x:204, y:170, width:12, height:80, rx:4, "class":"sv-metal"}, stick);
+  E("rect", {x:180, y:150, width:60, height:24, rx:10, "class":"sv-servo"}, stick);
+  var probe = G(svg);
+  E("rect", {x:300, y:154, width:150, height:14, rx:3, "class":"sv-metal"}, probe);
+  E("rect", {x:440, y:132, width:60, height:58, rx:6, "class":"sv-part"}, probe);
+  T(probe, 470, 208, "夾爪夾住治具", "sv-ts");
+  E("circle", {cx:296, cy:161, r:9, "class":"sv-part"}, probe);
+  T(probe, 370, 146, "荷重元", "sv-ts");
+  var gauge = G(svg);
+  var gx = 560, gy = 60, gh = 220;
+  E("rect", {x:gx, y:gy, width:34, height:gh, rx:5, "class":"sv-box"}, gauge);
+  var fill = E("rect", {x:gx + 3, y:gy + gh - 3, width:28, height:0, rx:3, "class":"sv-accent"}, gauge);
+  function yOf(g){ return gy + gh - g / 320 * gh; }
+  E("line", {x1:gx - 10, y1:yOf(50), x2:gx + 46, y2:yOf(50), stroke:"var(--mat)", "stroke-width":2.5}, gauge);
+  T(gauge, gx - 14, yOf(50) + 4, "目標 50 g", "sv-ts", "end");
+  E("line", {x1:gx - 10, y1:yOf(300), x2:gx + 46, y2:yOf(300), "class":"sv-red-s"}, gauge);
+  T(gauge, gx - 14, yOf(300) + 4, "安全上限 300 g", "sv-ts", "end");
+  var read = T(svg, gx + 17, gy + gh + 30, "0 g", "sv-tm");
+  var stop = G(svg);
+  E("rect", {x:250, y:40, width:200, height:44, rx:8, fill:"var(--mat)"}, stop);
+  T(stop, 350, 68, "到達目標 → 停止", "sv-tw");
+  stop.style.opacity = tl ? 0 : 1;
+  var st = {px:90, f:0, tilt:0};
+  function render(){
+    probe.setAttribute("transform", "translate(" + st.px + ",0)");
+    stick.setAttribute("transform", "rotate(" + (-st.tilt) + " 210 250)");
+    var h = st.f / 320 * (gh - 6);
+    fill.setAttribute("y", gy + gh - 3 - h); fill.setAttribute("height", Math.max(0, h));
+    read.textContent = Math.round(st.f) + " g";
+  }
+  if(!tl){ st.px = 0; st.f = 50; st.tilt = 10; render(); return; }
+  render();
+  step("s1");
+  tl.to(st, {px:20, duration:1.0, ease:"power1.inOut", onUpdate:render});
+  step("s2");
+  tl.to(st, {px:0, f:8, duration:0.5, ease:"none", onUpdate:render});
+  tl.to(st, {px:-14, f:30, tilt:6, duration:0.8, ease:"none", onUpdate:render});
+  tl.to(st, {px:-20, f:50, tilt:10, duration:0.8, ease:"power1.out", onUpdate:render});
+  step("s3");
+  tl.to(stop, {opacity:1, duration:0.3});
+  tl.to(stop, {scale:1.05, transformOrigin:"50% 50%", yoyo:true, repeat:1, duration:0.2});
+};
+})();
+
+(function(){
+"use strict";
+var X = window.__SO101; if(!X) return;
+var E = X.E, T = X.T, G = X.G, tlDraw = X.tlDraw, SC = X.SCENES;
+
+/* ---- facts used by the scenes (kept in one place) ---- */
+var MOTOR_ORDER = [
+  ["gripper", "夾爪", 6], ["wrist_roll", "手腕旋轉", 5], ["wrist_flex", "手腕俯仰", 4],
+  ["elbow_flex", "手肘", 3], ["shoulder_lift", "肩部抬升", 2], ["shoulder_pan", "肩部旋轉", 1]
+];
+var CELL_WIRES = [ // [load-cell wire colour class, colour name, HX711 terminal]
+  ["w-red", "紅", "E+"], ["w-black", "黑", "E-"], ["w-white", "白", "A-"], ["w-green", "綠", "A+"]
+];
+var HX_OUT = [ // [HX711 pin, Nano pin, wire class]; VDD exists only on the SparkFun board
+  ["VCC", "5V", "w-red"], ["VDD", "5V", "w-red"], ["GND", "GND", "w-black"], ["DT", "D2", "w-yellow"], ["SCK", "D3", "w-blue"]
+];
+var NANO_PINS = ["5V", "GND", "D2", "D3"];
+
+/* ===== scene: motor ID setup ===== */
+SC.motorid = function(svg, tl, step){
+  var pc = G(svg);
+  E("rect", {x:30, y:24, width:170, height:96, rx:6, "class":"sv-box"}, pc);
+  E("rect", {x:18, y:120, width:194, height:8, rx:3, "class":"sv-box"}, pc);
+  T(pc, 115, 56, "電腦", "sv-t");
+  T(pc, 115, 82, "lerobot-setup-motors", "sv-tm");
+  var prompt = T(pc, 115, 106, "", "sv-ts");
+  var board = G(svg);
+  E("rect", {x:50, y:206, width:130, height:70, rx:6, "class":"sv-pcb"}, board);
+  T(board, 115, 236, "驅動板", "sv-tw"); T(board, 115, 256, "電源 + USB-C", "sv-tw");
+  var usb = E("path", {d:"M115,206 C115,170 115,150 115,128", "class":"w w-blue"}, svg);
+  var motor = G(svg);
+  E("rect", {x:300, y:196, width:76, height:54, rx:6, "class":"sv-servo"}, motor);
+  T(motor, 338, 228, "STS3215", "sv-tw");
+  var badge = G(svg);
+  E("rect", {x:304, y:150, width:68, height:30, rx:15, "class":"sv-accent"}, badge);
+  var badgeT = T(badge, 338, 170, "ID ?", "sv-tw");
+  var cable = E("path", {d:"M180,236 C230,236 250,224 300,224", "class":"w w-black"}, svg);
+  T(svg, 338, 290, "一次只接一顆馬達", "sv-ts");
+  var list = G(svg);
+  var rows = MOTOR_ORDER.map(function(m, i){
+    var g = G(list); var y = 44 + i * 44;
+    E("rect", {x:440, y:y - 22, width:220, height:36, rx:6, "class":"sv-box"}, g);
+    T(g, 456, y + 1, m[1], "sv-t", "start");
+    T(g, 456, y + 14 - 2, "", "sv-ts", "start");
+    T(g, 600, y + 1, "ID " + m[2], "sv-tm", "end");
+    var ck = G(g);
+    E("circle", {cx:640, cy:y - 4, r:11, "class":"sv-accent"}, ck);
+    E("path", {d:"M634," + (y - 4) + " l4,5 l8,-9", stroke:"#fff", "stroke-width":2.6, fill:"none", "stroke-linecap":"round"}, ck);
+    return {g:g, ck:ck};
+  });
+  if(!tl){ badgeT.textContent = "ID 1"; return; }
+  step("s1");
+  tl.from([pc, board], {opacity:0, y:10, duration:0.4, stagger:0.15});
+  tlDraw(tl, usb, {duration:0.4});
+  tl.set(rows.map(function(r){ return r.ck; }), {opacity:0});
+  step("s2");
+  MOTOR_ORDER.forEach(function(m, i){
+    tl.call(function(){ prompt.textContent = "請只接上「" + m[1] + "」馬達，按 Enter"; badgeT.textContent = "ID ?"; });
+    tl.fromTo(motor, {x:60, opacity:0}, {x:0, opacity:1, duration:0.35});
+    tlDraw(tl, cable, {duration:0.35});
+    tl.fromTo(badge, {scale:0, transformOrigin:"50% 50%"}, {scale:1, duration:0.3, ease:"back.out(2)"});
+    tl.call(function(){ badgeT.textContent = "ID " + m[2]; });
+    tl.to(rows[i].ck, {opacity:1, duration:0.2});
+    tl.to(rows[i].g, {x:-4, duration:0.12, yoyo:true, repeat:1});
+    if(i < MOTOR_ORDER.length - 1){
+      tl.to(cable, {opacity:0, duration:0.15});
+      tl.to([motor, badge], {x:-40, opacity:0, duration:0.3});
+      tl.set([motor, badge, cable], {x:0, opacity:1});
+    }
+  });
+  step("s3");
+  tl.call(function(){ prompt.textContent = "6 顆都設定完成"; });
+  tl.from(list, {scale:1.02, transformOrigin:"50% 50%", duration:0.3});
+};
+
+/* ===== scene: probe jig assembly (side view, matches probe_tool design) ===== */
+SC.jig = function(svg, tl, step){
+  var X0 = 300, k = 3;
+  function px(x){ return X0 + x * k; }
+  function pz(z){ return 40 + (32 - z) * k; }
+  T(svg, 20, 26, "側視圖，單位依實際尺寸等比例", "sv-ts", "start");
+  var jawL = G(svg), jawR = G(svg);
+  E("path", {d:"M" + px(-26) + "," + pz(40) + " H" + px(-12) + " V" + pz(-2) + " L" + px(-16) + "," + pz(-6) + " H" + px(-26) + "z", "class":"sv-part"}, jawL);
+  T(jawL, px(-19), pz(42), "固定爪", "sv-ts");
+  E("path", {d:"M" + px(12) + "," + pz(40) + " H" + px(26) + " V" + pz(-6) + " H" + px(16) + " L" + px(12) + "," + pz(-2) + "z", "class":"sv-part"}, jawR);
+  T(jawR, px(19), pz(42), "活動爪", "sv-ts");
+  var block = G(svg);
+  E("rect", {x:px(-12), y:pz(32), width:24 * k, height:32 * k, rx:3, fill:"var(--w-blue)", opacity:0.85, stroke:"var(--ink)", "stroke-width":1.4}, block);
+  T(block, px(0), pz(16), "治具座", "sv-tw");
+  E("rect", {x:px(-8), y:pz(0), width:5 * k, height:10 * k, fill:"var(--w-blue)", opacity:0.85, stroke:"var(--ink)", "stroke-width":1.4}, block);
+  var bar = G(svg);
+  E("rect", {x:px(-3), y:pz(-4), width:6 * k, height:47 * k, rx:2, "class":"sv-metal"}, bar);
+  T(bar, px(-30), pz(-28), "TAL221：中間要懸空", "sv-ts", "end");
+  E("path", {d:"M" + px(-29) + "," + pz(-27) + " H" + px(-4), "class":"sv-thin"}, bar);
+  var s1 = G(svg);
+  E("rect", {x:px(-14), y:pz(-7.5) - 3, width:15 * k, height:6, rx:1, "class":"sv-servo"}, s1);
+  E("rect", {x:px(-16), y:pz(-7.5) - 6, width:2 * k, height:12, rx:1, "class":"sv-servo"}, s1);
+  T(s1, px(-30), pz(-7.5) + 4, "固定端：2 × M3×10", "sv-ts", "end");
+  var tip = G(svg);
+  E("rect", {x:px(3), y:pz(-45), width:3.5 * k, height:13 * k, fill:"var(--red)", opacity:0.85, stroke:"var(--ink)", "stroke-width":1.2}, tip);
+  E("path", {d:"M" + px(6.5) + "," + (pz(-54) - 9) + " L" + px(16) + "," + (pz(-54) - 6) + " A6,6 0 0 1 " + px(16) + "," + (pz(-54) + 6) + " L" + px(6.5) + "," + (pz(-54) + 9) + "z", fill:"var(--red)", opacity:0.85, stroke:"var(--ink)", "stroke-width":1.2}, tip);
+  var s2 = G(svg);
+  E("rect", {x:px(-6), y:pz(-47.5) - 3, width:14 * k, height:6, rx:1, "class":"sv-servo"}, s2);
+  E("rect", {x:px(-9), y:pz(-47.5) - 6, width:3 * k, height:12, rx:1, "class":"sv-servo"}, s2);
+  T(s2, px(24), pz(-44), "自由端：推頭 + 2 × M3×12 + 螺帽", "sv-ts", "start");
+  var wires = G(svg);
+  var wd = "M" + px(-1) + "," + pz(-4) + " C" + px(-1) + "," + pz(2) + " " + px(-10) + "," + pz(4) + " " + px(-10) + "," + pz(12);
+  E("path", {d:wd, "class":"w w-red"}, wires);
+  E("path", {d:wd, "class":"w w-green", transform:"translate(4,0)"}, wires);
+  T(wires, px(-30), pz(12), "細線穿過治具座側面的固定柱", "sv-ts", "end");
+  var tie = G(svg);
+  E("rect", {x:px(-28), y:pz(29) - 4, width:56 * k, height:8, rx:3, fill:"var(--amber)", stroke:"var(--ink)", "stroke-width":1}, tie);
+  T(tie, px(30), pz(29) + 4, "束帶綁住兩根爪", "sv-ts", "start");
+  var arrow = G(svg);
+  E("path", {d:"M" + px(22) + "," + pz(-54) + " H" + px(44) + " M" + px(38) + "," + (pz(-54) - 6) + " L" + px(44) + "," + pz(-54) + " L" + px(38) + "," + (pz(-54) + 6), "class":"sv-accent-s"}, arrow);
+  T(arrow, px(46), pz(-54) + 5, "推的方向", "sv-ts", "start");
+  if(!tl) return;
+  step("s1");
+  tl.from(block, {opacity:0, duration:0.4});
+  tl.from(bar, {y:60, opacity:0, duration:0.6});
+  tl.from(s1, {x:-60, opacity:0, duration:0.5});
+  step("s2");
+  tl.from(tip, {x:50, opacity:0, duration:0.5});
+  tl.from(s2, {x:-40, opacity:0, duration:0.4});
+  step("s3");
+  tl.from(wires, {opacity:0, duration:0.5});
+  step("s4");
+  tl.from(jawL, {x:-40, opacity:0, duration:0.5});
+  tl.from(jawR, {x:40, opacity:0, duration:0.5}, "<");
+  tl.from(tie, {scaleX:0, transformOrigin:"50% 50%", duration:0.5});
+  tl.from(arrow, {opacity:0, x:-10, duration:0.4});
+};
+
+/* ===== scene: force sensor wiring ===== */
+SC.forcewire = function(svg, tl, step){
+  var cell = G(svg);
+  E("rect", {x:24, y:150, width:170, height:26, rx:3, "class":"sv-metal"}, cell);
+  T(cell, 109, 202, "TAL221 荷重元", "sv-t");
+  E("path", {d:"M150,120 v22 M144,134 l6,8 l6,-8", "class":"sv-ink"}, cell);
+  T(cell, 150, 112, "受力方向", "sv-ts");
+  var hx = G(svg);
+  E("rect", {x:280, y:90, width:140, height:170, rx:6, "class":"sv-pcb"}, hx);
+  T(hx, 350, 82, "HX711 放大板", "sv-t");
+  var hxL = {}, hxR = {};
+  CELL_WIRES.forEach(function(w, i){ var y = 120 + i * 30; E("circle", {cx:290, cy:y, r:5, fill:"var(--w-yellow)", stroke:"var(--ink)"}, hx); T(hx, 302, y + 4, w[2], "sv-tw", "start"); hxL[w[2]] = [290, y]; });
+  HX_OUT.forEach(function(p, i){ var y = 112 + i * 30; E("circle", {cx:410, cy:y, r:5, fill:"var(--w-yellow)", stroke:"var(--ink)"}, hx); T(hx, 398, y + 4, p[0], "sv-tw", "end"); hxR[p[0]] = [410, y]; });
+  var nano = G(svg);
+  E("rect", {x:510, y:70, width:120, height:210, rx:6, fill:"var(--w-blue)", stroke:"var(--ink)", "stroke-width":1.4}, nano);
+  T(nano, 570, 62, "Arduino Nano", "sv-t");
+  var nanoP = {};
+  NANO_PINS.forEach(function(n, i){ var y = 120 + i * 36; E("circle", {cx:520, cy:y, r:5, fill:"var(--w-yellow)", stroke:"var(--ink)"}, nano); T(nano, 532, y + 4, n, "sv-tw", "start"); nanoP[n] = [520, y]; });
+  E("rect", {x:552, y:270, width:36, height:22, rx:3, "class":"sv-metal"}, nano);
+  var usb = E("path", {d:"M570,292 C570,310 600,316 640,316", "class":"w w-blue"}, svg);
+  T(svg, 650, 312, "接電腦", "sv-ts", "start");
+  var cw = CELL_WIRES.map(function(w, i){
+    var a = [194, 156 + i * 4], b = hxL[w[2]];
+    E("path", {d:X.curve(a, b, 30), "class":"w-under"}, svg);
+    var p = E("path", {d:X.curve(a, b, 30), "class":"w " + w[0]}, svg);
+    return p;
+  });
+  var hw = HX_OUT.map(function(p){
+    var a = hxR[p[0]], b = nanoP[p[1]];
+    E("path", {d:X.curve(a, b, 20), "class":"w-under"}, svg);
+    return E("path", {d:X.curve(a, b, 20), "class":"w " + p[2]}, svg);
+  });
+  var legend = G(svg);
+  CELL_WIRES.forEach(function(w, i){ T(legend, 24 + i * 62, 248, w[1] + "→" + w[2], "sv-ts", "start"); });
+  T(legend, 24, 274, "VDD 只有 SparkFun 板才有，也接 5V", "sv-ts", "start");
+  var pulse = E("circle", {r:5, fill:"var(--amber)", opacity:0}, svg);
+  var serial = G(svg);
+  E("rect", {x:24, y:26, width:220, height:40, rx:5, fill:"var(--code)", stroke:"var(--rule)"}, serial);
+  T(serial, 36, 51, "F,10342,50.12", "sv-tm", "start");
+  if(!tl) return;
+  step("s1");
+  tl.from([cell, hx, nano], {opacity:0, y:8, duration:0.35, stagger:0.12});
+  step("s2");
+  cw.forEach(function(p){ tlDraw(tl, p, {duration:0.45}); });
+  step("s3");
+  hw.forEach(function(p){ tlDraw(tl, p, {duration:0.45}); });
+  tlDraw(tl, usb, {duration:0.4});
+  step("s4");
+  tl.set(pulse, {opacity:1});
+  var dt = hw[3], L = dt.getTotalLength(), o = {t:0};
+  tl.to(o, {t:1, duration:0.6, ease:"none", repeat:2, onUpdate:function(){ var pt = dt.getPointAtLength(o.t * L); pulse.setAttribute("cx", pt.x); pulse.setAttribute("cy", pt.y); }});
+  tl.to(pulse, {opacity:0, duration:0.2});
+  tl.from(serial, {opacity:0, y:-8, duration:0.35});
+};
+})();
+
+/* ---------- step-by-step 3D assembly (official URDF poses) ---------- */
+(function(){
+"use strict";
+var X = window.__SO101; if(!X) return;
+var fetchAny = X.fetchAny, cssVar = X.cssVar, viewers = X.viewers, REDUCED = X.REDUCED;
+var ASM = window.__SO101_ASM || null;
+var ASM_NEW = 0xF2A51A, ASM_NEW_MOTOR = 0x9A6A12;
+
+function initAsm(){
+  var roots = document.querySelectorAll("figure[data-asm]");
+  if(!roots.length || !ASM) return;
+  if(!window.THREE || !THREE.STLLoader || !THREE.OrbitControls){
+    roots.forEach(function(r){ var s = r.querySelector(".status"); if(s) s.textContent = "3D 檢視器載入失敗，請重新整理頁面。"; });
+    return;
+  }
+  roots.forEach(function(root){
+    var started = false;
+    function start(){ if(started) return; started = true; var v = makeAsm(root); if(v) viewers.push(v); }
+    if("IntersectionObserver" in window){
+      var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ start(); io.disconnect(); } }); }, {rootMargin:"200px"});
+      io.observe(root);
+    } else start();
+  });
+}
+
+function makeAsm(root){
+  var arm = ASM.arms[root.getAttribute("data-asm")];
+  if(!arm) return null;
+  var vp = root.querySelector(".vp"), status = root.querySelector(".status");
+  var capStep = root.querySelector("[data-asm-step]"), capSub = root.querySelector("[data-asm-sub]");
+  var subList = root.querySelector("ol.subs");
+  var stepBtns = root.querySelectorAll("[data-step]");
+  var renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  vp.appendChild(renderer.domElement);
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(30, 1, 1, 20000);
+  camera.up.set(0, 0, 1);  /* the URDF world is Z-up */
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x556a60, 0.95));
+  var key = new THREE.DirectionalLight(0xffffff, 0.7); key.position.set(3.4, -4.2, 3); scene.add(key);
+  var fill = new THREE.DirectionalLight(0xffffff, 0.3); fill.position.set(-2, 2, 1); scene.add(fill);
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.08;
+  var raf = 0, visible = false, tl = null, cur = -1, ready = false;
+  function resize(){
+    var w = vp.clientWidth, h = vp.clientHeight;
+    if(!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  function loop(){ raf = requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); }
+  function setVisible(v){ visible = v; if(v && !raf && ready) loop(); if(!v && raf){ cancelAnimationFrame(raf); raf = 0; } }
+  if("ResizeObserver" in window) new ResizeObserver(resize).observe(vp); else window.addEventListener("resize", resize);
+  if("IntersectionObserver" in window) new IntersectionObserver(function(es){ es.forEach(function(e){ setVisible(e.isIntersecting); }); }).observe(root);
+  else setVisible(true);
+  resize();
+
+  function neutral(isMotor){ return new THREE.Color(isMotor ? cssVar("--bed", "#2B3330") : cssVar("--part", "#B9C9C1")); }
+
+  /* parts in assembly order */
+  var order = [];
+  arm.steps.forEach(function(s, si){ s.subs.forEach(function(sub, ui){ sub.parts.forEach(function(p){ order.push({id:p, si:si, ui:ui}); }); }); });
+  var objs = {};
+  var loader = new THREE.STLLoader();
+  var meshNames = {};
+  Object.keys(arm.parts).forEach(function(k){ meshNames[arm.parts[k].mesh] = 1; });
+  var geos = {};
+  status.textContent = "載入 3D 組裝模型中…";
+  Promise.all(Object.keys(meshNames).map(function(name){
+    return fetchAny("assets/stl64/" + name + ".stl.txt").then(function(buf){ var g = loader.parse(buf); g.computeVertexNormals(); geos[name] = g; });
+  })).then(function(){
+    order.forEach(function(o){
+      var part = arm.parts[o.id];
+      var mat = new THREE.MeshStandardMaterial({color: neutral(part.motor), roughness:0.55, metalness: part.motor ? 0.15 : 0.03});
+      var mesh = new THREE.Mesh(geos[part.mesh], mat);
+      mesh.matrixAutoUpdate = false; mesh.matrix.fromArray(part.m);
+      var g = new THREE.Group(); g.add(mesh); scene.add(g);
+      g.updateMatrixWorld(true);
+      var box = new THREE.Box3().setFromObject(mesh);
+      objs[o.id] = {group:g, mesh:mesh, mat:mat, motor:part.motor, box:box, o:o};
+    });
+    ready = true; status.textContent = "";
+    show(0, false);
+    if(visible && !raf) loop();
+  }).catch(function(){ status.textContent = "組裝模型載入失敗，請重新整理頁面。"; });
+
+  function boxOf(ids){
+    var b = new THREE.Box3();
+    ids.forEach(function(id){ b.union(objs[id].box); });
+    return b;
+  }
+  function frame(box, minR, animate, pad){
+    var c = new THREE.Vector3(), size = new THREE.Vector3(); box.getCenter(c); box.getSize(size);
+    var r = Math.max(size.length() / 2 * (pad || 1), minR);
+    var dist = r / Math.sin(camera.fov * Math.PI / 360) * 0.8;
+    var dir = camera.position.clone().sub(controls.target);
+    if(dir.lengthSq() < 1) dir.set(1.2, -1.6, 0.9);
+    dir.normalize();
+    var to = c.clone().add(dir.multiplyScalar(dist));
+    camera.near = dist / 30; camera.far = dist * 20; camera.updateProjectionMatrix();
+    if(animate && window.gsap && !REDUCED){
+      gsap.to(controls.target, {x:c.x, y:c.y, z:c.z, duration:0.9, ease:"power2.inOut"});
+      gsap.to(camera.position, {x:to.x, y:to.y, z:to.z, duration:0.9, ease:"power2.inOut"});
+    } else { controls.target.copy(c); camera.position.copy(to); controls.update(); }
+  }
+  function paint(ob, isNew){
+    ob.mat.color = isNew ? new THREE.Color(ob.motor ? ASM_NEW_MOTOR : ASM_NEW) : neutral(ob.motor);
+  }
+  function setCaption(si, ui){
+    var st = arm.steps[si];
+    capStep.textContent = st.title;
+    capSub.textContent = ui == null ? "新裝上的零件標成橘色。" : (ui + 1) + " / " + st.subs.length + "　" + st.subs[ui].text;
+    if(subList){
+      subList.querySelectorAll("li").forEach(function(li, i){ li.classList.toggle("on", ui === i); });
+    }
+  }
+  function fillSubs(si){
+    if(!subList) return;
+    subList.innerHTML = "";
+    arm.steps[si].subs.forEach(function(sub, i){
+      var li = document.createElement("li"); li.textContent = sub.text;
+      li.addEventListener("click", function(){ show(si, true, i); });
+      subList.appendChild(li);
+    });
+  }
+
+  /* si: step index, or -1 for the finished arm */
+  function show(si, animate, fromSub){
+    if(!ready) return;
+    if(tl){ tl.kill(); tl = null; }
+    cur = si;
+    stepBtns.forEach(function(b){ b.setAttribute("aria-pressed", String(+b.getAttribute("data-step") === si)); });
+    var all = si < 0;
+    var newIds = [], doneIds = [];
+    order.forEach(function(o){
+      var ob = objs[o.id];
+      ob.group.position.set(0, 0, 0); ob.mat.opacity = 1; ob.mat.transparent = false;
+      var shown = all || o.si < si || (o.si === si && (fromSub == null || o.ui <= fromSub || animate));
+      ob.group.visible = shown;
+      paint(ob, !all && o.si === si);
+      if(all || o.si < si) doneIds.push(o.id); else if(o.si === si) newIds.push(o.id);
+    });
+    if(all){
+      capStep.textContent = "完成的手臂"; capSub.textContent = "這是校準時的中間姿勢：上臂朝上、前臂朝前。";
+      if(subList) subList.innerHTML = "";
+      frame(boxOf(doneIds), 60, animate, 1.1);
+      return;
+    }
+    fillSubs(si);
+    frame(boxOf(newIds), 55, animate, 1.3);
+    if(!animate || !window.gsap || REDUCED){ setCaption(si, null); return; }
+    var subs = arm.steps[si].subs, start = fromSub || 0;
+    tl = gsap.timeline({delay:0.5});
+    var placed = doneIds.slice();
+    order.forEach(function(o){ if(o.si === si && o.ui < start) placed.push(o.id); });
+    subs.forEach(function(sub, ui){
+      if(ui < start) return;
+      tl.call(function(){
+        setCaption(si, ui);
+        newIds.forEach(function(id){ paint(objs[id], sub.parts.indexOf(id) >= 0); });
+      });
+      var prevBox = placed.length ? boxOf(placed) : null;
+      sub.parts.forEach(function(id, k){
+        var ob = objs[id];
+        var pc = new THREE.Vector3(); ob.box.getCenter(pc);
+        var dir = new THREE.Vector3(0, 0, 1);
+        if(prevBox){ var ac = new THREE.Vector3(); prevBox.getCenter(ac); dir = pc.clone().sub(ac); if(dir.lengthSq() < 1) dir.set(0, 0, 1); dir.normalize(); }
+        var off = dir.multiplyScalar(70);
+        ob.group.visible = false;
+        tl.call(function(){ ob.group.visible = true; ob.mat.transparent = true; ob.mat.opacity = 0; ob.group.position.copy(off); }, null, k ? "<0.2" : ">");
+        tl.to(ob.mat, {opacity:1, duration:0.45, ease:"power1.out"}, "<");
+        tl.to(ob.group.position, {x:0, y:0, z:0, duration:1.0, ease:"power2.out"}, "<");
+        tl.call(function(){ ob.mat.transparent = false; });
+      });
+      sub.parts.forEach(function(id){ placed.push(id); });
+      tl.to({}, {duration: sub.parts.length ? 1.1 : 1.8});
+    });
+    tl.call(function(){ setCaption(si, null); newIds.forEach(function(id){ paint(objs[id], true); }); });
+  }
+
+  root.querySelectorAll("[data-step]").forEach(function(b){ b.addEventListener("click", function(){ show(+b.getAttribute("data-step"), true); }); });
+  var act = function(name, fn){ var b = root.querySelector("[data-act=" + name + "]"); if(b) b.addEventListener("click", fn); };
+  act("play", function(){ show(cur < 0 ? 0 : cur, true); });
+  act("prev", function(){ show(Math.max(0, (cur < 0 ? arm.steps.length : cur) - 1), true); });
+  act("next", function(){ show(cur < 0 ? 0 : Math.min(arm.steps.length - 1, cur + 1), true); });
+  act("all", function(){ show(-1, true); });
+  return { recolor: function(){ if(ready) order.forEach(function(o){ var ob = objs[o.id]; paint(ob, cur >= 0 && o.si === cur); }); } };
+}
+
+if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", initAsm); else initAsm();
+})();
+
+</script>
+
+</body>
+</html>
