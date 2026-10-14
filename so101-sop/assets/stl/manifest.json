@@ -1,0 +1,1030 @@
+{
+  "source": {
+    "repo": "https://github.com/TheRobotStudio/SO-ARM100",
+    "commit": "a758567c3978dfeefe282ede0500085a48fe8f78",
+    "branch": "main",
+    "license": "Apache-2.0",
+    "copyright": "TheRobotStudio / SO-ARM100 contributors"
+  },
+  "conventions": {
+    "units": "mm (STL native)",
+    "format": "binary STL (originals copied byte-for-byte; *_lite.stl decimated with pyfqmr, header has no COLOR= tag)",
+    "camera_dir": "unit vector from model center towards camera in STL coordinates (Z up; set camera.up=(0,0,1)). camera_dir_yup is the same vector after rotating the mesh -90deg about X (three.js Y-up): (x,z,-y).",
+    "camera_distance_mm_fov45": "distance from center that frames the bounding sphere with a 45deg vertical FOV",
+    "used_in": "README 'Individual Part Files' tables: Common Parts = both, Leader-Specific = leader, Follower-Specific = follower; mounting plates = both (print ONE per arm by driver board brand); gauges/assembly = other",
+    "volume_cm3": "absolute signed volume of the triangle soup (solid material volume for watertight parts, not filament at infill)",
+    "gauges_header": "gauges/*.STL are binary STLs whose 80-byte header begins with 'solid'; three.js STLLoader handles them (size check), naive ASCII sniffers may not"
+  },
+  "files": [
+    {
+      "file": "Base_SO101.stl",
+      "part_name": "Base",
+      "used_in": "both",
+      "size_bytes": 477984,
+      "tris": 9558,
+      "bbox_mm": {
+        "min": [
+          -55.463,
+          0.0,
+          -16.0
+        ],
+        "max": [
+          55.463,
+          72.0,
+          71.0
+        ],
+        "size": [
+          110.925,
+          72.0,
+          87.0
+        ]
+      },
+      "volume_cm3": 122.69,
+      "area_cm2": 492.97,
+      "center_mm": [
+        0.0,
+        36.0,
+        27.5
+      ],
+      "bounding_radius_mm": 79.148,
+      "camera_dir": [
+        0.612,
+        0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        -0.612
+      ],
+      "camera_distance_mm_fov45": 217.2,
+      "source_path": "STL/SO101/Individual/Base_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "Base_motor_holder_SO101.stl",
+      "part_name": "Base motor holder",
+      "used_in": "both",
+      "size_bytes": 340884,
+      "tris": 6816,
+      "bbox_mm": {
+        "min": [
+          -22.35,
+          38.1,
+          -20.8
+        ],
+        "max": [
+          25.291,
+          69.5,
+          59.4
+        ],
+        "size": [
+          47.641,
+          31.4,
+          80.2
+        ]
+      },
+      "volume_cm3": 23.709,
+      "area_cm2": 133.0,
+      "center_mm": [
+        1.471,
+        53.8,
+        19.3
+      ],
+      "bounding_radius_mm": 49.213,
+      "camera_dir": [
+        0.612,
+        -0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        0.612
+      ],
+      "camera_distance_mm_fov45": 135.0,
+      "source_path": "STL/SO101/Individual/Base_motor_holder_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "Motor_holder_SO101_Base.stl",
+      "part_name": "Motor holder (base)",
+      "used_in": "both",
+      "size_bytes": 292784,
+      "tris": 5854,
+      "bbox_mm": {
+        "min": [
+          -53.85,
+          -55.097,
+          -28.88
+        ],
+        "max": [
+          -25.85,
+          -17.0,
+          26.2
+        ],
+        "size": [
+          28.0,
+          38.097,
+          55.08
+        ]
+      },
+      "volume_cm3": 13.307,
+      "area_cm2": 100.44,
+      "center_mm": [
+        -39.85,
+        -36.049,
+        -1.34
+      ],
+      "bounding_radius_mm": 36.295,
+      "camera_dir": [
+        0.612,
+        -0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        0.612
+      ],
+      "camera_distance_mm_fov45": 99.6,
+      "source_path": "STL/SO101/Individual/Motor_holder_SO101_Base.stl",
+      "lite": false
+    },
+    {
+      "file": "Motor_holder_SO101_Wrist.stl",
+      "part_name": "Motor holder (wrist)",
+      "used_in": "both",
+      "size_bytes": 400584,
+      "tris": 8010,
+      "bbox_mm": {
+        "min": [
+          -53.85,
+          -53.9,
+          -30.191
+        ],
+        "max": [
+          -25.85,
+          -17.0,
+          26.2
+        ],
+        "size": [
+          28.0,
+          36.9,
+          56.391
+        ]
+      },
+      "volume_cm3": 13.872,
+      "area_cm2": 101.86,
+      "center_mm": [
+        -39.85,
+        -35.45,
+        -1.995
+      ],
+      "bounding_radius_mm": 36.488,
+      "camera_dir": [
+        0.612,
+        -0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        0.612
+      ],
+      "camera_distance_mm_fov45": 100.1,
+      "source_path": "STL/SO101/Individual/Motor_holder_SO101_Wrist.stl",
+      "lite": false
+    },
+    {
+      "file": "Rotation_Pitch_SO101.stl",
+      "part_name": "Rotation / pitch (shoulder)",
+      "used_in": "both",
+      "size_bytes": 334884,
+      "tris": 6696,
+      "bbox_mm": {
+        "min": [
+          -59.8,
+          0.2,
+          -23.0
+        ],
+        "max": [
+          0.0,
+          84.4,
+          23.0
+        ],
+        "size": [
+          59.8,
+          84.2,
+          46.0
+        ]
+      },
+      "volume_cm3": 68.787,
+      "area_cm2": 181.81,
+      "center_mm": [
+        -29.9,
+        42.3,
+        0.0
+      ],
+      "bounding_radius_mm": 56.528,
+      "camera_dir": [
+        0.612,
+        0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        -0.612
+      ],
+      "camera_distance_mm_fov45": 155.1,
+      "source_path": "STL/SO101/Individual/Rotation_Pitch_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "Seeedstudio_Mounting_Plate_SO101.stl",
+      "part_name": "Mounting plate (Seeed Studio board)",
+      "used_in": "both",
+      "size_bytes": 97684,
+      "tris": 1952,
+      "bbox_mm": {
+        "min": [
+          -25.5,
+          -21.0,
+          0.0
+        ],
+        "max": [
+          25.5,
+          21.0,
+          7.6
+        ],
+        "size": [
+          51.0,
+          42.0,
+          7.6
+        ]
+      },
+      "volume_cm3": 9.325,
+      "area_cm2": 53.65,
+      "center_mm": [
+        0.0,
+        0.0,
+        3.8
+      ],
+      "bounding_radius_mm": 33.252,
+      "camera_dir": [
+        0.612,
+        -0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        0.612
+      ],
+      "camera_distance_mm_fov45": 91.2,
+      "source_path": "STL/SO101/Individual/Seeedstudio_Mounting_Plate_SO101.stl",
+      "lite": false,
+      "note": "Print only ONE mounting plate per arm, matching the servo driver board brand (Waveshare or Seeed Studio). Alternative to the Waveshare plate (3DPRINT.md)."
+    },
+    {
+      "file": "Under_arm_SO101.stl",
+      "part_name": "Under arm (lower arm)",
+      "used_in": "both",
+      "size_bytes": 525484,
+      "tris": 10508,
+      "bbox_mm": {
+        "min": [
+          -53.85,
+          -44.0,
+          -34.2
+        ],
+        "max": [
+          76.85,
+          -20.0,
+          30.2
+        ],
+        "size": [
+          130.7,
+          24.0,
+          64.4
+        ]
+      },
+      "volume_cm3": 92.895,
+      "area_cm2": 226.76,
+      "center_mm": [
+        11.5,
+        -32.0,
+        -2.0
+      ],
+      "bounding_radius_mm": 73.834,
+      "camera_dir": [
+        0.0,
+        0.866,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.0,
+        0.5,
+        -0.866
+      ],
+      "camera_distance_mm_fov45": 202.6,
+      "source_path": "STL/SO101/Individual/Under_arm_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "Upper_arm_SO101.stl",
+      "part_name": "Upper arm",
+      "used_in": "both",
+      "size_bytes": 401984,
+      "tris": 8038,
+      "bbox_mm": {
+        "min": [
+          -65.085,
+          -0.0,
+          -35.6
+        ],
+        "max": [
+          77.061,
+          24.5,
+          31.7
+        ],
+        "size": [
+          142.146,
+          24.5,
+          67.3
+        ]
+      },
+      "volume_cm3": 117.328,
+      "area_cm2": 279.03,
+      "center_mm": [
+        5.988,
+        12.25,
+        -1.95
+      ],
+      "bounding_radius_mm": 79.585,
+      "camera_dir": [
+        0.0,
+        0.866,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.0,
+        0.5,
+        -0.866
+      ],
+      "camera_distance_mm_fov45": 218.4,
+      "source_path": "STL/SO101/Individual/Upper_arm_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "WaveShare_Mounting_Plate_SO101.stl",
+      "part_name": "Mounting plate (Waveshare board)",
+      "used_in": "both",
+      "size_bytes": 37684,
+      "tris": 752,
+      "bbox_mm": {
+        "min": [
+          -25.5,
+          -21.0,
+          0.0
+        ],
+        "max": [
+          25.5,
+          21.0,
+          7.6
+        ],
+        "size": [
+          51.0,
+          42.0,
+          7.6
+        ]
+      },
+      "volume_cm3": 9.093,
+      "area_cm2": 53.45,
+      "center_mm": [
+        0.0,
+        0.0,
+        3.8
+      ],
+      "bounding_radius_mm": 33.252,
+      "camera_dir": [
+        0.612,
+        -0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        0.612
+      ],
+      "camera_distance_mm_fov45": 91.2,
+      "source_path": "STL/SO101/Individual/WaveShare_Mounting_Plate_SO101.stl",
+      "lite": false,
+      "note": "Print only ONE mounting plate per arm, matching the servo driver board brand (Waveshare or Seeed Studio). Listed under Common Parts in README."
+    },
+    {
+      "file": "Wrist_Roll_Pitch_SO101.stl",
+      "part_name": "Wrist roll / pitch",
+      "used_in": "both",
+      "size_bytes": 851884,
+      "tris": 17036,
+      "bbox_mm": {
+        "min": [
+          -27.1,
+          -20.0,
+          -37.828
+        ],
+        "max": [
+          35.2,
+          15.66,
+          39.999
+        ],
+        "size": [
+          62.3,
+          35.66,
+          77.828
+        ]
+      },
+      "volume_cm3": 32.299,
+      "area_cm2": 180.3,
+      "center_mm": [
+        4.05,
+        -2.17,
+        1.085
+      ],
+      "bounding_radius_mm": 52.939,
+      "camera_dir": [
+        0.612,
+        -0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        0.612
+      ],
+      "camera_distance_mm_fov45": 145.3,
+      "source_path": "STL/SO101/Individual/Wrist_Roll_Pitch_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "Moving_Jaw_SO101.stl",
+      "part_name": "Moving jaw (follower gripper)",
+      "used_in": "follower",
+      "size_bytes": 563084,
+      "tris": 11260,
+      "bbox_mm": {
+        "min": [
+          -12.3,
+          -82.0,
+          -24.0
+        ],
+        "max": [
+          9.999,
+          9.989,
+          24.0
+        ],
+        "size": [
+          22.299,
+          91.989,
+          48.0
+        ]
+      },
+      "volume_cm3": 20.693,
+      "area_cm2": 86.33,
+      "center_mm": [
+        -1.15,
+        -36.006,
+        0.0
+      ],
+      "bounding_radius_mm": 53.064,
+      "camera_dir": [
+        0.866,
+        0.0,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.866,
+        0.5,
+        -0.0
+      ],
+      "camera_distance_mm_fov45": 145.6,
+      "source_path": "STL/SO101/Individual/Moving_Jaw_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "Wrist_Roll_Follower_SO101.stl",
+      "part_name": "Wrist roll / fixed jaw (follower)",
+      "used_in": "follower",
+      "size_bytes": 602884,
+      "tris": 12056,
+      "bbox_mm": {
+        "min": [
+          -35.2,
+          -24.218,
+          -0.05
+        ],
+        "max": [
+          30.0,
+          27.782,
+          105.375
+        ],
+        "size": [
+          65.2,
+          52.0,
+          105.425
+        ]
+      },
+      "volume_cm3": 56.618,
+      "area_cm2": 186.76,
+      "center_mm": [
+        -2.6,
+        1.782,
+        52.662
+      ],
+      "bounding_radius_mm": 67.211,
+      "camera_dir": [
+        0.612,
+        0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        -0.612
+      ],
+      "camera_distance_mm_fov45": 184.4,
+      "source_path": "STL/SO101/Individual/Wrist_Roll_Follower_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "BambuLabA1mini_Follower_SO101_lite.stl",
+      "part_name": "Follower print plates, Bambu Lab A1 mini (lite)",
+      "used_in": "follower",
+      "size_bytes": 2850084,
+      "tris": 57000,
+      "bbox_mm": {
+        "min": [
+          22.379,
+          -197.889,
+          -0.005
+        ],
+        "max": [
+          394.565,
+          171.425,
+          87.0
+        ],
+        "size": [
+          372.186,
+          369.315,
+          87.005
+        ]
+      },
+      "volume_cm3": 571.426,
+      "area_cm2": 2022.85,
+      "center_mm": [
+        208.472,
+        -13.232,
+        43.498
+      ],
+      "bounding_radius_mm": 265.747,
+      "camera_dir": [
+        0.612,
+        -0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        0.612
+      ],
+      "camera_distance_mm_fov45": 729.2,
+      "source_path": "STL/SO101/Follower/BambuLabA1mini_Follower_SO101.stl",
+      "lite": true,
+      "lite_of": {
+        "source_path": "STL/SO101/Follower/BambuLabA1mini_Follower_SO101.stl",
+        "size_bytes": 4829284,
+        "tris": 96584
+      },
+      "note": "Decimated; several A1 mini (180x180) plate layouts placed side by side in one file; bbox is offset from origin, center it in the viewer."
+    },
+    {
+      "file": "Handle_SO101.stl",
+      "part_name": "Handle (leader)",
+      "used_in": "leader",
+      "size_bytes": 561084,
+      "tris": 11220,
+      "bbox_mm": {
+        "min": [
+          -93.879,
+          -12.5,
+          36.703
+        ],
+        "max": [
+          -5.754,
+          12.5,
+          96.768
+        ],
+        "size": [
+          88.125,
+          25.0,
+          60.065
+        ]
+      },
+      "volume_cm3": 69.626,
+      "area_cm2": 108.3,
+      "center_mm": [
+        -49.817,
+        0.0,
+        66.736
+      ],
+      "bounding_radius_mm": 54.769,
+      "camera_dir": [
+        0.0,
+        0.866,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.0,
+        0.5,
+        -0.866
+      ],
+      "camera_distance_mm_fov45": 150.3,
+      "source_path": "STL/SO101/Individual/Handle_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "Trigger_SO101.stl",
+      "part_name": "Trigger (leader)",
+      "used_in": "leader",
+      "size_bytes": 448084,
+      "tris": 8960,
+      "bbox_mm": {
+        "min": [
+          -31.99,
+          -51.0,
+          -26.0
+        ],
+        "max": [
+          9.99,
+          10.0,
+          6.0
+        ],
+        "size": [
+          41.98,
+          61.0,
+          32.0
+        ]
+      },
+      "volume_cm3": 11.164,
+      "area_cm2": 57.43,
+      "center_mm": [
+        -11.0,
+        -20.5,
+        -10.0
+      ],
+      "bounding_radius_mm": 40.334,
+      "camera_dir": [
+        -0.866,
+        0.0,
+        0.5
+      ],
+      "camera_dir_yup": [
+        -0.866,
+        0.5,
+        -0.0
+      ],
+      "camera_distance_mm_fov45": 110.7,
+      "source_path": "STL/SO101/Individual/Trigger_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "Wrist_Roll_SO101.stl",
+      "part_name": "Wrist roll (leader)",
+      "used_in": "leader",
+      "size_bytes": 307984,
+      "tris": 6158,
+      "bbox_mm": {
+        "min": [
+          -35.2,
+          -24.0,
+          -1.0
+        ],
+        "max": [
+          30.0,
+          28.0,
+          41.85
+        ],
+        "size": [
+          65.2,
+          52.0,
+          42.85
+        ]
+      },
+      "volume_cm3": 39.815,
+      "area_cm2": 141.83,
+      "center_mm": [
+        -2.6,
+        2.0,
+        20.425
+      ],
+      "bounding_radius_mm": 46.881,
+      "camera_dir": [
+        0.612,
+        0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        -0.612
+      ],
+      "camera_distance_mm_fov45": 128.6,
+      "source_path": "STL/SO101/Individual/Wrist_Roll_SO101.stl",
+      "lite": false
+    },
+    {
+      "file": "BambuLabA1mini_Leader_SO101_lite.stl",
+      "part_name": "Leader print plates, Bambu Lab A1 mini (lite)",
+      "used_in": "leader",
+      "size_bytes": 2850084,
+      "tris": 57000,
+      "bbox_mm": {
+        "min": [
+          9.748,
+          -203.686,
+          -0.003
+        ],
+        "max": [
+          392.008,
+          168.547,
+          87.0
+        ],
+        "size": [
+          382.26,
+          372.233,
+          87.003
+        ]
+      },
+      "volume_cm3": 614.535,
+      "area_cm2": 2057.29,
+      "center_mm": [
+        200.878,
+        -17.569,
+        43.499
+      ],
+      "bounding_radius_mm": 270.301,
+      "camera_dir": [
+        -0.612,
+        -0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        -0.612,
+        0.5,
+        0.612
+      ],
+      "camera_distance_mm_fov45": 741.6,
+      "source_path": "STL/SO101/Leader/BambuLabA1mini_Leader_SO101.stl",
+      "lite": true,
+      "lite_of": {
+        "source_path": "STL/SO101/Leader/BambuLabA1mini_Leader_SO101.stl",
+        "size_bytes": 4980384,
+        "tris": 99606
+      },
+      "note": "Decimated; several A1 mini (180x180) plate layouts placed side by side in one file; bbox is offset from origin, center it in the viewer."
+    },
+    {
+      "file": "gauges/Gauge_0.STL",
+      "part_name": "Servo fit gauge - zero",
+      "used_in": "other",
+      "size_bytes": 88384,
+      "tris": 1766,
+      "bbox_mm": {
+        "min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          51.236,
+          34.7,
+          10.0
+        ],
+        "size": [
+          51.236,
+          34.7,
+          10.0
+        ]
+      },
+      "volume_cm3": 6.8,
+      "area_cm2": 40.44,
+      "center_mm": [
+        25.618,
+        17.35,
+        5.0
+      ],
+      "bounding_radius_mm": 31.342,
+      "camera_dir": [
+        0.612,
+        -0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        0.612
+      ],
+      "camera_distance_mm_fov45": 86.0,
+      "source_path": "STL/Gauges/Gauge_0.STL",
+      "lite": false
+    },
+    {
+      "file": "gauges/Gauge_tight_1.STL",
+      "part_name": "Servo fit gauge - tight",
+      "used_in": "other",
+      "size_bytes": 20884,
+      "tris": 416,
+      "bbox_mm": {
+        "min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          51.114,
+          34.6,
+          10.0
+        ],
+        "size": [
+          51.114,
+          34.6,
+          10.0
+        ]
+      },
+      "volume_cm3": 6.792,
+      "area_cm2": 40.13,
+      "center_mm": [
+        25.557,
+        17.3,
+        5.0
+      ],
+      "bounding_radius_mm": 31.264,
+      "camera_dir": [
+        0.612,
+        -0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        0.612,
+        0.5,
+        0.612
+      ],
+      "camera_distance_mm_fov45": 85.8,
+      "source_path": "STL/Gauges/Gauge_tight_1.STL",
+      "lite": false
+    },
+    {
+      "file": "gauges/Lego_Size_Test_02_minuspoint1.STL",
+      "part_name": "LEGO 4x2 size test - minus 0.1 mm",
+      "used_in": "other",
+      "size_bytes": 39184,
+      "tris": 782,
+      "bbox_mm": {
+        "min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          27.029,
+          25.8,
+          10.0
+        ],
+        "size": [
+          27.029,
+          25.8,
+          10.0
+        ]
+      },
+      "volume_cm3": 3.589,
+      "area_cm2": 23.09,
+      "center_mm": [
+        13.514,
+        12.9,
+        5.0
+      ],
+      "bounding_radius_mm": 19.34,
+      "camera_dir": [
+        -0.612,
+        0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        -0.612,
+        0.5,
+        -0.612
+      ],
+      "camera_distance_mm_fov45": 53.1,
+      "source_path": "STL/Gauges/Lego_Size_Test_02_minuspoint1.STL",
+      "lite": false
+    },
+    {
+      "file": "gauges/Lego_Size_Test_02_zero.STL",
+      "part_name": "LEGO 4x2 size test - zero",
+      "used_in": "other",
+      "size_bytes": 70784,
+      "tris": 1414,
+      "bbox_mm": {
+        "min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          27.15,
+          25.9,
+          10.0
+        ],
+        "size": [
+          27.15,
+          25.9,
+          10.0
+        ]
+      },
+      "volume_cm3": 3.613,
+      "area_cm2": 23.07,
+      "center_mm": [
+        13.575,
+        12.95,
+        5.0
+      ],
+      "bounding_radius_mm": 19.416,
+      "camera_dir": [
+        -0.612,
+        0.612,
+        0.5
+      ],
+      "camera_dir_yup": [
+        -0.612,
+        0.5,
+        -0.612
+      ],
+      "camera_distance_mm_fov45": 53.3,
+      "source_path": "STL/Gauges/Lego_Size_Test_02_zero.STL",
+      "lite": false
+    },
+    {
+      "file": "SO101_Assembly_lite.stl",
+      "part_name": "SO-101 full assembly (lite overview)",
+      "used_in": "other",
+      "size_bytes": 7500084,
+      "tris": 150000,
+      "bbox_mm": {
+        "min": [
+          -55.67,
+          -226.428,
+          0.394
+        ],
+        "max": [
+          55.677,
+          92.923,
+          253.776
+        ],
+        "size": [
+          111.347,
+          319.352,
+          253.382
+        ]
+      },
+      "volume_cm3": 835.431,
+      "area_cm2": 3459.25,
+      "center_mm": [
+        0.004,
+        -66.753,
+        127.085
+      ],
+      "bounding_radius_mm": 211.297,
+      "camera_dir": [
+        0.742,
+        0.52,
+        0.423
+      ],
+      "camera_dir_yup": [
+        0.742,
+        0.423,
+        -0.52
+      ],
+      "camera_distance_mm_fov45": 579.8,
+      "source_path": "STL/SO101/Individual/SO101 Assembly.stl",
+      "lite": true,
+      "lite_of": {
+        "source_path": "STL/SO101/Individual/SO101 Assembly.stl",
+        "size_bytes": 37635784,
+        "tris": 752714
+      },
+      "note": "Decimated overview of 'SO101 Assembly.stl' (150k of 752,714 tris; bbox within 0.45 mm, surface area 99.55%, volume 99.52% of original). Shows the follower configuration with servos and cables; multiple overlapping bodies, so volume is approximate. Camera dir hand-picked three-quarter view."
+    }
+  ]
+}

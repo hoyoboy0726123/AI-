@@ -1,0 +1,114 @@
+<section class="part" id="p1" data-phase="A" data-toc="階段 A　單臂">
+  <div class="part-head">
+    <span class="tag">階段 A</span>
+    <h2>單臂：先讓一隻執行臂動起來</h2>
+    <p>執行臂 Follower 是真正去做事的那隻手臂，6 顆馬達都是 STS3215、7.4V、1/345 減速。這個階段做完，你會有一隻能用電腦控制、已經校準好的手臂。</p>
+  </div>
+  <div class="two">
+    <figure><div class="photo"><img src="assets/img/SO101_Follower.jpg" alt="組裝完成的 SO-101 執行臂，官方照片" width="1600" height="1200" loading="lazy"></div><figcaption>完成品：SO-101 執行臂。照片來源 TheRobotStudio/SO-ARM100，Apache-2.0。</figcaption></figure>
+    <!--VIEWER:overview-->
+  </div>
+
+  <article class="step" id="a01">
+    <header><span class="code">A-01</span><h3>備齊工具與料件</h3></header>
+    <div class="body">
+      <div class="need"><b>工具</b><span class="chip">3D 印表機，平台至少 220 × 220 mm</span><span class="chip">PLA+ 線材 1 捲</span><span class="chip">十字起子 #0、#1</span><span class="chip">電腦一台，有 USB 孔</span><span class="chip">斜口鉗或刮刀，拆支撐用</span></div>
+      <p>下表是官方 GitHub 列出的單隻執行臂料件，價格和網址都照官方原文。淘寶連結需要透過集運寄到台灣。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>料件</th><th class="num">數量</th><th class="num">美元</th><th class="num">人民幣</th><th>購買連結</th></tr></thead>
+          <tbody>
+            <tr><td>STS3215 伺服馬達 7.4V，1/345 減速，型號 C001</td><td class="num">6</td><td class="num">13.89</td><td class="num">97.72</td><td><a href="https://www.alibaba.com/product-detail/Top-Seller-Low-Cost-Feetech-STS3215_1600999461525.html" target="_blank" rel="noopener">Alibaba</a>　<a href="https://item.taobao.com/item.htm?id=712179366565&amp;skuId=5268252241438" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>馬達驅動板 Bus Servo Adapter</td><td class="num">1</td><td class="num">10.6</td><td class="num">27</td><td><a href="https://www.amazon.com/Waveshare-Integrates-Control-Circuit-Supports/dp/B0CTMM4LWK/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738817173460&amp;skuId=5096283384143" target="_blank" rel="noopener">天貓</a></td></tr>
+            <tr><td>USB-C 傳輸線</td><td class="num">1 組</td><td class="num">7</td><td class="num">23.9</td><td><a href="https://www.amazon.com/Charging-etguuds-Charger-Braided-Compatible/dp/B0B8NWLLW2/?th=1" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=44425281296&amp;skuId=5611379016222" target="_blank" rel="noopener">天貓</a></td></tr>
+            <tr><td>電源供應器</td><td class="num">1</td><td class="num">10</td><td class="num">22.31</td><td><a href="https://www.amazon.com/Facmogu-Switching-Transformer-Compatible-5-5x2-1mm/dp/B087LY41PV/" target="_blank" rel="noopener">Amazon</a>　<a href="https://item.taobao.com/item.htm?id=544824248494&amp;skuId=4974994129990" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>桌夾</td><td class="num">2 個</td><td class="num">5</td><td class="num">7.8</td><td><a href="https://www.amazon.com/Mr-Pen-Carpenter-Clamp-6inch/dp/B092L925J4/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738636473238&amp;skuId=5505939904942" target="_blank" rel="noopener">天貓</a></td></tr>
+            <tr><td>精密起子組</td><td class="num">1</td><td class="num">6</td><td class="num">14.9</td><td><a href="https://www.amazon.com/Precision-Phillips-Screwdriver-Electronics-Computer/dp/B0DB227RTH" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=675684600845&amp;skuId=4856851392176" target="_blank" rel="noopener">天貓</a></td></tr>
+          </tbody>
+          <tfoot><tr><td>合計</td><td></td><td class="num">121.94</td><td class="num">682.23</td><td>約新台幣 3,300 到 3,900 元</td></tr></tfoot>
+        </table>
+      </div>
+      <div class="note tip"><b class="k">也可以買整套</b><p>官方合作的套件商：Seeed <a href="https://www.seeedstudio.com/SO-ARM100-Low-Cost-AI-Arm-Kit.html" target="_blank" rel="noopener">國際官網</a>、<a href="https://item.taobao.com/item.htm?id=878010637397&amp;skuId=5915703371829" target="_blank" rel="noopener">淘寶</a>；WowRobo <a href="https://shop.wowrobo.com/products/so-arm101-diy-kit-assembled-version-1" target="_blank" rel="noopener">國際官網</a>、<a href="https://item.taobao.com/item.htm?ft=t&amp;id=860171734711" target="_blank" rel="noopener">淘寶</a>。買套件的話，A-01 到 A-04 的採購和列印可以跳過，直接從 A-05 開始。</p></div>
+      <div class="note warn"><b class="k">注意馬達版本</b><p>執行臂 6 顆都要買 7.4V、1/345 減速的 C001。主控臂用的是另外三種減速比，階段 C 才會用到，現在不要混在一起。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a01"><span><b>檢查點</b>6 顆 C001 馬達、驅動板、USB-C 線、電源、桌夾和起子都在桌上，數量正確。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a02">
+    <header><span class="code">A-02</span><h3>下載官方列印檔</h3></header>
+    <div class="body">
+      <p>官方已經把執行臂全部零件排好在同一個檔案裡，方向也擺好了。依你的印表機平台大小，下載對應的那一個就好。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>你的印表機</th><th>執行臂整盤檔案</th><th>下載</th></tr></thead>
+          <tbody>
+            <tr><td>Ender 類，平台 220 × 220 mm</td><td><code>Ender_Follower_SO101.stl</code></td><td><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/SO101/Follower/Ender_Follower_SO101.stl" target="_blank" rel="noopener">GitHub 頁面</a>　<a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Follower/Ender_Follower_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+            <tr><td>Prusa 類，平台 205 × 250 mm</td><td><code>Prusa_Follower_SO101.stl</code></td><td><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/SO101/Follower/Prusa_Follower_SO101.stl" target="_blank" rel="noopener">GitHub 頁面</a>　<a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Follower/Prusa_Follower_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+            <tr><td>Bambu Lab A1 mini</td><td><code>BambuLabA1mini_Follower_SO101.stl</code></td><td><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/SO101/Follower/BambuLabA1mini_Follower_SO101.stl" target="_blank" rel="noopener">GitHub 頁面</a>　<a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Follower/BambuLabA1mini_Follower_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>想一個一個零件印，或某個零件印壞了要重印，就用下面的 3D 檢視器確認長相，再到官方的 <a href="https://github.com/TheRobotStudio/SO-ARM100/tree/main/STL/SO101/Individual" target="_blank" rel="noopener">Individual 資料夾</a> 下載單一零件。</p>
+      <!--VIEWER:parts-->
+      <div class="dl"><button class="btn primary" type="button" data-download="assets/so101-official-stl.zip" data-filename="SO-101-official-STL.zip">下載全部單一零件 STL（zip）</button><span class="msg">內含官方 Apache-2.0 授權檔。</span></div>
+      <label class="check"><input type="checkbox" id="ck-a02"><span><b>檢查點</b>整盤檔案已經下載，用切片軟體打開，零件都平躺在平台範圍內。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a03">
+    <header><span class="code">A-03</span><h3>先印量規，確認尺寸準確</h3></header>
+    <div class="body">
+      <p>馬達要剛好塞進列印件，印表機尺寸偏差一點就會太鬆或塞不進去。所以先花幾分鐘印量規。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>手上有的東西</th><th>要印的量規</th><th>下載</th></tr></thead>
+          <tbody>
+            <tr><td>STS3215 馬達</td><td><code>Gauge_0.STL</code>、<code>Gauge_tight_1.STL</code></td><td><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/Gauges/Gauge_0.STL" target="_blank" rel="noopener">Gauge_0</a>　<a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/Gauges/Gauge_tight_1.STL" target="_blank" rel="noopener">Gauge_tight_1</a></td></tr>
+            <tr><td>標準樂高 4 × 2 積木</td><td><code>Lego_Size_Test_02_zero.STL</code>、<code>Lego_Size_Test_02_minuspoint1.STL</code></td><td><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/Gauges/Lego_Size_Test_02_zero.STL" target="_blank" rel="noopener">zero</a>　<a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/STL/Gauges/Lego_Size_Test_02_minuspoint1.STL" target="_blank" rel="noopener">minus 0.1</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!--ANIM:print-->
+      <ol class="do">
+        <li>依照官方建議設定切片：PLA+、0.4 mm 噴嘴配 0.2 mm 層高，或 0.6 mm 噴嘴配 0.4 mm 層高、填充 15%。</li>
+        <li>平台清乾淨，不能有灰塵或油。用水擦過的話要擦乾。印表機建議上膠的話，薄薄塗一層口紅膠。</li>
+        <li>印 <code>Gauge_0</code>，拿馬達去試塞。官方的判斷標準請看 <a href="https://youtu.be/dss8E3DG2rA" target="_blank" rel="noopener">官方示範影片</a>。</li>
+        <li>太緊或太鬆，就調整印表機設定再印一次。調好之前不要印整盤零件。</li>
+      </ol>
+      <label class="check"><input type="checkbox" id="ck-a03"><span><b>檢查點</b>馬達放進 Gauge_0，鬆緊和官方影片差不多：塞得進去、不會晃。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a04">
+    <header><span class="code">A-04</span><h3>印整盤執行臂零件，拆支撐</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li>打開 A-02 下載的整盤檔案，用 A-03 調好的設定切片。</li>
+        <li>支撐設定為「全部區域」，但與水平面夾角大於 45° 的斜面不需要支撐。</li>
+        <li>確認水平方向的螺絲孔裡面<strong>沒有</strong>長支撐，有的話在切片軟體裡把那裡的支撐去掉。</li>
+        <li>印完用刮刀把零件從平台鏟下來，把所有支撐材料拆乾淨，特別是馬達要塞進去的凹槽。</li>
+      </ol>
+      <div class="note tip"><b class="k">線材用量</b><p>從官方 220 × 220 整盤檔算出，執行臂大約用 280 到 360 g PLA，一捲 1 kg 綽綽有餘。</p></div>
+      <!--VIEWER:plates-->
+      <div class="tbl">
+        <table>
+          <thead><tr><th>零件檔名</th><th>用途</th><th class="num">數量</th></tr></thead>
+          <tbody>
+            <tr><td><code>Base_SO101</code></td><td>底座</td><td class="num">1</td></tr>
+            <tr><td><code>Base_motor_holder_SO101</code></td><td>底座馬達座</td><td class="num">1</td></tr>
+            <tr><td><code>Motor_holder_SO101_Base</code></td><td>肩部馬達座</td><td class="num">1</td></tr>
+            <tr><td><code>Rotation_Pitch_SO101</code></td><td>肩部旋轉與抬升件</td><td class="num">1</td></tr>
+            <tr><td><code>Upper_arm_SO101</code></td><td>上臂</td><td class="num">1</td></tr>
+            <tr><td><code>Under_arm_SO101</code></td><td>前臂</td><td class="num">1</td></tr>
+            <tr><td><code>Motor_holder_SO101_Wrist</code></td><td>腕部馬達座</td><td class="num">1</td></tr>
+            <tr><td><code>Wrist_Roll_Pitch_SO101</code></td><td>腕部俯仰件</td><td class="num">1</td></tr>
+            <tr><td><code>Wrist_Roll_Follower_SO101</code></td><td>腕部旋轉件，執行臂專用</td><td class="num">1</td></tr>
+            <tr><td><code>Moving_Jaw_SO101</code></td><td>活動夾爪，執行臂專用</td><td class="num">1</td></tr>
+            <tr><td><code>WaveShare_Mounting_Plate_SO101</code> 或 <code>Seeedstudio_Mounting_Plate_SO101</code></td><td>驅動板固定板，依你買的驅動板品牌選一個</td><td class="num">1</td></tr>
+          </tbody>
+          <tfoot><tr><td>合計</td><td></td><td class="num">11</td></tr></tfoot>
+        </table>
+      </div>
+      <label class="check"><input type="checkbox" id="ck-a04"><span><b>檢查點</b>11 個零件都在，對照上表與 3D 檢視器確認，馬達凹槽和螺絲孔裡沒有殘留支撐。</span></label>
+    </div>
+  </article>

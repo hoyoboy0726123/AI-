@@ -1,0 +1,105 @@
+{
+  "source_repo": "https://github.com/TheRobotStudio/SO-ARM100",
+  "commit": "a758567c3978dfeefe282ede0500085a48fe8f78",
+  "license": "Apache-2.0",
+  "license_url": "https://github.com/TheRobotStudio/SO-ARM100/blob/a758567c3978dfeefe282ede0500085a48fe8f78/LICENSE",
+  "attribution": "Images from TheRobotStudio/SO-ARM100 (Apache-2.0)",
+  "files": [
+    {
+      "file": "SO101_Follower.webp",
+      "derived": "original (unchanged)",
+      "size_px": [
+        2048,
+        1536
+      ],
+      "size_bytes": 133522,
+      "source_path": "media/SO101_Follower.webp",
+      "source_url": "https://github.com/TheRobotStudio/SO-ARM100/blob/a758567c3978dfeefe282ede0500085a48fe8f78/media/SO101_Follower.webp",
+      "raw_url": "https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/a758567c3978dfeefe282ede0500085a48fe8f78/media/SO101_Follower.webp",
+      "description": "SO-101 follower arm",
+      "commit": "a758567c3978dfeefe282ede0500085a48fe8f78",
+      "license": "Apache-2.0",
+      "copyright": "TheRobotStudio/SO-ARM100"
+    },
+    {
+      "file": "SO101_Follower.jpg",
+      "derived": "converted from webp, downscaled to 1600px width, JPEG q85",
+      "size_px": [
+        1600,
+        1200
+      ],
+      "size_bytes": 171623,
+      "source_path": "media/SO101_Follower.webp",
+      "source_url": "https://github.com/TheRobotStudio/SO-ARM100/blob/a758567c3978dfeefe282ede0500085a48fe8f78/media/SO101_Follower.webp",
+      "raw_url": "https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/a758567c3978dfeefe282ede0500085a48fe8f78/media/SO101_Follower.webp",
+      "description": "SO-101 follower arm",
+      "commit": "a758567c3978dfeefe282ede0500085a48fe8f78",
+      "license": "Apache-2.0",
+      "copyright": "TheRobotStudio/SO-ARM100"
+    },
+    {
+      "file": "SO101_Leader.webp",
+      "derived": "original (unchanged)",
+      "size_px": [
+        2048,
+        1536
+      ],
+      "size_bytes": 154650,
+      "source_path": "media/SO101_Leader.webp",
+      "source_url": "https://github.com/TheRobotStudio/SO-ARM100/blob/a758567c3978dfeefe282ede0500085a48fe8f78/media/SO101_Leader.webp",
+      "raw_url": "https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/a758567c3978dfeefe282ede0500085a48fe8f78/media/SO101_Leader.webp",
+      "description": "SO-101 leader arm",
+      "commit": "a758567c3978dfeefe282ede0500085a48fe8f78",
+      "license": "Apache-2.0",
+      "copyright": "TheRobotStudio/SO-ARM100"
+    },
+    {
+      "file": "SO101_Leader.jpg",
+      "derived": "converted from webp, downscaled to 1600px width, JPEG q85",
+      "size_px": [
+        1600,
+        1200
+      ],
+      "size_bytes": 193915,
+      "source_path": "media/SO101_Leader.webp",
+      "source_url": "https://github.com/TheRobotStudio/SO-ARM100/blob/a758567c3978dfeefe282ede0500085a48fe8f78/media/SO101_Leader.webp",
+      "raw_url": "https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/a758567c3978dfeefe282ede0500085a48fe8f78/media/SO101_Leader.webp",
+      "description": "SO-101 leader arm",
+      "commit": "a758567c3978dfeefe282ede0500085a48fe8f78",
+      "license": "Apache-2.0",
+      "copyright": "TheRobotStudio/SO-ARM100"
+    },
+    {
+      "file": "Leader_And_Follower_SO100.jpg",
+      "derived": "downscaled from 4032x3024 to 1600px width, JPEG q85, metadata stripped, converted Display P3 -> sRGB",
+      "size_px": [
+        1600,
+        1200
+      ],
+      "size_bytes": 193251,
+      "source_path": "media/Leader_And_Follower_SO100.jpg",
+      "source_url": "https://github.com/TheRobotStudio/SO-ARM100/blob/a758567c3978dfeefe282ede0500085a48fe8f78/media/Leader_And_Follower_SO100.jpg",
+      "raw_url": "https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/a758567c3978dfeefe282ede0500085a48fe8f78/media/Leader_And_Follower_SO100.jpg",
+      "description": "SO-100 leader and follower arms (previous generation)",
+      "commit": "a758567c3978dfeefe282ede0500085a48fe8f78",
+      "license": "Apache-2.0",
+      "copyright": "TheRobotStudio/SO-ARM100"
+    },
+    {
+      "file": "servo_studio_dashboard.png",
+      "derived": "original (unchanged)",
+      "size_px": [
+        1024,
+        491
+      ],
+      "size_bytes": 248970,
+      "source_path": "docs/assets/servo_studio_dashboard.png",
+      "source_url": "https://github.com/TheRobotStudio/SO-ARM100/blob/a758567c3978dfeefe282ede0500085a48fe8f78/docs/assets/servo_studio_dashboard.png",
+      "raw_url": "https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/a758567c3978dfeefe282ede0500085a48fe8f78/docs/assets/servo_studio_dashboard.png",
+      "description": "Feetech servo studio dashboard screenshot",
+      "commit": "a758567c3978dfeefe282ede0500085a48fe8f78",
+      "license": "Apache-2.0",
+      "copyright": "TheRobotStudio/SO-ARM100"
+    }
+  ]
+}
