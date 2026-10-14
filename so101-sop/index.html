@@ -148,6 +148,22 @@ figcaption{font-size:13px;color:var(--ink-2)}
 .viewer .parts button{font:500 13px var(--f-body);padding:4px 10px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer}
 .viewer .parts button[aria-pressed="true"]{background:var(--mat);border-color:var(--mat);color:var(--sheet)}
 @media (max-width:640px){.asmv .vp{aspect-ratio:1/1}}
+.resbar{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin:14px 0;padding:12px 16px;border:1.5px solid var(--mat);border-radius:8px;background:var(--mat-soft);color:var(--ink);text-decoration:none;font-size:15px}
+.resbar b{font-family:var(--f-disp);letter-spacing:.12em;color:var(--mat);font-size:16px}
+.resbar:hover span{text-decoration:underline}
+.res{display:grid;gap:22px}
+.res h4{font-size:17px;margin:0 0 8px;padding-left:10px;border-left:4px solid var(--mat)}
+.res ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.res li{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);min-width:0}
+.res li>a{font-weight:700;overflow-wrap:anywhere}
+.res li p{flex-basis:100%;margin:0;font-size:14px;line-height:1.6;color:var(--ink-2);overflow-wrap:anywhere}
+.res ul.vids{grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr))}
+.badge{font-size:12px;line-height:1.6;padding:0 8px;border-radius:999px;white-space:nowrap;font-weight:700}
+.badge.ok{background:var(--mat-soft);color:var(--mat);border:1px solid var(--mat)}
+.badge.off{background:var(--amber-soft);color:var(--amber);border:1px solid var(--amber)}
+.badge.srch{background:var(--code);color:var(--ink-2);border:1px solid var(--rule)}
+.pdf{font:700 11px var(--f-mono);padding:0 6px;border-radius:4px;background:var(--red-soft);color:var(--red)}
+.reslegend{font-size:14px}
 .asmv .asm-cap{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:10px 12px 0;font-size:15px}
 .asmv .asm-cap b{font-family:var(--f-disp);letter-spacing:.06em;color:var(--mat);font-size:17px}
 .asmv .ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px}
@@ -220,6 +236,7 @@ footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-siz
       <div role="listitem"><b>圖檔授權</b>Apache-2.0</div>
     </div>
     <p class="lead">這份手冊帶零基礎的工程師，從下載開源列印檔開始，一步一步做出 SO-101 機械手臂，再加上 TAL221 荷重元做力量感測，最後補上主控臂做成雙臂遙控。每一張工單都有料件、動作、動畫或 3D 圖，以及「檢查點」。檢查點沒過，不要進下一步。</p>
+    <a class="resbar" href="#r01"><b>開工前先看</b><span>官方開源位置、說明書與規格書 PDF、官方影片，全部整理在 R-01，每個連結都標了驗證狀態。</span></a>
     <nav class="phases" aria-label="三個階段">
       <a class="phase-card" href="#p1"><span class="tag">階段 A</span><h3>單臂：執行臂動起來</h3><p>列印、裝軟體、設定馬達、組裝、校準、測試</p><div class="meter" aria-hidden="true"><i data-meter="A"></i></div><span class="meter-label" data-meter-label="A">0 / 0 完成</span></a>
       <a class="phase-card" href="#p2"><span class="tag">階段 B</span><h3>力感測：量 1 到 200 克</h3><p>荷重元接線、韌體、治具、砝碼校正、推力控制</p><div class="meter" aria-hidden="true"><i data-meter="B"></i></div><span class="meter-label" data-meter-label="B">0 / 0 完成</span></a>
