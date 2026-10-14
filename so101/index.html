@@ -155,6 +155,22 @@ figcaption{font-size:13px;color:var(--ink-2)}
 .viewer .parts button{font:500 13px var(--f-body);padding:4px 10px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer}
 .viewer .parts button[aria-pressed="true"]{background:var(--mat);border-color:var(--mat);color:var(--sheet)}
 @media (max-width:640px){.asmv .vp{aspect-ratio:1/1}}
+.resbar{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;margin:14px 0;padding:12px 16px;border:1.5px solid var(--mat);border-radius:8px;background:var(--mat-soft);color:var(--ink);text-decoration:none;font-size:15px}
+.resbar b{font-family:var(--f-disp);letter-spacing:.12em;color:var(--mat);font-size:16px}
+.resbar:hover span{text-decoration:underline}
+.res{display:grid;gap:22px}
+.res h4{font-size:17px;margin:0 0 8px;padding-left:10px;border-left:4px solid var(--mat)}
+.res ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.res li{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);min-width:0}
+.res li>a{font-weight:700;overflow-wrap:anywhere}
+.res li p{flex-basis:100%;margin:0;font-size:14px;line-height:1.6;color:var(--ink-2);overflow-wrap:anywhere}
+.res ul.vids{grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr))}
+.badge{font-size:12px;line-height:1.6;padding:0 8px;border-radius:999px;white-space:nowrap;font-weight:700}
+.badge.ok{background:var(--mat-soft);color:var(--mat);border:1px solid var(--mat)}
+.badge.off{background:var(--amber-soft);color:var(--amber);border:1px solid var(--amber)}
+.badge.srch{background:var(--code);color:var(--ink-2);border:1px solid var(--rule)}
+.pdf{font:700 11px var(--f-mono);padding:0 6px;border-radius:4px;background:var(--red-soft);color:var(--red)}
+.reslegend{font-size:14px}
 .asmv .asm-cap{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:10px 12px 0;font-size:15px}
 .asmv .asm-cap b{font-family:var(--f-disp);letter-spacing:.06em;color:var(--mat);font-size:17px}
 .asmv .ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px}
@@ -230,6 +246,7 @@ footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-siz
       <div role="listitem"><b>圖檔授權</b>Apache-2.0</div>
     </div>
     <p class="lead">這份手冊帶零基礎的工程師，從下載開源列印檔開始，一步一步做出 SO-101 機械手臂，再加上 TAL221 荷重元做力量感測，最後補上主控臂做成雙臂遙控。每一張工單都有料件、動作、動畫或 3D 圖，以及「檢查點」。檢查點沒過，不要進下一步。</p>
+    <a class="resbar" href="#r01"><b>開工前先看</b><span>官方開源位置、說明書與規格書 PDF、官方影片，全部整理在 R-01，每個連結都標了驗證狀態。</span></a>
     <nav class="phases" aria-label="三個階段">
       <a class="phase-card" href="#p1"><span class="tag">階段 A</span><h3>單臂：執行臂動起來</h3><p>列印、裝軟體、設定馬達、組裝、校準、測試</p><div class="meter" aria-hidden="true"><i data-meter="A"></i></div><span class="meter-label" data-meter-label="A">0 / 0 完成</span></a>
       <a class="phase-card" href="#p2"><span class="tag">階段 B</span><h3>力感測：量 1 到 200 克</h3><p>荷重元接線、韌體、治具、砝碼校正、推力控制</p><div class="meter" aria-hidden="true"><i data-meter="B"></i></div><span class="meter-label" data-meter-label="B">0 / 0 完成</span></a>
@@ -246,6 +263,122 @@ footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-siz
     </aside>
 
     <main id="main">
+<section class="part" id="p0" data-phase="R" data-toc="開工前　官方資源">
+  <div class="part-head">
+    <span class="tag">開工前</span>
+    <h2>官方開源位置與說明書</h2>
+    <p>所有原始檔、官方教學、規格書 PDF 和官方影片都在這裡。手冊裡的每一步都是從這些來源整理出來的，遇到手冊沒寫到的細節，就回到這裡查原文。</p>
+  </div>
+
+  <article class="step" id="r01">
+    <header><span class="code">R-01</span><h3>先把這些連結加入書籤</h3></header>
+    <div class="body">
+      <dl class="kv reslegend">
+        <dt><span class="badge ok">已驗證</span></dt><dd>撰寫本手冊時實際下載過，或用 git 直接讀到內容。</dd>
+        <dt><span class="badge off">官方指定</span></dt><dd>網址寫在官方文件裡，但撰寫環境連不到這個網站，沒能親自打開。</dd>
+        <dt><span class="badge srch">搜尋確認</span></dt><dd>用搜尋引擎找到，標題和內容摘要都對得上，但沒能直接打開。</dd>
+      </dl>
+
+      <div class="res">
+        <section>
+          <h4>開源專案本體</h4>
+          <ul>
+            <li><a href="https://github.com/TheRobotStudio/SO-ARM100" target="_blank" rel="noopener">SO-ARM100 官方 GitHub</a><span class="badge ok">已驗證</span>
+              <p>SO-101 的硬體總部：列印檔、料件表、列印設定都在 README。本手冊對照的版本是 commit a758567，2026-10-06。</p></li>
+            <li><a href="https://github.com/TheRobotStudio/SO-ARM100/tree/main/STL/SO101" target="_blank" rel="noopener">STL 列印檔資料夾 STL/SO101</a><span class="badge ok">已驗證</span>
+              <p>執行臂 Follower、主控臂 Leader 的整盤檔，和 Individual 單一零件。全部實際下載過。</p></li>
+            <li><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/3DPRINT.md" target="_blank" rel="noopener">列印與代印說明 3DPRINT.md</a><span class="badge ok">已驗證</span>
+              <p>沒有 3D 印表機的話，官方列出的代印服務在這裡。</p></li>
+            <li><a href="https://github.com/TheRobotStudio/SO-ARM100/tree/main/Simulation/SO101" target="_blank" rel="noopener">官方 3D 模型 URDF Simulation/SO101</a><span class="badge ok">已驗證</span>
+              <p>本手冊的逐步組裝圖就是用這份模型算出來的。</p></li>
+            <li><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/LICENSE" target="_blank" rel="noopener">授權條款 Apache-2.0</a><span class="badge ok">已驗證</span>
+              <p>可以自由列印、修改和商用，轉發時要保留授權聲明。</p></li>
+            <li><a href="https://github.com/huggingface/lerobot" target="_blank" rel="noopener">LeRobot 官方 GitHub</a><span class="badge ok">已驗證</span>
+              <p>控制手臂的軟體。本手冊對照 0.6.2 版，commit ae2b57f，2026-10-13。</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h4>官方教學說明書</h4>
+          <ul>
+            <li><a href="https://huggingface.co/docs/lerobot/so101" target="_blank" rel="noopener">LeRobot SO-101 組裝與設定教學</a><span class="badge off">官方指定</span>
+              <p>官方 README 指定的組裝說明。網頁版在 Hugging Face；同一份內容的原文檔 <a href="https://github.com/huggingface/lerobot/blob/main/docs/source/so101.mdx" target="_blank" rel="noopener">so101.mdx</a> 已實際讀過。</p></li>
+            <li><a href="https://huggingface.co/docs/lerobot/installation" target="_blank" rel="noopener">LeRobot 安裝說明</a><span class="badge off">官方指定</span>
+              <p>A-05 的安裝步驟出處。原文檔已實際讀過： <a href="https://github.com/huggingface/lerobot/blob/main/docs/source/installation.mdx" target="_blank" rel="noopener">installation.mdx</a>。</p></li>
+            <li><a href="https://huggingface.co/docs/lerobot/il_robots" target="_blank" rel="noopener">LeRobot 遙控、錄資料、訓練 AI</a><span class="badge off">官方指定</span>
+              <p>雙臂做好之後的下一步：錄示範資料、訓練模型。原文檔已實際讀過： <a href="https://github.com/huggingface/lerobot/blob/main/docs/source/il_robots.mdx" target="_blank" rel="noopener">il_robots.mdx</a>。</p></li>
+            <li><a href="https://github.com/TheRobotStudio/SO-ARM100/blob/main/Software/WEBUI_CALIBRATION.md" target="_blank" rel="noopener">官方網頁版校準工具說明</a><span class="badge ok">已驗證</span>
+              <p>另一種校準方式，用瀏覽器操作。</p></li>
+            <li><a href="https://wiki.seeedstudio.com/cn/lerobot_so100m/" target="_blank" rel="noopener">Seeed 中文教學</a><span class="badge srch">搜尋確認</span>
+              <p>官方合作套件商 Seeed 寫的簡體中文教學，從組裝到訓練都有圖。英文新版在 <a href="https://wiki.seeedstudio.com/lerobot_so100m_new/" target="_blank" rel="noopener">lerobot_so100m_new</a>。</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h4>規格書 PDF 與硬體說明</h4>
+          <ul>
+            <li><a href="https://wiki.seeedstudio.com/feetech_servo/" target="_blank" rel="noopener">Feetech 馬達文件中心</a><span class="badge srch">搜尋確認</span>
+              <p>STS3215 系列的規格書都在這裡：執行臂用的 C001，主控臂用的 C044、C046，還有通訊協定文件。</p></li>
+            <li><a href="https://files.seeedstudio.com/Bazaar/product_pdf/101090141.pdf" target="_blank" rel="noopener">STS3215 C044 規格書</a><span class="pdf">PDF</span><span class="badge srch">搜尋確認</span>
+              <p>主控臂 ID 1、ID 3 用的 1/191 馬達。</p></li>
+            <li><a href="https://www.waveshare.com/wiki/Bus_Servo_Adapter_(A)" target="_blank" rel="noopener">Waveshare 馬達驅動板說明</a><span class="badge srch">搜尋確認</span>
+              <p>驅動板的接線、跳線帽位置、電路圖下載。A-06 要把跳線帽放在 B。</p></li>
+            <li><a href="https://raw.githubusercontent.com/sparkfun/HX711-Load-Cell-Amplifier/master/datasheets/hx711F_EN.pdf" target="_blank" rel="noopener">HX711 晶片規格書</a><span class="pdf">PDF</span><span class="badge ok">已驗證</span>
+              <p>SparkFun 在 GitHub 上附的英文版，實際下載過。電路板設計檔在 <a href="https://github.com/sparkfun/HX711-Load-Cell-Amplifier" target="_blank" rel="noopener">SparkFun HX711 GitHub</a>。</p></li>
+            <li><a href="https://cdn.sparkfun.com/assets/9/9/a/f/3/TAL221.pdf" target="_blank" rel="noopener">TAL221 荷重元規格書</a><span class="pdf">PDF</span><span class="badge off">官方指定</span>
+              <p>SparkFun 商品頁附的規格書。打不開的話，可以看<a href="https://cdn.components.ru/media/PDF/2459570.pdf" target="_blank" rel="noopener">第三方保存的同一份</a>。</p></li>
+            <li><a href="https://docs.arduino.cc/resources/datasheets/A000005-datasheet.pdf" target="_blank" rel="noopener">Arduino Nano 規格書</a><span class="pdf">PDF</span><span class="badge srch">搜尋確認</span>
+              <p>Arduino 官方，26 頁，含腳位圖。</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h4>軟體與工具</h4>
+          <ul>
+            <li><a href="https://github.com/conda-forge/miniforge" target="_blank" rel="noopener">Miniforge</a><span class="badge ok">已驗證</span>
+              <p>A-05 用來建立 Python 環境。</p></li>
+            <li><a href="https://www.arduino.cc/en/software" target="_blank" rel="noopener">Arduino IDE</a><span class="badge off">官方指定</span>
+              <p>B-04 燒錄韌體用。</p></li>
+            <li><a href="https://github.com/bogde/HX711" target="_blank" rel="noopener">HX711 Arduino Library</a><span class="badge ok">已驗證</span>
+              <p>作者 Bogdan Necula，版本 0.7.5。在 Arduino IDE 裡搜尋 <code>HX711 Arduino Library</code> 安裝。</p></li>
+            <li><a href="https://www.feetechrc.com/software.html" target="_blank" rel="noopener">Feetech 官方馬達除錯軟體</a><span class="badge off">官方指定</span>
+              <p>Windows 用。官方 README 推薦用它單獨測試馬達。</p></li>
+            <li><a href="https://github.com/Kotakku/FT_SCServo_Debug_Qt" target="_blank" rel="noopener">FT_SCServo_Debug_Qt</a><span class="badge ok">已驗證</span>
+              <p>Ubuntu 用的馬達除錯工具，官方 README 推薦。</p></li>
+          </ul>
+        </section>
+
+        <section>
+          <h4>官方影片</h4>
+          <ul class="vids">
+            <li><a href="https://youtu.be/dss8E3DG2rA" target="_blank" rel="noopener">量規試塞示範</a><span class="badge off">官方指定</span><p>A-03 列印量規後，對照鬆緊度。</p></li>
+            <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/setup_motors_so101_2.mp4" target="_blank" rel="noopener">設定馬達 ID</a><span class="badge off">官方指定</span><p>A-07。</p></li>
+            <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint1_v2.mp4" target="_blank" rel="noopener">關節 1 組裝</a><span class="badge off">官方指定</span><p>A-09。</p></li>
+            <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint2_v2.mp4" target="_blank" rel="noopener">關節 2 組裝</a><span class="badge off">官方指定</span><p>A-10。</p></li>
+            <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint3_v2.mp4" target="_blank" rel="noopener">關節 3 組裝</a><span class="badge off">官方指定</span><p>A-11。</p></li>
+            <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint4_v2.mp4" target="_blank" rel="noopener">關節 4 組裝</a><span class="badge off">官方指定</span><p>A-12。</p></li>
+            <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint5_v2.mp4" target="_blank" rel="noopener">關節 5 組裝</a><span class="badge off">官方指定</span><p>A-13。</p></li>
+            <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Gripper_v2.mp4" target="_blank" rel="noopener">夾爪組裝</a><span class="badge off">官方指定</span><p>A-14。</p></li>
+            <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/calibrate_so101_2.mp4" target="_blank" rel="noopener">校準示範</a><span class="badge off">官方指定</span><p>A-16、C-04。</p></li>
+            <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Leader_v2.mp4" target="_blank" rel="noopener">主控臂握把組裝</a><span class="badge off">官方指定</span><p>C-03。</p></li>
+          </ul>
+          <p class="src" style="margin:8px 0 0">影片網址都直接取自目前官方 so101.mdx 原文，放在 Hugging Face 上，撰寫環境連不到所以沒有實際播放過。</p>
+        </section>
+
+        <section>
+          <h4>社群</h4>
+          <ul>
+            <li><a href="https://discord.gg/ggrqhPTsMe" target="_blank" rel="noopener">官方 Discord 社群</a><span class="badge off">官方指定</span>
+              <p>卡關時可以到這裡用英文發問，硬體和軟體的開發者都在。</p></li>
+          </ul>
+        </section>
+      </div>
+      <div class="note tip"><b class="k">官方網站打不開怎麼辦</b><p>Hugging Face 的網頁打不開時，點各項目裡的「原文檔」，在 GitHub 上看同一份內容。影片打不開時，手冊每一步的逐步組裝圖和 3D 動畫，也是照同一份官方步驟做的。</p></div>
+      <label class="check"><input type="checkbox" id="ck-r01"><span><b>檢查點</b>SO-ARM100 GitHub、LeRobot SO-101 教學、Feetech 馬達文件中心這三個連結都能打開，已經加入書籤。</span></label>
+    </div>
+  </article>
+</section>
+
 <section class="part" id="p1" data-phase="A" data-toc="階段 A　單臂">
   <div class="part-head">
     <span class="tag">階段 A</span>
@@ -1759,7 +1892,7 @@ if __name__ == &quot;__main__&quot;:
   <article class="step" id="z02">
     <header><span class="code">Z-02</span><h3>資料來源與授權</h3></header>
     <div class="body">
-      <p>本手冊所有指令、步驟和料件都對照以下版本的原始檔查證，日期 2026-10-14。官方之後若更新，以官方為準。</p>
+      <p>本手冊所有指令、步驟和料件都對照以下版本的原始檔查證，日期 2026-10-14。官方之後若更新，以官方為準。完整的官方連結、說明書和規格書 PDF 清單在最前面的 <a href="#r01">R-01</a>。</p>
       <ul class="src do">
         <li>SO-101 硬體：<a href="https://github.com/TheRobotStudio/SO-ARM100" target="_blank" rel="noopener">TheRobotStudio/SO-ARM100</a>，commit a758567，Apache-2.0。列印檔、照片、料件表、列印設定都來自這裡。</li>
         <li>LeRobot 軟體 0.6.2：<a href="https://github.com/huggingface/lerobot" target="_blank" rel="noopener">huggingface/lerobot</a>，commit ae2b57f，Apache-2.0。安裝、設定馬達、校準、遙控的指令與程式介面來自 <code>docs/source/so101.mdx</code>、<code>installation.mdx</code>、<code>il_robots.mdx</code> 與原始碼。</li>
