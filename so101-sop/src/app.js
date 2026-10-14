@@ -121,7 +121,15 @@ function buildZip(spec){
 function initDownloads(){
   var btns = document.querySelectorAll("[data-zip]");
   if(!btns.length) return;
-  var dlPromise = (window.claude && typeof window.claude.use === "function") ? window.claude.use("downloads") : Promise.resolve(null);
+  var inClaude = !!(window.claude && typeof window.claude.use === "function");
+  var dlPromise = inClaude ? window.claude.use("downloads") : Promise.resolve(null);
+  /* outside claude.ai, e.g. GitHub Pages: a plain browser download */
+  function saveLocal(blob, name){
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 60000);
+  }
   btns.forEach(function(btn){
     var msg = btn.parentElement.querySelector(".msg");
     var spec = ZIPS[btn.getAttribute("data-zip")];
@@ -130,8 +138,9 @@ function initDownloads(){
       btn.disabled = true;
       if(msg) msg.textContent = "打包中，檔案較多請稍候…";
       dlPromise.then(function(dl){
-        if(!dl){ throw {code:"unavailable"}; }
+        if(!dl && inClaude){ throw {code:"unavailable"}; }
         return buildZip(spec).then(function(blob){
+          if(!dl) return saveLocal(blob, spec.name);
           return dl.save({filename: spec.name, data: blob});
         });
       }).then(function(){

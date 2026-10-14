@@ -27,6 +27,16 @@ python3 src/build.py
 
 輸出在 `dist/index.html`。`assets/stl64/` 是 STL 的 base64 版本，網頁用它載入 3D 模型，`build.py` 會自動產生。
 
+## GitHub Pages
+
+網址：https://hoyoboy0726123.github.io/AI-/so101/
+
+```bash
+python3 src/tools/build_pages.py
+```
+
+會產生 `site/`，把它整個複製到 `gh-pages` 分支的 `so101/` 資料夾再推上去就完成更新。下載按鈕在 GitHub Pages 上會直接用瀏覽器下載 zip。
+
 ## 驗證狀態
 
 - 官方 STL 下載網址都實際下載過；LeRobot 指令與 Python 類別對照 LeRobot 0.6.2 原始碼。
