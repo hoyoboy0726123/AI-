@@ -13,7 +13,7 @@ ANIMS = {
     "jig": {"vb": "0 0 720 330", "title": "治具組裝", "steps": [
         "荷重元固定端鎖上治具座", "受力端裝上推頭", "細線用束帶固定，不讓它受力", "夾爪夾緊治具座"]},
     "calibrate": {"vb": "0 0 680 330", "title": "校準流程", "steps": [
-        "把每個關節擺到行程中間，按 Enter", "依序把每個關節轉到兩端極限", "全部轉完，按 Enter 存檔"]},
+        "上臂朝上、前臂朝前，擺到中間位置，按 Enter", "除了手腕旋轉，每個關節慢慢轉到兩端", "全部轉完，按 Enter 存檔"]},
     "teleop": {"vb": "0 0 680 330", "title": "雙臂遙控", "steps": [
         "兩隻手臂都用 USB 接上同一台電腦", "用手帶動主控臂，執行臂同步跟著動"]},
     "weights": {"vb": "0 0 680 340", "title": "砝碼校正", "steps": [
@@ -26,22 +26,22 @@ VIEWERS = {
     "parts": {"base": "assets/stl/", "hint": "拖曳旋轉　滾輪或雙指縮放", "groups": [
         ("共用零件", [
             ("Base_SO101.stl", "底座", "執行臂、主控臂都要"),
-            ("Base_motor_holder_SO101.stl", "底座馬達座", "執行臂、主控臂都要"),
-            ("Motor_holder_SO101_Base.stl", "肩部馬達座", "執行臂、主控臂都要"),
-            ("Rotation_Pitch_SO101.stl", "肩部旋轉件", "執行臂、主控臂都要"),
+            ("Base_motor_holder_SO101.stl", "馬達座 甲，關節 1", "執行臂、主控臂都要"),
+            ("Motor_holder_SO101_Base.stl", "馬達座 乙，關節 1", "執行臂、主控臂都要"),
+            ("Rotation_Pitch_SO101.stl", "肩部零件", "執行臂、主控臂都要"),
             ("Upper_arm_SO101.stl", "上臂", "執行臂、主控臂都要"),
             ("Under_arm_SO101.stl", "前臂", "執行臂、主控臂都要"),
-            ("Motor_holder_SO101_Wrist.stl", "腕部馬達座", "執行臂、主控臂都要"),
-            ("Wrist_Roll_Pitch_SO101.stl", "腕部俯仰件", "執行臂、主控臂都要"),
+            ("Motor_holder_SO101_Wrist.stl", "馬達座 4", "執行臂、主控臂都要"),
+            ("Wrist_Roll_Pitch_SO101.stl", "手腕座", "執行臂、主控臂都要"),
             ("WaveShare_Mounting_Plate_SO101.stl", "驅動板固定板 Waveshare", "依驅動板品牌二選一"),
             ("Seeedstudio_Mounting_Plate_SO101.stl", "驅動板固定板 Seeed", "依驅動板品牌二選一"),
         ]),
         ("執行臂專用", [
-            ("Wrist_Roll_Follower_SO101.stl", "腕部旋轉件", "只有執行臂"),
-            ("Moving_Jaw_SO101.stl", "活動夾爪", "只有執行臂"),
+            ("Wrist_Roll_Follower_SO101.stl", "夾爪本體", "只有執行臂"),
+            ("Moving_Jaw_SO101.stl", "活動爪", "只有執行臂"),
         ]),
         ("主控臂專用", [
-            ("Wrist_Roll_SO101.stl", "腕部旋轉件", "只有主控臂"),
+            ("Wrist_Roll_SO101.stl", "主控臂手腕座", "只有主控臂"),
             ("Handle_SO101.stl", "握把", "只有主控臂"),
             ("Trigger_SO101.stl", "扳機", "只有主控臂"),
         ]),
@@ -92,3 +92,32 @@ def viewer(name, pressed=None):
         f'<div class="parts">{"".join(groups)}</div>'
         f"</figure>"
     )
+
+
+NAMES = {f: (lab, use) for _g, items in VIEWERS["parts"]["groups"] for f, lab, use in items}
+
+
+def parts(spec):
+    """<!--PARTS:file1.stl,file2.stl|note--> -> grid of rendered part images."""
+    files, _, note = spec.partition("|")
+    cells = []
+    for f in [x.strip() for x in files.split(",") if x.strip()]:
+        lab, _use = NAMES.get(f, (f, ""))
+        png = f.rsplit(".", 1)[0] + ".png"
+        cells.append(
+            f'<figure class="pimg"><img src="assets/img/parts/{html.escape(png)}" alt="{html.escape(lab)} 的 3D 算繪圖" '
+            f'width="800" height="600" loading="lazy"><figcaption><b>{html.escape(lab)}</b><code>{html.escape(f)}</code></figcaption></figure>'
+        )
+    cap = f'<p class="src" style="margin:0">{html.escape(note)}</p>' if note else ""
+    return f'<div class="pgrid">{"".join(cells)}</div>{cap}'
+
+
+def code(spec, root):
+    """<!--CODE:relative/path|caption--> -> copyable code block filled from the file on disk."""
+    path, _, cap = spec.partition("|")
+    p = root / path.strip()
+    if not p.exists():
+        return f"<!--FILL:missing {html.escape(path)}-->"
+    body = html.escape(p.read_text(encoding="utf-8"))
+    return (f'<div class="codeblk"><div class="cap"><span>{html.escape(cap or p.name)}</span>'
+            f'<button class="btn" type="button" data-copy>複製</button></div><pre>{body}</pre></div>')

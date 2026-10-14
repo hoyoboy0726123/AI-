@@ -1,0 +1,114 @@
+  <article class="step" id="a08">
+    <header><span class="code">A-08</span><h3>組裝前：清零件、預接線、備螺絲</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li><strong>清乾淨支撐。</strong>官方建議用小起子伸到支撐底下撬起來，最容易清。</li>
+        <li><strong>先在每顆馬達插一條 3-pin 線。</strong>官方建議馬達裝進零件前就先插好一條，裝進去之後就很難插了。A-07 留在馬達上的線剛好用上。</li>
+        <li><strong>依 ID 擺好馬達。</strong>關節 1 用 ID 1 的馬達，關節 2 用 ID 2，依此類推，夾爪用 ID 6。官方文字寫的「第一顆馬達」「motor 3」指的就是這個編號。</li>
+        <li><strong>準備螺絲。</strong>官方料件表沒有列螺絲，組裝會用到兩種，請先確認馬達附的螺絲包，不夠就另外買。</li>
+      </ol>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>螺絲</th><th>用在哪裡</th><th class="num">執行臂大約數量</th></tr></thead>
+          <tbody>
+            <tr><td><strong>M2 × 6 mm</strong>，最小的那種</td><td>把馬達鎖在列印件上</td><td class="num">24</td></tr>
+            <tr><td><strong>M3 × 6 mm</strong></td><td>舵盤固定、手臂零件鎖在舵盤上</td><td class="num">42 到 50</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src">數量是本手冊依官方組裝文字逐步加總，其中兩處官方寫「兩側各 4 顆」還是「兩側共 4 顆」不夠清楚，所以 M3 給一個範圍。多備幾顆比較保險。</p>
+      <div class="note tip"><b class="k">舵盤是什麼</b><p>馬達出力軸上的圓形塑膠盤，英文叫 horn。每顆馬達有上下兩片，上面那片要用一顆 M3 × 6 鎖住，下面那片官方說不用鎖。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a08"><span><b>檢查點</b>11 個列印件都清乾淨；6 顆馬達各插好一條 3-pin 線並標好 ID；M2 × 6 和 M3 × 6 螺絲都夠。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a09">
+    <header><span class="code">A-09</span><h3>關節 1：底座與肩部旋轉，馬達 ID 1</h3></header>
+    <div class="body">
+      <!--PARTS:Base_SO101.stl,Base_motor_holder_SO101.stl,Motor_holder_SO101_Base.stl,Rotation_Pitch_SO101.stl|官方文字只寫「底座」「第一個馬達座」「肩部零件」「肩部馬達座」，沒有對應檔名。上面是本手冊依檔名推測的對應，兩個馬達座請對照官方影片確認哪個先裝。-->
+      <ol class="do">
+        <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
+        <li>把第一顆馬達放進底座。</li>
+        <li>用 4 顆 M2 × 6 固定馬達：上面 2 顆、下面 2 顆。</li>
+        <li>套上第一個馬達座，兩側各用 1 顆 M2 × 6 固定。</li>
+        <li>裝上肩部零件。</li>
+        <li>肩部零件上面鎖 4 顆 M3 × 6，下面也鎖 4 顆 M3 × 6。</li>
+        <li>裝上肩部馬達座。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint1_v2.mp4" target="_blank" rel="noopener">關節 1 組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a09"><span><b>檢查點</b>用手轉肩部零件，可以順暢左右旋轉，沒有卡住或晃動；所有螺絲都鎖上了。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a10">
+    <header><span class="code">A-10</span><h3>關節 2：肩部抬升，馬達 ID 2</h3></header>
+    <div class="body">
+      <!--PARTS:Upper_arm_SO101.stl-->
+      <ol class="do">
+        <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
+        <li>把第二顆馬達從上方滑進去。</li>
+        <li>用 4 顆 M2 × 6 固定第二顆馬達。</li>
+        <li>裝上上臂，兩側各用 4 顆 M3 × 6 鎖住。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint2_v2.mp4" target="_blank" rel="noopener">關節 2 組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a10"><span><b>檢查點</b>上臂可以前後擺動，兩側 8 顆 M3 都鎖上。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a11">
+    <header><span class="code">A-11</span><h3>關節 3：手肘，馬達 ID 3</h3></header>
+    <div class="body">
+      <!--PARTS:Under_arm_SO101.stl|官方叫它 forearm，前臂；檔名是 Under_arm。-->
+      <ol class="do">
+        <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
+        <li>放入第三顆馬達，用 4 顆 M2 × 6 固定。</li>
+        <li>把前臂接到第三顆馬達，兩側各用 4 顆 M3 × 6 鎖住。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint3_v2.mp4" target="_blank" rel="noopener">關節 3 組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a11"><span><b>檢查點</b>前臂可以上下擺動，兩側 8 顆 M3 都鎖上。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a12">
+    <header><span class="code">A-12</span><h3>關節 4：手腕俯仰，馬達 ID 4</h3></header>
+    <div class="body">
+      <!--PARTS:Motor_holder_SO101_Wrist.stl|官方叫它「馬達座 4」，本手冊依檔名推測是這個零件。-->
+      <ol class="do">
+        <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
+        <li>套上馬達座 4。</li>
+        <li>把第四顆馬達滑進去。</li>
+        <li>用 4 顆 M2 × 6 固定第四顆馬達。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint4_v2.mp4" target="_blank" rel="noopener">關節 4 組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a12"><span><b>檢查點</b>第四顆馬達穩固不晃，4 顆 M2 都鎖上。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a13">
+    <header><span class="code">A-13</span><h3>關節 5：手腕旋轉，馬達 ID 5</h3></header>
+    <div class="body">
+      <!--PARTS:Wrist_Roll_Pitch_SO101.stl|官方叫它 wrist holder，手腕座；本手冊依檔名推測是這個零件。-->
+      <ol class="do">
+        <li>把第五顆馬達放進手腕座，前面用 2 顆 M2 × 6 固定。</li>
+        <li>這顆馬達<strong>只裝一片舵盤</strong>，用 1 顆 M3 × 6 鎖住。</li>
+        <li>把手腕接到第四顆馬達上，用 M3 × 6 鎖住，官方寫「兩側 4 顆」。請對照影片確認是每側 4 顆還是共 4 顆。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint5_v2.mp4" target="_blank" rel="noopener">關節 5 組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a13"><span><b>檢查點</b>手腕可以上下擺動，第五顆馬達只裝了一片舵盤。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a14">
+    <header><span class="code">A-14</span><h3>夾爪：執行臂版本，馬達 ID 6</h3></header>
+    <div class="body">
+      <!--PARTS:Wrist_Roll_Follower_SO101.stl,Moving_Jaw_SO101.stl|官方叫它們 gripper，夾爪本體，和 gripper claw，活動爪。對應檔名為本手冊推測。-->
+      <ol class="do">
+        <li>把夾爪本體裝到第五顆馬達手腕的舵盤上，用 4 顆 M3 × 6 鎖住。</li>
+        <li>放入夾爪馬達，兩側各用 2 顆 M2 × 6 固定。</li>
+        <li>夾爪馬達裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
+        <li>裝上活動爪，用 M3 × 6 鎖住，官方寫「兩側 4 顆」，請對照影片確認。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Gripper_v2.mp4" target="_blank" rel="noopener">夾爪組裝</a></p>
+      <label class="check"><input type="checkbox" id="ck-a14"><span><b>檢查點</b>用手輕輕開合活動爪，順暢不卡；整隻手臂 6 顆馬達都裝好了。</span></label>
+    </div>
+  </article>

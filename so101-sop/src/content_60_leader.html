@@ -1,0 +1,120 @@
+<section class="part" id="p3" data-phase="C" data-toc="階段 C　雙臂">
+  <div class="part-head">
+    <span class="tag">階段 C</span>
+    <h2>雙臂：做主控臂，用手遙控執行臂</h2>
+    <p>主控臂 Leader 是你用手拿著帶動的那一隻。它用三種不同減速比的馬達：要夠輕好推，又要撐得住自己的重量。做好之後，你推主控臂，執行臂就會同步跟著動，之後也能用來錄示範資料訓練 AI。</p>
+  </div>
+  <div class="two">
+    <figure><div class="photo"><img src="assets/img/SO101_Leader.jpg" alt="組裝完成的 SO-101 主控臂，官方照片" width="1600" height="1200" loading="lazy"></div><figcaption>完成品：SO-101 主控臂，多了握把和扳機。</figcaption></figure>
+    <figure><div class="photo"><img src="assets/img/Leader_And_Follower_SO100.jpg" alt="主控臂與執行臂並排，官方照片" width="1600" height="1200" loading="lazy"></div><figcaption>主控臂和執行臂成對使用的樣子，照片是前一代 SO-100。來源 TheRobotStudio/SO-ARM100。</figcaption></figure>
+  </div>
+
+  <article class="step" id="c01">
+    <header><span class="code">C-01</span><h3>補齊主控臂料件，列印主控臂零件</h3></header>
+    <div class="body">
+      <div class="tbl">
+        <table>
+          <thead><tr><th>要加買的料件</th><th class="num">數量</th><th>購買連結</th></tr></thead>
+          <tbody>
+            <tr><td>主控臂 6 顆 STS3215 套組：1/147 C046 三顆、1/191 C044 兩顆、1/345 C001 一顆</td><td class="num">1 組</td><td><a href="https://www.alibaba.com/product-detail/6PCS-7-4V-STS3215-Servos-for_1601428584027.html" target="_blank" rel="noopener">Alibaba 套組</a></td></tr>
+            <tr><td>馬達驅動板</td><td class="num">1</td><td><a href="https://www.amazon.com/Waveshare-Integrates-Control-Circuit-Supports/dp/B0CTMM4LWK/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738817173460&amp;skuId=5096283384143" target="_blank" rel="noopener">天貓</a></td></tr>
+            <tr><td>電源供應器</td><td class="num">1</td><td><a href="https://www.amazon.com/Facmogu-Switching-Transformer-Compatible-5-5x2-1mm/dp/B087LY41PV/" target="_blank" rel="noopener">Amazon</a>　<a href="https://item.taobao.com/item.htm?id=544824248494&amp;skuId=4974994129990" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>桌夾</td><td class="num">2</td><td><a href="https://www.amazon.com/Mr-Pen-Carpenter-Clamp-6inch/dp/B092L925J4/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738636473238&amp;skuId=5505939904942" target="_blank" rel="noopener">天貓</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>官方說明主控臂一律用 7.4V 馬達。列印用主控臂的整盤檔：</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>你的印表機</th><th>主控臂整盤檔案</th><th>下載</th></tr></thead>
+          <tbody>
+            <tr><td>Ender 類，220 × 220 mm</td><td><code>Ender_Leader_SO101.stl</code></td><td><a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Leader/Ender_Leader_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+            <tr><td>Prusa 類，205 × 250 mm</td><td><code>Prusa_Leader_SO101.stl</code></td><td><a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Leader/Prusa_Leader_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+            <tr><td>Bambu Lab A1 mini</td><td><code>BambuLabA1mini_Leader_SO101.stl</code></td><td><a href="https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main/STL/SO101/Leader/BambuLabA1mini_Leader_SO101.stl" target="_blank" rel="noopener">直接下載</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>列印設定和 A-03、A-04 完全一樣。主控臂共 12 個零件：8 個和執行臂相同的零件、1 片驅動板固定板，再加上這 3 個主控臂專用零件：</p>
+      <!--PARTS:Wrist_Roll_SO101.stl,Handle_SO101.stl,Trigger_SO101.stl-->
+      <label class="check"><input type="checkbox" id="ck-c01"><span><b>檢查點</b>主控臂 6 顆馬達到貨，三種型號分開放好並標示；12 個零件印好並清完支撐。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="c02">
+    <header><span class="code">C-02</span><h3>設定主控臂馬達 ID：每顆的型號都不同</h3></header>
+    <div class="body">
+      <p>步驟和 A-07 一樣，但主控臂每個關節用的馬達型號不同。程式叫你接哪個關節，就要拿對應型號的那顆。拿錯的話 ID 會寫到錯的馬達上，裝好之後推起來會太重或撐不住。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>設定順序</th><th>程式提示</th><th>關節</th><th class="num">ID</th><th>拿這種馬達</th></tr></thead>
+          <tbody>
+            <tr><td>第 1 顆</td><td><code>gripper</code></td><td>夾爪</td><td class="num">6</td><td>1/147　C046</td></tr>
+            <tr><td>第 2 顆</td><td><code>wrist_roll</code></td><td>手腕旋轉</td><td class="num">5</td><td>1/147　C046</td></tr>
+            <tr><td>第 3 顆</td><td><code>wrist_flex</code></td><td>手腕俯仰</td><td class="num">4</td><td>1/147　C046</td></tr>
+            <tr><td>第 4 顆</td><td><code>elbow_flex</code></td><td>手肘</td><td class="num">3</td><td>1/191　C044</td></tr>
+            <tr><td>第 5 顆</td><td><code>shoulder_lift</code></td><td>肩部抬升</td><td class="num">2</td><td>1/345　C001</td></tr>
+            <tr><td>第 6 顆</td><td><code>shoulder_pan</code></td><td>肩部旋轉</td><td class="num">1</td><td>1/191　C044</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note warn"><b class="k">先分好再開始</b><p>官方文件沒有說明三種型號外觀怎麼分辨，拆箱時就要分開放、做好標示。主控臂的驅動板要用另一個連接埠，先重做一次 A-06 找出來。</p></div>
+      <div class="codeblk"><div class="cap"><span>把 COM4 換成主控臂驅動板的連接埠</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-setup-motors --teleop.type=so101_leader --teleop.port=COM4</pre></div>
+      <label class="check"><input type="checkbox" id="ck-c02"><span><b>檢查點</b>6 行 <code>motor id set to</code> 都出現，每顆馬達貼上「ID + 型號」的標示。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="c03">
+    <header><span class="code">C-03</span><h3>組裝主控臂</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li><strong>關節 1 到 5：</strong>照 <a href="#a09">A-09</a> 到 <a href="#a13">A-13</a> 一模一樣的步驟，只是馬達換成上表對應 ID 的那顆。</li>
+        <li><strong>握把與扳機：</strong>主控臂沒有夾爪，改成下面這四步。</li>
+      </ol>
+      <ol class="do">
+        <li>把主控臂手腕座裝到手腕上，用 4 顆 M3 × 6 鎖住。</li>
+        <li>用 1 顆 M2 × 6 把握把裝到手腕座上。</li>
+        <li>放入夾爪馬達 ID 6，兩側各用 2 顆 M2 × 6 固定，裝一片舵盤並用 1 顆 M3 × 6 鎖住。</li>
+        <li>用 4 顆 M3 × 6 裝上扳機。官方原文寫「follower trigger」，依零件清單判斷指的是主控臂的扳機零件。</li>
+      </ol>
+      <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Leader_v2.mp4" target="_blank" rel="noopener">主控臂握把組裝</a></p>
+      <ol class="do" start="3">
+        <li><strong>串線與固定：</strong>照 <a href="#a15">A-15</a> 串接馬達線、裝上驅動板、用桌夾固定在桌邊。</li>
+      </ol>
+      <label class="check"><input type="checkbox" id="ck-c03"><span><b>檢查點</b>用手推主控臂每個關節都很輕，放手後手臂撐得住自己，不會自己往下掉。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="c04">
+    <header><span class="code">C-04</span><h3>校準主控臂</h3></header>
+    <div class="body">
+      <p>流程和 A-16 一樣：上臂朝上、前臂朝前擺到中間位置按 Enter，除了手腕旋轉之外每個關節轉到兩端，再按 Enter 存檔。</p>
+      <div class="codeblk"><div class="cap"><span>主控臂的連接埠與名字</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-calibrate \
+    --teleop.type=so101_leader \
+    --teleop.port=COM4 \
+    --teleop.id=my_awesome_leader_arm</pre></div>
+      <p class="src">存檔位置：<code>~/.cache/huggingface/lerobot/calibration/teleoperators/so_leader/my_awesome_leader_arm.json</code></p>
+      <label class="check"><input type="checkbox" id="ck-c04"><span><b>檢查點</b>畫面出現 <code>Calibration saved to</code>。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="c05">
+    <header><span class="code">C-05</span><h3>雙臂遙控</h3></header>
+    <div class="body">
+      <!--ANIM:teleop-->
+      <div class="codeblk"><div class="cap"><span>兩隻手臂都接上電腦後執行，名字要和校準時一樣</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-teleoperate \
+    --robot.type=so101_follower \
+    --robot.port=COM3 \
+    --robot.id=my_awesome_follower_arm \
+    --teleop.type=so101_leader \
+    --teleop.port=COM4 \
+    --teleop.id=my_awesome_leader_arm</pre></div>
+      <ol class="do">
+        <li>執行前，先把兩隻手臂擺成差不多的姿勢，避免執行臂一開始就大幅度跳動。</li>
+        <li>慢慢推主控臂，確認執行臂跟著動。扣主控臂的扳機，執行臂的夾爪會跟著開合。</li>
+        <li>要停止就按 <kbd>Ctrl</kbd> + <kbd>C</kbd>，程式會斷開兩隻手臂。執行臂會放掉出力，記得先扶好或讓它停在桌面附近。</li>
+      </ol>
+      <div class="note tip"><b class="k">名字很重要</b><p>官方說明：LeRobot 用 <code>id</code> 找校準檔。遙控、錄資料、跑 AI 都要用同一組名字，不然它會以為還沒校準，又要求你重新校準。</p></div>
+      <label class="check"><input type="checkbox" id="ck-c05"><span><b>檢查點</b>推主控臂時，執行臂同步做出一樣的動作，夾爪跟著扳機開合。恭喜，整套雙臂完成。</span></label>
+    </div>
+  </article>
+</section>

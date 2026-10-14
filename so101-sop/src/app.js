@@ -355,58 +355,60 @@ SCENES.print = function(svg, tl, step){
   tl.to(nozzle, {x:350, y:30, duration:0.3});
   step("s4");
   tl.to(hatch, {y:30, opacity:0, duration:0.7, ease:"power2.in"});
-  tl.to(hatch, {y:0, opacity:1, duration:0.01, delay:0.6});
-  tl.set(hatch, {opacity:0});
 };
 
 /* ===== scene: chain (servo daisy chain) ===== */
 SCENES.chain = function(svg, tl, step){
-  var board = G(svg);
-  E("rect", {x:24, y:226, width:120, height:70, rx:6, "class":"sv-pcb"}, board);
-  T(board, 84, 258, "驅動板", "sv-tw");
-  T(board, 84, 276, "Bus Servo", "sv-tw");
   var psu = G(svg);
-  E("rect", {x:24, y:150, width:84, height:44, rx:6, "class":"sv-box"}, psu);
-  T(psu, 66, 177, "電源", "sv-t");
+  E("rect", {x:30, y:30, width:110, height:46, rx:6, "class":"sv-box"}, psu);
+  T(psu, 85, 58, "電源", "sv-t");
+  var board = G(svg);
+  E("rect", {x:30, y:136, width:130, height:74, rx:6, "class":"sv-pcb"}, board);
+  T(board, 95, 168, "驅動板", "sv-tw"); T(board, 95, 190, "Bus Servo", "sv-tw");
   var pc = G(svg);
-  E("rect", {x:170, y:244, width:96, height:56, rx:5, "class":"sv-box"}, pc);
-  E("rect", {x:160, y:300, width:116, height:7, rx:3, "class":"sv-box"}, pc);
-  T(pc, 218, 278, "電腦", "sv-t");
-  var pPower = E("path", {d:"M66,194 C66,210 70,214 70,226", "class":"w w-red"}, svg);
-  var pUsb = E("path", {d:"M144,262 C152,262 158,272 170,272", "class":"w w-blue"}, svg);
-  var pos = [[330,262],[330,200],[410,128],[520,128],[590,128],[640,170]];
-  var names = ["1 肩部旋轉","2 肩部抬升","3 手肘","4 手腕俯仰","5 手腕旋轉","6 夾爪"];
-  E("path", {d:"M300,300 h80", "class":"sv-ink"}, svg);
-  E("path", {d:"M330,262 L330,200 L410,128 L640,128", "class":"sv-thin", "stroke-width":14, stroke:"var(--part)", opacity:0.7}, svg);
-  var motors = pos.map(function(p, i){
+  E("rect", {x:30, y:254, width:110, height:52, rx:5, "class":"sv-box"}, pc);
+  E("rect", {x:20, y:306, width:130, height:8, rx:3, "class":"sv-box"}, pc);
+  T(pc, 85, 286, "電腦", "sv-t");
+  var pPower = E("path", {d:"M85,76 L85,136", "class":"w w-red"}, svg);
+  var pUsb = E("path", {d:"M85,210 L85,254", "class":"w w-blue"}, svg);
+  var names = ["肩部旋轉","肩部抬升","手肘","手腕俯仰","手腕旋轉","夾爪"];
+  var xs = [222, 296, 370, 444, 518, 592], y = 160;
+  T(svg, 407, 70, "每顆馬達有兩個插座：一個接進來、一個接出去", "sv-ts");
+  var motors = xs.map(function(x, i){
     var g = G(svg);
-    E("rect", {x:p[0] - 22, y:p[1] - 16, width:44, height:32, rx:4, "class":"sv-servo"}, g);
-    T(g, p[0], p[1] + 5, "ID " + (i + 1), "sv-tw");
-    T(g, p[0], p[1] - 24, names[i], "sv-ts");
+    E("rect", {x:x - 26, y:y, width:52, height:40, rx:5, "class":"sv-servo"}, g);
+    E("circle", {cx:x - 14, cy:y + 6, r:3.2, fill:"var(--w-yellow)"}, g);
+    E("circle", {cx:x + 14, cy:y + 6, r:3.2, fill:"var(--w-yellow)"}, g);
+    T(g, x, y + 28, "ID " + (i + 1), "sv-tw");
+    T(g, x, y + 62, names[i], "sv-ts");
     return g;
   });
-  var d = "M144,240 C230,240 250,262 308,262";
-  var wires = [E("path", {d:d, "class":"w w-black"}, svg)];
-  for(var i = 0; i < pos.length - 1; i++){
-    var a = pos[i], b = pos[i + 1];
-    wires.push(E("path", {d:"M" + (a[0] + (i===0?0:0)) + "," + (a[1] - 16) + " C" + a[0] + "," + (a[1] - 40) + " " + b[0] + "," + (b[1] + 40) + " " + b[0] + "," + (b[1] + 16), "class":"w w-black"}, svg));
+  var ds = ["M160,173 C180,173 186,166 " + (xs[0] - 14) + ",166"];
+  for(var i = 0; i < xs.length - 1; i++){
+    var a = xs[i] + 14, b = xs[i + 1] - 14;
+    ds.push("M" + a + "," + (y + 6) + " C" + a + "," + (y - 40) + " " + b + "," + (y - 40) + " " + b + "," + (y + 6));
   }
+  var wires = ds.map(function(d){
+    var u = E("path", {d:d, "class":"w-under"}, svg);
+    var w = E("path", {d:d, "class":"w w-black"}, svg);
+    w.__under = u; return w;
+  });
   motors.forEach(function(m){ svg.appendChild(m); });
+  T(svg, 407, 262, "只有 ID 1 接到驅動板，其他馬達一顆接一顆", "sv-ts");
   var pulse = E("circle", {r:5, fill:"var(--w-yellow)", stroke:"var(--ink)", "stroke-width":1, opacity:0}, svg);
   if(!tl) return;
   step("s1");
-  tl.from([board, psu, pc], {opacity:0, y:10, stagger:0.15, duration:0.4});
-  tlDraw(tl, pPower, {duration:0.5});
-  tlDraw(tl, pUsb, {duration:0.5});
+  tl.from([psu, board, pc], {opacity:0, y:10, stagger:0.15, duration:0.4});
+  tlDraw(tl, pPower, {duration:0.4});
+  tlDraw(tl, pUsb, {duration:0.4});
   step("s2");
   tl.from(motors, {opacity:0, scale:0.6, transformOrigin:"50% 50%", stagger:0.12, duration:0.3});
   step("s3");
-  wires.forEach(function(w){ tlDraw(tl, w, {duration:0.35}); });
+  wires.forEach(function(w){ tlDraw(tl, w.__under, {duration:0.35}); tlDraw(tl, w, {duration:0.35}, "<"); });
   step("s4");
   tl.set(pulse, {opacity:1});
   wires.forEach(function(w){
-    var L = w.getTotalLength();
-    var o = {t:0};
+    var L = w.getTotalLength(); var o = {t:0};
     tl.to(o, {t:1, duration:0.28, ease:"none", onUpdate:function(){ var pt = w.getPointAtLength(o.t * L); pulse.setAttribute("cx", pt.x); pulse.setAttribute("cy", pt.y); }});
   });
   tl.to(pulse, {opacity:0, duration:0.2});
@@ -446,13 +448,13 @@ SCENES.calibrate = function(svg, tl, step){
   T(svg, 20, 28, "側視圖", "sv-ts", "start");
   var arm = makeArm(svg, 200, 300, 1);
   var inset = G(svg);
-  E("rect", {x:440, y:40, width:220, height:120, rx:8, "class":"sv-box"}, inset);
-  T(inset, 550, 62, "俯視：肩部旋轉、手腕旋轉", "sv-ts");
+  E("rect", {x:430, y:36, width:236, height:150, rx:8, "class":"sv-box"}, inset);
+  T(inset, 548, 58, "俯視", "sv-ts");
   E("circle", {cx:500, cy:110, r:32, "class":"sv-thin"}, inset);
   var pan = E("line", {x1:500, y1:110, x2:532, y2:110, "class":"sv-accent-s"}, inset);
   E("circle", {cx:610, cy:110, r:26, "class":"sv-thin"}, inset);
   var roll = E("line", {x1:610, y1:110, x2:636, y2:110, "class":"sv-accent-s"}, inset);
-  T(inset, 500, 156, "1 肩部旋轉", "sv-ts"); T(inset, 610, 156, "5 手腕旋轉", "sv-ts");
+  T(inset, 500, 158, "1 肩部旋轉", "sv-ts"); T(inset, 500, 175, "要轉到兩端", "sv-ts"); T(inset, 610, 158, "5 手腕旋轉", "sv-ts"); T(inset, 610, 175, "不用轉", "sv-ts");
   var key = G(svg);
   E("rect", {x:500, y:220, width:120, height:56, rx:8, "class":"sv-box"}, key);
   T(key, 560, 254, "Enter", "sv-tm");
@@ -467,12 +469,11 @@ SCENES.calibrate = function(svg, tl, step){
   tl.to(st, {lift:0, elbow:0, wrist:0, jaw:0, duration:1.2, ease:"power2.inOut", onUpdate:r});
   tl.fromTo(key, {scale:1}, {scale:0.92, transformOrigin:"50% 50%", duration:0.12, yoyo:true, repeat:1});
   step("s2");
-  tl.call(function(){ label.textContent = "每個關節轉到兩端極限"; });
+  tl.call(function(){ label.textContent = "除了手腕旋轉，每個關節轉到兩端"; });
   tl.to(pan, {rotation:-120, svgOrigin:"500 110", duration:0.6}).to(pan, {rotation:120, svgOrigin:"500 110", duration:0.9}).to(pan, {rotation:0, svgOrigin:"500 110", duration:0.5});
   tl.to(st, {lift:-55, duration:0.6, onUpdate:r}).to(st, {lift:45, duration:0.9, onUpdate:r}).to(st, {lift:0, duration:0.5, onUpdate:r});
   tl.to(st, {elbow:-60, duration:0.6, onUpdate:r}).to(st, {elbow:75, duration:0.9, onUpdate:r}).to(st, {elbow:0, duration:0.5, onUpdate:r});
   tl.to(st, {wrist:-80, duration:0.5, onUpdate:r}).to(st, {wrist:80, duration:0.8, onUpdate:r}).to(st, {wrist:0, duration:0.4, onUpdate:r});
-  tl.to(roll, {rotation:-150, svgOrigin:"610 110", duration:0.5}).to(roll, {rotation:150, svgOrigin:"610 110", duration:0.8}).to(roll, {rotation:0, svgOrigin:"610 110", duration:0.4});
   tl.to(st, {jaw:24, duration:0.4, onUpdate:r}).to(st, {jaw:0, duration:0.4, onUpdate:r});
   step("s3");
   tl.call(function(){ label.textContent = "完成後再按 Enter 存檔"; });

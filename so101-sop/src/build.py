@@ -13,7 +13,9 @@ if "</script" in scripts.lower():
     sys.exit("script text contains a closing script tag")
 content = re.sub(r"<!--ANIM:(\w+)-->", lambda m: widgets.anim(m.group(1)), content)
 content = re.sub(r"<!--VIEWER:(\w+)(?::([^>]+))?-->", lambda m: widgets.viewer(m.group(1), m.group(2)), content)
-left = re.findall(r"<!--(?:ANIM|VIEWER|FILL)[^>]*-->", content)
+content = re.sub(r"<!--CODE:([^>]+)-->", lambda m: widgets.code(m.group(1), ROOT), content)
+content = re.sub(r"<!--PARTS:([^>]+)-->", lambda m: widgets.parts(m.group(1)), content)
+left = re.findall(r"<!--(?:ANIM|VIEWER|FILL|PARTS|CODE)[^>]*-->", content)
 if left: print("unresolved placeholders:", left)
 out = tpl.replace("<!--CONTENT-->", content).replace("/*SCRIPT*/", scripts)
 dist = ROOT / "dist"

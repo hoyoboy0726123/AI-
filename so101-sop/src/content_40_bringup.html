@@ -1,0 +1,57 @@
+  <article class="step" id="a15">
+    <header><span class="code">A-15</span><h3>串接馬達線，裝上驅動板，固定在桌邊</h3></header>
+    <div class="body">
+      <!--ANIM:chain-->
+      <!--PARTS:WaveShare_Mounting_Plate_SO101.stl,Seeedstudio_Mounting_Plate_SO101.stl|依你的驅動板品牌，只用其中一個。-->
+      <ol class="do">
+        <li>每顆馬達都有兩個 3-pin 插座，一個接進來、一個接出去。把每顆馬達接到下一顆，從夾爪 6 一路串到肩部旋轉 1。</li>
+        <li>肩部旋轉 ID 1 那顆馬達，再用一條線接到驅動板。</li>
+        <li>用固定板把驅動板裝在手臂底座上。</li>
+        <li>用桌夾把底座牢牢夾在桌子邊緣。官方校準圖就是這樣擺的，手臂動起來才不會倒。</li>
+        <li>接上電源和 USB-C。</li>
+      </ol>
+      <div class="note warn"><b class="k">電源別插錯</b><p>官方說明：標準的 7.4V 馬達配 5V 電源。只有改買 12V 版馬達的人才換 12V、5A 以上的電源。不要把 12V 電源接到 7.4V 馬達上。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a15"><span><b>檢查點</b>6 顆馬達串成一條線，只有 ID 1 接到驅動板；底座用桌夾固定，搖不動。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a16">
+    <header><span class="code">A-16</span><h3>校準執行臂</h3></header>
+    <div class="body">
+      <p>校準讓電腦知道每個關節的中間位置和兩端極限。之後主控臂和執行臂擺同樣姿勢時，讀數才會一樣。每隻手臂通常只要校準一次。</p>
+      <!--ANIM:calibrate-->
+      <div class="codeblk"><div class="cap"><span>把 COM3 換成你的連接埠，名字可以自訂，但之後要一直用同一個</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-calibrate \
+    --robot.type=so101_follower \
+    --robot.port=COM3 \
+    --robot.id=my_awesome_follower_arm</pre></div>
+      <div class="note stop"><b class="k">不要直接複製官方網頁的校準指令</b><p>官方文件的這段指令在行尾夾了 <code>\ # &lt;- The port of your robot</code> 這種註解，貼進終端機會出錯，指令根本沒有執行。請用上面這段已經拿掉註解的版本。Windows 的命令視窗如果不接受行尾的 <code>\</code>，就把整段寫成一行。</p></div>
+      <ol class="do">
+        <li><strong>擺到中間位置。</strong>官方示意圖的姿勢是：上臂垂直朝上，前臂水平朝前，夾爪和前臂成一直線。擺好後按 Enter。</li>
+        <li><strong>每個關節轉到兩端。</strong>畫面會出現 <code>NAME | MIN | POS | MAX</code> 的即時表格。除了手腕旋轉，其他每個關節都要用手慢慢轉到兩邊的極限。手腕旋轉不需要轉，程式會直接設成整圈。</li>
+        <li><strong>按 Enter 存檔。</strong>畫面出現 <code>Calibration saved to</code>，後面是存檔路徑。</li>
+      </ol>
+      <dl class="kv">
+        <dt>存檔位置</dt><dd><code>~/.cache/huggingface/lerobot/calibration/robots/so_follower/my_awesome_follower_arm.json</code></dd>
+        <dt>官方影片</dt><dd><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/calibrate_so101_2.mp4" target="_blank" rel="noopener">校準示範</a></dd>
+      </dl>
+      <div class="note warn"><b class="k">常見錯誤</b><p>出現 <code>Some motors have the same min and max values</code>，代表有關節沒轉到。重新執行，這次每個關節都要轉。一定要寫 <code>--robot.id</code>，不寫的話檔名會變成 <code>None.json</code>，之後很容易搞混。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a16"><span><b>檢查點</b>畫面出現 <code>Calibration saved to</code>，而且 MIN 和 MAX 在每個關節都不一樣。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a17">
+    <header><span class="code">A-17</span><h3>第一次用 Python 控制手臂</h3></header>
+    <div class="body">
+      <p>這段程式由本手冊撰寫，用的類別名稱、方法和參數都已經對照 LeRobot 0.6.2 原始碼確認。它會讀出每個關節的角度，再讓夾爪慢慢開合一次。</p>
+      <div class="note stop"><b class="k">執行前先擺好手臂</b><p>程式結束時會自動放掉馬達出力，手臂會變軟。如果手臂舉在空中，會直接掉下來。執行前請把手臂收折在桌面上，旁邊不要放東西。</p></div>
+      <!--CODE:assets/scripts/first_move.py|first_move.py-->
+      <ul class="do">
+        <li>關節 1 到 5 的單位是「度」，0 度是校準時記錄範圍的正中間；夾爪是 0 到 100。</li>
+        <li><code>max_relative_target</code> 必須寫成 <code>5.0</code>，寫成整數 <code>5</code> 程式會報錯。</li>
+        <li>最後印出的負載讀數是馬達的原始數值，官方沒有說明單位，只能拿來比較大小。</li>
+      </ul>
+      <div class="codeblk"><div class="cap"><span>執行</span><button class="btn" type="button" data-copy>複製</button></div><pre>python first_move.py</pre></div>
+      <label class="check"><input type="checkbox" id="ck-a17"><span><b>檢查點</b>畫面印出 <code>shoulder_pan.pos</code> 到 <code>gripper.pos</code> 六個數值，夾爪慢慢開合一次。恭喜，階段 A 完成。</span></label>
+    </div>
+  </article>
+</section>

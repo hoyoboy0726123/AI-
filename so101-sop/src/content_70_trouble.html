@@ -1,0 +1,46 @@
+<section class="part" id="p4" data-phase="Z" data-toc="附錄">
+  <div class="part-head">
+    <span class="tag">附錄</span>
+    <h2>故障排除與資料來源</h2>
+    <p>錯誤訊息照程式原文列出，方便你直接比對畫面上的文字。</p>
+  </div>
+
+  <article class="step" id="z01">
+    <header><span class="code">Z-01</span><h3>看到這些訊息時怎麼辦</h3></header>
+    <div class="body">
+      <div class="tbl">
+        <table>
+          <thead><tr><th>畫面上的訊息</th><th>原因</th><th>處理方式</th></tr></thead>
+          <tbody>
+            <tr><td><code>Could not connect on port '...'</code></td><td>連接埠寫錯，或驅動板沒接好</td><td>重新執行 <code>lerobot-find-port</code>，確認 USB 和電源都插好</td></tr>
+            <tr><td><code>Motor '...' (model 'sts3215') was not found</code></td><td>設定 ID 時找不到馬達</td><td>檢查電源、USB、3-pin 線；Waveshare 跳線要在 B</td></tr>
+            <tr><td><code>... different than the one expected: '777'</code></td><td>設定 ID 時同時接了不只一顆馬達</td><td>一次只接一顆馬達</td></tr>
+            <tr><td><code>Missing motor IDs</code></td><td>組裝後有馬達沒回應</td><td>多半是串接的 3-pin 線鬆了，或那顆馬達沒設定過 ID</td></tr>
+            <tr><td><code>Some Motors use different firmware versions</code></td><td>馬達韌體版本不一致</td><td>用飛特官方的 Windows 軟體更新韌體，<a href="https://www.feetechrc.com/software" target="_blank" rel="noopener">下載頁</a>；更新時絕對不能斷電或拔 USB</td></tr>
+            <tr><td><code>Some motors have the same min and max values</code></td><td>校準時有關節沒轉到</td><td>重新校準，手腕旋轉以外的關節都要轉到兩端</td></tr>
+            <tr><td><code>Mismatch between calibration values ...</code></td><td>找不到對應名字的校準檔</td><td>確認 <code>--robot.id</code>、<code>--teleop.id</code> 和校準時一樣</td></tr>
+            <tr><td><code>Incorrect status packet!</code></td><td>匯流排偶爾傳錯資料，多個關節同時動時比較常見</td><td>程式預設會重試 2 次；常出現時可以加 <code>--robot.num_read_retries=5</code></td></tr>
+            <tr><td><code>'feetech-servo-sdk' is required but not installed</code></td><td>少裝套件</td><td>在 lerobot 資料夾執行 <code>pip install -e ".[feetech]"</code></td></tr>
+            <tr><td><code>'pyserial' is required ...</code></td><td>少裝套件</td><td>執行 <code>pip install -e ".[core_scripts]"</code></td></tr>
+            <tr><td>Linux 上 <code>Permission denied</code></td><td>沒有連接埠權限</td><td><code>sudo chmod 666 /dev/ttyACM0</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>還是解決不了，可以到官方 <a href="https://discord.com/invite/s3KuuzsPFb" target="_blank" rel="noopener">LeRobot Discord</a> 發問。</p>
+    </div>
+  </article>
+
+  <article class="step" id="z02">
+    <header><span class="code">Z-02</span><h3>資料來源與授權</h3></header>
+    <div class="body">
+      <p>本手冊所有指令、步驟和料件都對照以下版本的原始檔查證，日期 2026-10-14。官方之後若更新，以官方為準。</p>
+      <ul class="src do">
+        <li>SO-101 硬體：<a href="https://github.com/TheRobotStudio/SO-ARM100" target="_blank" rel="noopener">TheRobotStudio/SO-ARM100</a>，commit a758567，Apache-2.0。列印檔、照片、料件表、列印設定都來自這裡。</li>
+        <li>LeRobot 軟體 0.6.2：<a href="https://github.com/huggingface/lerobot" target="_blank" rel="noopener">huggingface/lerobot</a>，commit ae2b57f，Apache-2.0。安裝、設定馬達、校準、遙控的指令與程式介面來自 <code>docs/source/so101.mdx</code>、<code>installation.mdx</code>、<code>il_robots.mdx</code> 與原始碼。</li>
+        <li>官方線上組裝說明：<a href="https://huggingface.co/docs/lerobot/so101" target="_blank" rel="noopener">huggingface.co/docs/lerobot/so101</a>。</li>
+        <li>力感測：TAL221 荷重元、HX711、<a href="https://github.com/bogde/HX711" target="_blank" rel="noopener">bogde/HX711</a> 函式庫，細節列在階段 B。</li>
+        <li>零件圖：由本手冊用官方 STL 算繪；3D 檢視器載入的也是官方 STL 原檔，組裝總圖為減面版本。</li>
+      </ul>
+    </div>
+  </article>
+</section>

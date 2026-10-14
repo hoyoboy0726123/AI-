@@ -1,0 +1,84 @@
+  <article class="step" id="a05">
+    <header><span class="code">A-05</span><h3>安裝 LeRobot 軟體</h3></header>
+    <div class="body">
+      <p>LeRobot 是 Hugging Face 的開源機器人軟體，SO-101 的設定、校準和控制都靠它。官方要求 <strong>Python 3.12 以上</strong>，建議用 Miniforge 的 conda 管理環境。以下指令照官方安裝文件，查證版本為 LeRobot 0.6.2。</p>
+      <ol class="do">
+        <li><strong>安裝 Miniforge。</strong>Windows 請到 <a href="https://github.com/conda-forge/miniforge/releases/latest" target="_blank" rel="noopener">Miniforge 下載頁</a> 下載 Windows 安裝程式，裝好後從開始選單打開「Miniforge Prompt」，後面的指令都在這個視窗輸入。macOS 和 Linux 用官方這兩行：</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>macOS / Linux 終端機</span><button class="btn" type="button" data-copy>複製</button></div><pre>wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+bash Miniforge3-$(uname)-$(uname -m).sh</pre></div>
+      <ol class="do" start="2">
+        <li><strong>建立並啟用環境，安裝 ffmpeg。</strong>以後每次開新視窗要用 LeRobot，都要先執行 <code>conda activate lerobot</code>。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>所有系統</span><button class="btn" type="button" data-copy>複製</button></div><pre>conda create -y -n lerobot python=3.12
+conda activate lerobot
+conda install ffmpeg -c conda-forge</pre></div>
+      <ol class="do" start="3">
+        <li><strong>下載 LeRobot 原始碼並安裝。</strong>SO-101 需要兩組額外套件：<code>core_scripts</code> 提供校準與遙控指令，<code>feetech</code> 是 STS3215 馬達的驅動程式。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>所有系統</span><button class="btn" type="button" data-copy>複製</button></div><pre>git clone https://github.com/huggingface/lerobot.git
+cd lerobot
+pip install -e ".[core_scripts]"
+pip install -e ".[feetech]"</pre></div>
+      <div class="note tip"><b class="k">沒有 git 的話</b><p>Windows 可以先在 Miniforge Prompt 執行 <code>conda install git -c conda-forge</code>，再執行上面的指令。</p></div>
+      <div class="note warn"><b class="k">安裝出錯時</b><p>Linux 若出現編譯錯誤，官方建議先裝系統套件：<code>sudo apt-get install cmake build-essential python3-dev pkg-config libavformat-dev libavcodec-dev libavdevice-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev</code>。ffmpeg 有問題時，官方建議改裝 7.1.1 版：<code>conda install ffmpeg=7.1.1 -c conda-forge</code>。</p></div>
+      <div class="codeblk"><div class="cap"><span>檢查安裝結果</span><button class="btn" type="button" data-copy>複製</button></div><pre>pip show lerobot</pre></div>
+      <label class="check"><input type="checkbox" id="ck-a05"><span><b>檢查點</b>執行 <code>pip show lerobot</code> 會顯示 <code>Name: lerobot</code> 和版本號，沒有錯誤訊息。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a06">
+    <header><span class="code">A-06</span><h3>接上驅動板，找出連接埠</h3></header>
+    <div class="body">
+      <div class="need"><b>料件</b><span class="chip">驅動板</span><span class="chip">電源供應器</span><span class="chip">USB-C 線</span></div>
+      <ol class="do">
+        <li><strong>設定跳線。</strong>如果你的驅動板是 Waveshare，官方說明要把板子上的兩個跳線帽都插在 <strong>B</strong> 那一側，也就是 USB 模式。</li>
+        <li><strong>接電源與 USB。</strong>電源供應器插上驅動板，USB-C 線一端接驅動板、一端接電腦。這時候先不要接馬達。</li>
+        <li><strong>執行找連接埠的指令。</strong>程式會請你拔掉 USB 線再按 Enter，它比較拔線前後的差異，就知道哪一個是驅動板。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>啟用 lerobot 環境後執行</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-find-port</pre></div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>你的系統</th><th>連接埠長相</th><th>額外步驟</th></tr></thead>
+          <tbody>
+            <tr><td>Windows</td><td><code>COM3</code>、<code>COM4</code> 這類名稱</td><td>不需要</td></tr>
+            <tr><td>macOS</td><td><code>/dev/tty.usbmodem585A0076841</code> 這類名稱</td><td>不需要</td></tr>
+            <tr><td>Linux</td><td><code>/dev/ttyACM0</code>、<code>/dev/ttyACM1</code></td><td>官方建議執行 <code>sudo chmod 666 /dev/ttyACM0</code> 給予權限</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note warn"><b class="k">找不到連接埠時</b><p>先換一條 USB-C 線試試。只能充電、不能傳資料的線，電腦不會偵測到驅動板。這是一般經驗，官方文件沒有特別寫。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a06"><span><b>檢查點</b>畫面出現 <code>The port of this MotorsBus is ...</code>，把這個連接埠名稱抄下來，後面每個指令都會用到。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="a07">
+    <header><span class="code">A-07</span><h3>設定 6 顆馬達的 ID</h3></header>
+    <div class="body">
+      <p>新馬達出廠時 ID 通常都是 1。同一條線上的馬達 ID 必須不同，電腦才分得出誰是誰。這個步驟一次只接一顆馬達，程式會自動寫入 ID 和通訊速率 1,000,000，寫進馬達的記憶體後就不用再做。</p>
+      <!--ANIM:motorid-->
+      <div class="codeblk"><div class="cap"><span>把 COM3 換成你在 A-06 抄下的連接埠</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-setup-motors --robot.type=so101_follower --robot.port=COM3</pre></div>
+      <ol class="do">
+        <li>程式會先顯示 <code>Connect the controller board to the 'gripper' motor only and press enter.</code>：拿一顆馬達，用 3-pin 線接到驅動板，<strong>只接這一顆</strong>，按 Enter。</li>
+        <li>畫面出現 <code>'gripper' motor id set to 6</code>。拿膠帶在這顆馬達上寫「6 夾爪」。</li>
+        <li>把 3-pin 線從驅動板那一端拔掉，馬達那一端可以留著，之後組裝剛好用得到。換下一顆馬達，用另一條 3-pin 線接到驅動板。</li>
+        <li>照提示依序完成：手腕旋轉 5、手腕俯仰 4、手肘 3、肩部抬升 2、肩部旋轉 1。</li>
+      </ol>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>設定順序</th><th>程式裡的名稱</th><th>關節</th><th class="num">寫入的 ID</th></tr></thead>
+          <tbody>
+            <tr><td>第 1 顆</td><td><code>gripper</code></td><td>夾爪</td><td class="num">6</td></tr>
+            <tr><td>第 2 顆</td><td><code>wrist_roll</code></td><td>手腕旋轉</td><td class="num">5</td></tr>
+            <tr><td>第 3 顆</td><td><code>wrist_flex</code></td><td>手腕俯仰</td><td class="num">4</td></tr>
+            <tr><td>第 4 顆</td><td><code>elbow_flex</code></td><td>手肘</td><td class="num">3</td></tr>
+            <tr><td>第 5 顆</td><td><code>shoulder_lift</code></td><td>肩部抬升</td><td class="num">2</td></tr>
+            <tr><td>第 6 顆</td><td><code>shoulder_pan</code></td><td>肩部旋轉</td><td class="num">1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note tip"><b class="k">官方提醒</b><p>每次按 Enter 前都先檢查接線。換馬達時手會碰到驅動板，電源線很容易被扯鬆。官方的設定示範影片在 <a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/setup_motors_so101_2.mp4" target="_blank" rel="noopener">這裡</a>。</p></div>
+      <div class="note warn"><b class="k">出現錯誤時</b><p>看到 <code>Motor 'xxx' (model 'sts3215') was not found</code>，代表電腦找不到馬達：檢查電源、USB 線、3-pin 線，以及 Waveshare 跳線是否在 B。看到 <code>different than the one expected: '777'</code>，代表同時接了不只一顆馬達，或接到不是 STS3215 的馬達。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a07"><span><b>檢查點</b>畫面依序出現 6 行 <code>motor id set to</code>，ID 6 到 1 都有；每顆馬達都貼上寫了 ID 的膠帶。</span></label>
+    </div>
+  </article>
