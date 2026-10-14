@@ -531,7 +531,8 @@ SCENES.teleop = function(svg, tl, step){
   });
 };
 
-window.__SO101 = {E:E, T:T, G:G, tlDraw:tlDraw, pinRow:pinRow, curve:curve, SCENES:SCENES, makeArm:makeArm};
+window.__SO101 = {E:E, T:T, G:G, tlDraw:tlDraw, pinRow:pinRow, curve:curve, SCENES:SCENES, makeArm:makeArm,
+  fetchAny:fetchAny, cssVar:cssVar, viewers:viewers, REDUCED:REDUCED};
 
 /* ---------- boot ---------- */
 function boot(){

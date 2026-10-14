@@ -32,3 +32,15 @@ python3 src/build.py
 - 官方 STL 下載網址都實際下載過；LeRobot 指令與 Python 類別對照 LeRobot 0.6.2 原始碼。
 - Arduino 韌體用 arduino-cli 對 `arduino:avr:nano` 編譯成功；`force_probe.py` 在模擬環境測過。
 - 韌體、程式和治具都還沒有在實體硬體上測試。治具的孔位請先用游標卡尺量過荷重元再印。
+
+## 組裝步驟圖
+
+`assets/asm/` 和 `assets/img/asm/` 是從官方 URDF 模型產生的，重新產生的方法：
+
+```bash
+pip install numpy fast-simplification
+python3 src/tools/gen_assembly.py <SO-ARM100>/Simulation/SO101
+W=720 H=540 node src/tools/asm_render.js src/tools/asm_render_jobs.json
+```
+
+第二個指令需要 Node 的 playwright，以及 three.js 0.147.0 的檔案，用 `LIB` 環境變數指定 three 所在的資料夾。

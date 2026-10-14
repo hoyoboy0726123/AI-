@@ -147,6 +147,21 @@ figcaption{font-size:13px;color:var(--ink-2)}
 .viewer .parts .grp>span{font-family:var(--f-disp);letter-spacing:.12em;font-size:12px;color:var(--ink-2);min-width:7em}
 .viewer .parts button{font:500 13px var(--f-body);padding:4px 10px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer}
 .viewer .parts button[aria-pressed="true"]{background:var(--mat);border-color:var(--mat);color:var(--sheet)}
+@media (max-width:640px){.asmv .vp{aspect-ratio:1/1}}
+.asmv .asm-cap{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:10px 12px 0;font-size:15px}
+.asmv .asm-cap b{font-family:var(--f-disp);letter-spacing:.06em;color:var(--mat);font-size:17px}
+.asmv .ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px}
+.asmv ol.subs{list-style:none;margin:0;padding:0 12px 10px;display:grid;gap:4px;counter-reset:s}
+.asmv ol.subs:empty{display:none}
+.asmv ol.subs li{counter-increment:s;display:flex;gap:10px;padding:6px 10px;border-radius:5px;cursor:pointer;font-size:14px;color:var(--ink-2)}
+.asmv ol.subs li::before{content:counter(s);font-family:var(--f-disp);font-weight:700;color:var(--mat);min-width:1ch}
+.asmv ol.subs li.on{background:var(--amber-soft);color:var(--ink)}
+.asmgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));gap:10px}
+.asmimg{display:grid;gap:0;align-content:start;background:var(--paper);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.asmimg img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:contain}
+.asmimg .ph{aspect-ratio:4/3;display:grid;place-items:center;padding:16px;text-align:center;color:var(--ink-2);font-size:14px;border-bottom:1px dashed var(--rule)}
+.asmimg figcaption{display:flex;gap:8px;padding:8px 10px;font-size:14px;line-height:1.5;border-top:1px solid var(--rule)}
+.asmimg figcaption b{font-family:var(--f-disp);color:var(--amber);font-size:16px;line-height:1.3}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:10px}
 .pimg{gap:4px;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:6px}
 .pimg img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:contain}

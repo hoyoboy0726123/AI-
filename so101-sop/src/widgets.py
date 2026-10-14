@@ -26,8 +26,8 @@ VIEWERS = {
     "parts": {"base": "assets/stl64/", "hint": "拖曳旋轉　滾輪或雙指縮放", "groups": [
         ("共用零件", [
             ("Base_SO101.stl", "底座", "執行臂、主控臂都要"),
-            ("Base_motor_holder_SO101.stl", "馬達座 甲，關節 1", "執行臂、主控臂都要"),
-            ("Motor_holder_SO101_Base.stl", "馬達座 乙，關節 1", "執行臂、主控臂都要"),
+            ("Base_motor_holder_SO101.stl", "第一個馬達座，關節 1", "執行臂、主控臂都要"),
+            ("Motor_holder_SO101_Base.stl", "肩部馬達座，關節 1", "執行臂、主控臂都要"),
             ("Rotation_Pitch_SO101.stl", "肩部零件", "執行臂、主控臂都要"),
             ("Upper_arm_SO101.stl", "上臂", "執行臂、主控臂都要"),
             ("Under_arm_SO101.stl", "前臂", "執行臂、主控臂都要"),
@@ -125,3 +125,40 @@ def code(spec, root):
     body = html.escape(p.read_text(encoding="utf-8"))
     return (f'<div class="codeblk"><div class="cap"><span>{html.escape(cap or p.name)}</span>'
             f'<button class="btn" type="button" data-copy>複製</button></div><pre>{body}</pre></div>')
+
+
+def asm(arm, data):
+    """<!--ASM:follower--> -> interactive step-by-step 3D assembly viewer."""
+    steps = data["arms"][arm]["steps"]
+    btns = "".join(f'<button type="button" data-step="{i}" aria-pressed="false">{i + 1} {html.escape(s["title"])}</button>'
+                   for i, s in enumerate(steps))
+    return (
+        f'<figure class="viewer asmv" data-asm="{arm}">'
+        f'<div class="vp"><div class="status">3D 組裝模型會在捲到這裡時載入</div><div class="hint">拖曳旋轉　滾輪或雙指縮放</div></div>'
+        f'<div class="asm-cap"><b data-asm-step>組裝順序</b><span data-asm-sub>點下方的步驟，看零件一個一個裝上去。</span></div>'
+        f'<div class="ctrl"><button class="btn primary" type="button" data-act="play">播放這一步</button>'
+        f'<button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button>'
+        f'<button class="btn" type="button" data-act="all">看完成的手臂</button></div>'
+        f'<ol class="subs"></ol>'
+        f'<div class="parts"><div class="grp"><span>組裝順序</span>{btns}</div></div>'
+        f'<figcaption class="src" style="padding:0 12px 12px">零件位置取自官方 SO-ARM100 的 URDF 模型，橘色是這一步新裝的零件，深色方塊是馬達。'
+        f'動畫只表示零件最後裝在哪裡，實際插入的方向請對照官方影片。</figcaption>'
+        f"</figure>"
+    )
+
+
+def asm_step(arm, step_id, data):
+    """<!--ASMSTEP:follower:j1--> -> one picture per official sub-step, new parts highlighted."""
+    st = next(s for s in data["arms"][arm]["steps"] if s["id"] == step_id)
+    cells = []
+    for i, sub in enumerate(st["subs"]):
+        text = html.escape(sub["text"])
+        if sub["parts"]:
+            names = "、".join(data["labels"][p] for p in sub["parts"])
+            cells.append(
+                f'<figure class="asmimg"><img src="assets/img/asm/{arm}_{step_id}_{i}.webp" width="720" height="540" loading="lazy" '
+                f'alt="{html.escape(st["title"])} 第 {i + 1} 步：{html.escape(names)} 的位置，橘色標示"><figcaption><b>{i + 1}</b>{text}</figcaption></figure>')
+        else:
+            cells.append(f'<figure class="asmimg noimg"><div class="ph">{text}</div><figcaption><b>{i + 1}</b>{text}</figcaption></figure>')
+    return (f'<div class="asmgrid">{"".join(cells)}</div>'
+            f'<p class="src" style="margin:0">圖由官方 URDF 模型算繪，橘色是新裝的零件。手臂擺的是校準時的中間姿勢，組裝時你手上的零件角度可能不同。</p>')

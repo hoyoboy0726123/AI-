@@ -1,0 +1,249 @@
+[
+ {
+  "arm": "follower",
+  "upto": 0,
+  "sub": 0,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.0,
+  "out": "assets/img/asm/follower_j1_0.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 0,
+  "sub": 1,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_j1_1.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 0,
+  "sub": 2,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_j1_2.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 0,
+  "sub": 3,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_j1_3.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 1,
+  "sub": 0,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_j2_0.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 1,
+  "sub": 1,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_j2_1.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 2,
+  "sub": 0,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_j3_0.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 2,
+  "sub": 1,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_j3_1.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 3,
+  "sub": 0,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_j4_0.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 3,
+  "sub": 1,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_j4_1.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 4,
+  "sub": 0,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_j5_0.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 5,
+  "sub": 0,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_grip_0.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 5,
+  "sub": 1,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_grip_1.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 5,
+  "sub": 2,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_grip_2.webp"
+ },
+ {
+  "arm": "follower",
+  "upto": 6,
+  "sub": 0,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/follower_board_0.webp"
+ },
+ {
+  "arm": "leader",
+  "upto": 5,
+  "sub": 0,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/leader_handle_0.webp"
+ },
+ {
+  "arm": "leader",
+  "upto": 5,
+  "sub": 1,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/leader_handle_1.webp"
+ },
+ {
+  "arm": "leader",
+  "upto": 5,
+  "sub": 2,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/leader_handle_2.webp"
+ },
+ {
+  "arm": "leader",
+  "upto": 5,
+  "sub": 3,
+  "view": [
+   1.2,
+   -1.6,
+   0.9
+  ],
+  "focus": "new",
+  "pad": 1.5,
+  "out": "assets/img/asm/leader_handle_3.webp"
+ }
+]

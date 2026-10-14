@@ -18,6 +18,8 @@
       </div>
       <p class="src">數量是本手冊依官方組裝文字逐步加總，其中兩處官方寫「兩側各 4 顆」還是「兩側共 4 顆」不夠清楚，所以 M3 給一個範圍。多備幾顆比較保險。</p>
       <div class="note tip"><b class="k">舵盤是什麼</b><p>馬達出力軸上的圓形塑膠盤，英文叫 horn。每顆馬達有上下兩片，上面那片要用一顆 M3 × 6 鎖住，下面那片官方說不用鎖。</p></div>
+      <p><strong>先看一次完整的組裝順序。</strong>下面的 3D 模型會照官方步驟，把零件一個一個裝上去。可以先整段看完，組裝時再回來對照。</p>
+      <!--ASM:follower-->
       <label class="check"><input type="checkbox" id="ck-a08"><span><b>檢查點</b>11 個列印件都清乾淨；6 顆馬達各插好一條 3-pin 線並標好 ID；M2 × 6 和 M3 × 6 螺絲都夠。</span></label>
     </div>
   </article>
@@ -25,7 +27,8 @@
   <article class="step" id="a09">
     <header><span class="code">A-09</span><h3>關節 1：底座與肩部旋轉，馬達 ID 1</h3></header>
     <div class="body">
-      <!--PARTS:Base_SO101.stl,Base_motor_holder_SO101.stl,Motor_holder_SO101_Base.stl,Rotation_Pitch_SO101.stl|官方文字只寫「底座」「第一個馬達座」「肩部零件」「肩部馬達座」，沒有對應檔名。上面是本手冊依檔名推測的對應，兩個馬達座請對照官方影片確認哪個先裝。-->
+      <!--PARTS:Base_SO101.stl,Base_motor_holder_SO101.stl,Rotation_Pitch_SO101.stl,Motor_holder_SO101_Base.stl|依官方 URDF 模型確認：第一個馬達座 Base_motor_holder 固定在底座上；肩部馬達座 Motor_holder_SO101_Base 跟著肩部一起轉，關節 2 的馬達就裝在它裡面。-->
+      <!--ASMSTEP:follower:j1-->
       <ol class="do">
         <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
         <li>把第一顆馬達放進底座。</li>
@@ -44,6 +47,7 @@
     <header><span class="code">A-10</span><h3>關節 2：肩部抬升，馬達 ID 2</h3></header>
     <div class="body">
       <!--PARTS:Upper_arm_SO101.stl-->
+      <!--ASMSTEP:follower:j2-->
       <ol class="do">
         <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
         <li>把第二顆馬達從上方滑進去。</li>
@@ -59,6 +63,7 @@
     <header><span class="code">A-11</span><h3>關節 3：手肘，馬達 ID 3</h3></header>
     <div class="body">
       <!--PARTS:Under_arm_SO101.stl|官方叫它 forearm，前臂；檔名是 Under_arm。-->
+      <!--ASMSTEP:follower:j3-->
       <ol class="do">
         <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
         <li>放入第三顆馬達，用 4 顆 M2 × 6 固定。</li>
@@ -72,7 +77,8 @@
   <article class="step" id="a12">
     <header><span class="code">A-12</span><h3>關節 4：手腕俯仰，馬達 ID 4</h3></header>
     <div class="body">
-      <!--PARTS:Motor_holder_SO101_Wrist.stl|官方叫它「馬達座 4」，本手冊依檔名推測是這個零件。-->
+      <!--PARTS:Motor_holder_SO101_Wrist.stl|官方叫它「馬達座 4」，已用官方 URDF 模型確認是這個零件。-->
+      <!--ASMSTEP:follower:j4-->
       <ol class="do">
         <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
         <li>套上馬達座 4。</li>
@@ -87,7 +93,8 @@
   <article class="step" id="a13">
     <header><span class="code">A-13</span><h3>關節 5：手腕旋轉，馬達 ID 5</h3></header>
     <div class="body">
-      <!--PARTS:Wrist_Roll_Pitch_SO101.stl|官方叫它 wrist holder，手腕座；本手冊依檔名推測是這個零件。-->
+      <!--PARTS:Wrist_Roll_Pitch_SO101.stl|官方叫它 wrist holder，手腕座；已用官方 URDF 模型確認是這個零件。-->
+      <!--ASMSTEP:follower:j5-->
       <ol class="do">
         <li>把第五顆馬達放進手腕座，前面用 2 顆 M2 × 6 固定。</li>
         <li>這顆馬達<strong>只裝一片舵盤</strong>，用 1 顆 M3 × 6 鎖住。</li>
@@ -101,7 +108,8 @@
   <article class="step" id="a14">
     <header><span class="code">A-14</span><h3>夾爪：執行臂版本，馬達 ID 6</h3></header>
     <div class="body">
-      <!--PARTS:Wrist_Roll_Follower_SO101.stl,Moving_Jaw_SO101.stl|官方叫它們 gripper，夾爪本體，和 gripper claw，活動爪。對應檔名為本手冊推測。-->
+      <!--PARTS:Wrist_Roll_Follower_SO101.stl,Moving_Jaw_SO101.stl|官方叫它們 gripper，夾爪本體，和 gripper claw，活動爪；對應檔名已用官方 URDF 模型確認。-->
+      <!--ASMSTEP:follower:grip-->
       <ol class="do">
         <li>把夾爪本體裝到第五顆馬達手腕的舵盤上，用 4 顆 M3 × 6 鎖住。</li>
         <li>放入夾爪馬達，兩側各用 2 顆 M2 × 6 固定。</li>
