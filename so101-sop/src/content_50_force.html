@@ -1,0 +1,235 @@
+<section class="part" id="p2" data-phase="B" data-toc="階段 B　力感測">
+  <div class="part-head">
+    <span class="tag">階段 B</span>
+    <h2>力感測：量 1 到 200 克的推力</h2>
+    <p>在夾爪上加一個小型荷重元，讓手臂知道自己推了多大力。荷重元把力量變成很小的電壓，HX711 放大板把它轉成數字，Arduino Nano 再用 USB 傳到電腦。最後用 Python 讓手臂慢慢推遊戲手把的蘑菇頭，推到設定的克數就停。</p>
+  </div>
+  <figure><div class="photo"><img src="assets/force/probe_tool_preview.png" alt="力感測治具組裝預覽：藍色治具座、灰色荷重元、紅色推頭" width="1280" height="760" loading="lazy"></div><figcaption>本手冊設計的治具，組裝預覽。藍色是夾在夾爪裡的治具座，灰色是 TAL221 荷重元，紅色是推頭。右圖箭頭方向就是量力的方向。</figcaption></figure>
+
+  <article class="step" id="b01">
+    <header><span class="code">B-01</span><h3>備齊力感測料件</h3></header>
+    <div class="body">
+      <div class="tbl">
+        <table>
+          <thead><tr><th>料件</th><th class="num">數量</th><th>規格與說明</th></tr></thead>
+          <tbody>
+            <tr><td>TAL221 迷你荷重元 <b>500 g</b></td><td class="num">1</td><td>SparkFun 料號 SEN-14728，<a href="https://www.sparkfun.com/mini-load-cell-500g-straight-bar-tal221.html" target="_blank" rel="noopener">商品頁</a>。尺寸 47 × 12 × 6 mm，4 條細線長約 110 mm。台灣、淘寶可搜尋「TAL221 500g」。</td></tr>
+            <tr><td>HX711 放大板</td><td class="num">1</td><td>SparkFun SEN-13879 紅色板，或常見的綠色通用板，兩種接法本章都有寫。</td></tr>
+            <tr><td>Arduino Nano，ATmega328P</td><td class="num">1</td><td>原廠或相容板都可以。另備一條能傳資料的 USB 線，接頭看你買的 Nano 是哪一種。</td></tr>
+            <tr><td>M3 × 10 螺絲</td><td class="num">2</td><td>把荷重元有線的那一端鎖在治具座上。</td></tr>
+            <tr><td>M3 × 12 螺絲和 M3 螺帽</td><td class="num">各 2</td><td>把推頭鎖在荷重元沒有線的那一端。M3 × 14 也可以。</td></tr>
+            <tr><td>小束帶，寬 3 mm 以下</td><td class="num">2</td><td>一條把治具座綁在兩根夾爪上，一條固定荷重元的細線。</td></tr>
+            <tr><td>杜邦線、排針、熱縮套管</td><td class="num">1 份</td><td>HX711 到 Nano 用 4 條杜邦線。荷重元的細線要焊在排針上再套熱縮管。</td></tr>
+            <tr><td>砝碼 1、10、50、100、200 g</td><td class="num">1 組</td><td>沒有砝碼的話，用 0.01 g 的珠寶秤先秤好幾樣小東西，拿它們當砝碼。</td></tr>
+            <tr><td>游標卡尺、三用電錶、烙鐵</td><td class="num">各 1</td><td>量荷重元孔位、檢查線路、焊接。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note warn"><b class="k">一定要買 500 g，不要買 100 g</b><p>你要量到 200 克。500 g 版推到 200 克只用了 40% 的量程，安全過載是 750 克，原廠標示綜合誤差約正負 0.25 克。100 g 版的安全過載只有 150 克，推到 200 克會壓壞。</p></div>
+      <p class="src">荷重元規格整理自 SparkFun 商品頁、原廠 HT Sensor 規格表與多家通路的資料。這些商品頁在本手冊的撰寫環境裡無法直接開啟，數值是交叉比對搜尋結果後確認的；網址可能因店家改版而變動。</p>
+      <label class="check"><input type="checkbox" id="ck-b01"><span><b>檢查點</b>荷重元上的標示是 500 g；HX711、Nano、螺絲、束帶、砝碼都到齊。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="b02">
+    <header><span class="code">B-02</span><h3>量荷重元、列印治具、組裝</h3></header>
+    <div class="body">
+      <p>治具是本手冊依照 SO-101 官方夾爪模型和 TAL221 尺寸設計的，有兩個零件：夾在夾爪裡的<b>治具座</b>，和鎖在荷重元前端的<b>推頭</b>。兩個檔案都已經轉成列印方向，切片時直接放上平台。</p>
+      <!--VIEWER:jig-->
+      <!--PARTS:probe_block.stl,probe_tip.stl|治具座長 42 mm、寬 24 mm；推頭高約 15.5 mm。-->
+      <div class="dl"><button class="btn primary" type="button" data-zip="kit">下載力感測套件（zip）</button><span class="msg">內含治具 STL、OpenSCAD 原始檔、Arduino 韌體與 Python 程式。</span></div>
+      <p><strong>先用游標卡尺量你手上的荷重元。</strong>治具上有幾個尺寸只能從第三方 CAD 模型取得，請實際量過再印：</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>要量的地方</th><th class="num">治具預設值</th><th>來源</th></tr></thead>
+          <tbody>
+            <tr><td>荷重元長、寬、厚</td><td class="num">47 × 12 × 6 mm</td><td>多家商品頁與 CAD 模型一致</td></tr>
+            <tr><td>同一端兩個孔的中心距，橫跨 12 mm 寬度</td><td class="num">6.0 mm</td><td>三個不同作者的配件都是這個值</td></tr>
+            <tr><td>孔中心到荷重元端面的距離</td><td class="num">3.5 mm</td><td>只有一個第三方模型，<b>要量</b></td></tr>
+            <tr><td>兩端實心部分的長度</td><td class="num">7 mm</td><td>只有一個第三方模型，<b>要量</b></td></tr>
+            <tr><td>夾爪閉合時兩爪的間距</td><td class="num">24 mm</td><td>由官方模型量出，正負 1 mm</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note tip"><b class="k">尺寸不一樣怎麼辦</b><p>下載套件裡的 <code>cad/probe_tool.scad</code> 用免費的 OpenSCAD 打開，最上面有 <code>hole_from_end</code>、<code>cell_head_len</code>、<code>hole_pitch</code>、<code>clamp_w</code> 等參數。改成你量到的數字，存檔後依序匯出 <code>part="block"</code> 和 <code>part="tip"</code> 兩個 STL。</p></div>
+      <ol class="do">
+        <li><strong>列印。</strong>PLA 或 PETG，層高 0.2 mm，牆 4 圈，填充 40% 以上。檔案已經擺好方向：治具座的三根小柱子朝上，推頭的尖端朝上。</li>
+        <li><strong>試孔。</strong>拿一顆 M3 螺絲穿過治具上的 4 個孔，要能順順穿過。太緊就用 3.4 mm 鑽頭手轉擴孔。</li>
+        <li><strong>分清荷重元的兩端。</strong>有線的那一端是<b>固定端</b>，孔是 M3 螺紋；沒有線的那一端是<b>受力端</b>，孔是光孔。</li>
+      </ol>
+      <!--ANIM:jig-->
+      <ol class="do" start="4">
+        <li><strong>鎖固定端。</strong>把荷重元有線的那一端貼在治具座伸出來的舌片上，2 顆 M3 × 10 從舌片那一側穿過去，直接鎖進荷重元的螺紋孔。鎖緊即可，不要用力到滑牙。</li>
+        <li><strong>鎖推頭。</strong>推頭的平板貼在荷重元受力端的另一面，也就是和舌片相反的那一面，尖端朝外。2 顆 M3 × 12 穿過平板和荷重元，另一側用螺帽鎖緊。</li>
+        <li><strong>整理細線。</strong>治具座側面有 3 根交錯的小柱子，4 條細線在柱子之間繞 S 形穿過，再用小束帶穿過旁邊的橋形扣固定。這樣拉到線時，力量不會傳到荷重元的出線口。</li>
+        <li><strong>確認中間懸空。</strong>荷重元中間那段，四周都不能碰到治具。拿一張紙從荷重元中段和舌片之間穿過去，要能順利通過。</li>
+      </ol>
+      <div class="note stop"><b class="k">細線很脆弱</b><p>荷重元的線大約只有 0.6 mm 粗，最容易從出線口斷掉，斷了幾乎修不好，只能換一顆。不要用線把荷重元提起來，也不要反覆彎折出線口。</p></div>
+      <label class="check"><input type="checkbox" id="ck-b02"><span><b>檢查點</b>有線的一端鎖在舌片上，推頭鎖在另一端；紙片能從荷重元中段穿過；細線已經繞過小柱子並綁好。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="b03">
+    <header><span class="code">B-03</span><h3>接線：荷重元 → HX711 → Arduino Nano</h3></header>
+    <div class="body">
+      <!--ANIM:forcewire-->
+      <p><strong>第一段：荷重元的 4 條線接到 HX711。</strong>SparkFun 紅色板上印的是線的顏色，通用綠色板印的是訊號名稱。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>荷重元的線</th><th>訊號</th><th>SparkFun 板</th><th>通用綠色板</th></tr></thead>
+          <tbody>
+            <tr><td>紅</td><td>激勵 正</td><td>RED</td><td>E+</td></tr>
+            <tr><td>黑</td><td>激勵 負</td><td>BLK</td><td>E−</td></tr>
+            <tr><td>白</td><td>訊號 負</td><td>WHT</td><td>A−</td></tr>
+            <tr><td>綠</td><td>訊號 正</td><td>GRN</td><td>A+</td></tr>
+            <tr><td>沒有線</td><td></td><td>YLW 空著</td><td>B+、B− 空著</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>第二段：HX711 接到 Nano。</strong></p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>SparkFun 板</th><th>通用綠色板</th><th>接到 Arduino Nano</th></tr></thead>
+          <tbody>
+            <tr><td>VCC</td><td>VCC</td><td>5V</td></tr>
+            <tr><td>VDD</td><td>沒有這個腳</td><td>5V，和 VCC 接同一個腳</td></tr>
+            <tr><td>DAT</td><td>DT</td><td><b>D2</b></td></tr>
+            <tr><td>CLK</td><td>SCK</td><td><b>D3</b></td></tr>
+            <tr><td>GND</td><td>GND</td><td>GND</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note stop"><b class="k">SparkFun 板的 VDD 一定要接</b><p>VCC 供電給荷重元，VDD 決定數位訊號的電壓。VDD 沒接的話，Nano 一個數字都讀不到。</p></div>
+      <div class="note warn"><b class="k">不要照 SparkFun 範例的腳位</b><p>SparkFun 自己的範例程式是 DAT 接 3、CLK 接 2，剛好和本手冊相反。本手冊的韌體固定用 DAT 接 D2、CLK 接 D3。</p></div>
+      <ol class="do">
+        <li>荷重元的細線焊在排針上，每個焊點套熱縮管。不要用螺絲端子夾這麼細的線。</li>
+        <li>HX711 用雙面膠或束帶固定在手腕或前臂上，越靠近荷重元越好。荷重元的線只有 110 mm 長，而且這段線越短雜訊越小。</li>
+        <li>HX711 到 Nano 的 4 條線沿著手臂走到底座，經過手腕的兩個關節時各留一段鬆弛的線圈，讓關節轉動時不會拉扯。線長盡量在 1 公尺以內。</li>
+        <li>訊號線遠離馬達的電源線。Nano 用自己的 USB 線直接接電腦，不要和馬達驅動板共用同一個 USB 集線器。</li>
+      </ol>
+      <div class="note tip"><b class="k">用三用電錶先檢查荷重元</b><p>荷重元先不要接到 HX711，量電阻：紅、黑之間大約 1090 Ω，綠、白之間大約 1000 Ω。顯示 OL 代表有線斷了。</p></div>
+      <p class="src">SparkFun 板的腳位對照，是直接讀 SparkFun 官方 GitHub 上的電路板檔案確認的。少數商店標示的綠、白兩線顏色相反，沒關係，B-05 的校正會自動處理正負號。</p>
+      <label class="check"><input type="checkbox" id="ck-b03"><span><b>檢查點</b>對照兩張表各檢查一次：紅黑白綠 4 條線、5V 兩條、GND、D2、D3 都接對；焊點都套了熱縮管。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="b04">
+    <header><span class="code">B-04</span><h3>燒錄 Arduino 韌體</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li><strong>安裝 Arduino IDE 2。</strong>到 <a href="https://www.arduino.cc/en/software" target="_blank" rel="noopener">Arduino 官網</a> 下載安裝。</li>
+        <li><strong>安裝函式庫。</strong>左側點「程式庫管理員」，搜尋 <code>HX711 Arduino Library</code>，安裝作者是 <b>Bogdan Necula</b> 的那一個，版本 0.7.5。</li>
+        <li><strong>打開韌體。</strong>解開下載的力感測套件，用 Arduino IDE 打開 <code>so101_force/so101_force.ino</code>。下載按鈕不能用的話，就在 Arduino IDE 新增一個草稿，把內容全部刪掉，貼上下方的程式碼，存檔名稱打 <code>so101_force</code>。</li>
+        <li><strong>選板子。</strong>工具 → 開發板選 <code>Arduino Nano</code>，處理器選 <code>ATmega328P</code>，連接埠選 Nano 的那一個。</li>
+        <li><strong>上傳。</strong>按上傳箭頭，下方出現「上傳完成」就成功了。</li>
+        <li><strong>打開序列埠監控視窗。</strong>右上角放大鏡圖示，鮑率選 <code>115200</code>，行尾選「換行」或 Newline。</li>
+      </ol>
+      <div class="note stop"><b class="k">函式庫名字很容易裝錯</b><p>程式庫管理員裡還有一個名字就叫 <code>HX711</code>、作者是 Rob Tillaart 的函式庫。那是另一套，用它編譯會失敗。已經裝錯的話，先移除它，再裝 Bogdan Necula 的版本。</p></div>
+      <div class="note warn"><b class="k">相容板上傳失敗</b><p>處理器改選 <code>ATmega328P (Old Bootloader)</code> 再上傳一次。Windows 如果找不到連接埠，大多是相容板用的 CH340 晶片缺驅動程式，安裝 CH340 驅動後重新插拔 USB。</p></div>
+      <p>上傳成功後，序列埠監控視窗會依序看到這幾行，最後每秒大約 10 行 <code>F,</code> 開頭的資料。因為還沒校正，最後一欄是 <code>nan</code>。</p>
+      <div class="codeblk"><div class="cap"><span>正常的開機畫面</span></div><pre># so101_force v1.0 (TAL221 + HX711, DOUT=D2 SCK=D3)
+# NOT CALIBRATED: send t (no load), put a known weight on the tip, send c&lt;grams&gt;
+# auto-tare at boot: do not touch the probe
+OK,TARE,…
+F,1234,nan
+F,1334,nan</pre></div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>在監控視窗輸入</th><th>作用</th></tr></thead>
+          <tbody>
+            <tr><td><code>t</code></td><td>歸零，推頭上不能有任何東西</td></tr>
+            <tr><td><code>c100</code></td><td>用 100 g 砝碼校正，數字換成你放的克數。結果存在 Nano 裡，斷電也不會消失</td></tr>
+            <tr><td><code>r</code></td><td>印出一筆原始讀數，除錯用</td></tr>
+            <tr><td><code>a8</code></td><td>平均 8 筆資料，數字越大越穩但反應越慢，可設 1 到 16，預設 4</td></tr>
+            <tr><td><code>?</code></td><td>顯示說明和目前設定</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <details class="fold"><summary>韌體完整程式碼 so101_force.ino</summary><!--CODE:assets/force/so101_force/so101_force.ino|so101_force.ino--></details>
+      <p class="src">這份韌體由本手冊撰寫，已用 arduino-cli 對 <code>arduino:avr:nano</code> 編譯成功，用了 9464 bytes，約 30%。也用模擬程式測過歸零、校正、存檔、斷線警告等情境，但還沒有在實體 Nano 上跑過。</p>
+      <label class="check"><input type="checkbox" id="ck-b04"><span><b>檢查點</b>序列埠監控視窗一直出現 <code>F,…,nan</code>，沒有 <code>WARN,HX711_NOT_READY</code>。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="b05">
+    <header><span class="code">B-05</span><h3>用砝碼校正</h3></header>
+    <div class="body">
+      <!--ANIM:weights-->
+      <ol class="do">
+        <li><strong>先暖機 10 分鐘。</strong>Nano 插上 USB 放著。HX711 和荷重元剛通電時會慢慢升溫，零點會漂。</li>
+        <li><strong>把治具座固定在桌上，推頭尖端朝正上方。</strong>治具座側躺，用小虎鉗、夾子或膠帶固定。這時候荷重元是水平的，中間懸空。砝碼放在推頭上，壓的方向就和之後蘑菇頭頂回來的方向一樣，推力讀數才會是正的。</li>
+        <li><strong>想放紙杯當托盤，就現在放。</strong>用膠帶把小紙杯貼在推頭上，放砝碼比較穩。之後的歸零會把紙杯一起扣掉。</li>
+        <li><strong>歸零。</strong>推頭上不放砝碼，在監控視窗輸入 <code>t</code>，等出現 <code>OK,TARE,</code> 開頭的回覆。</li>
+        <li><strong>校正。</strong>輕輕放上 100 g 砝碼，等 3 秒，輸入 <code>c100</code>。用 200 g 就輸入 <code>c200</code>。</li>
+        <li><strong>看回覆。</strong>應該出現 <code>OK,CAL,</code> 後面接一個數字，500 g 荷重元大約在 2360 到 3650 之間。差很多就是砝碼克數打錯、荷重元不是 500 g，或線接錯。</li>
+        <li><strong>拿掉砝碼。</strong>讀數要回到 0，誤差在正負 0.3 g 以內。回不去就重新做第 4 到第 6 步。</li>
+      </ol>
+      <p><strong>線性檢查。</strong>先輸入 <code>t</code> 歸零，再依序放 1、10、50、100、200 g，每次等 3 秒，看 10 筆左右的平均，填進下表。每拿掉一個砝碼，都要確認讀數回到 0 再放下一個。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th class="num">砝碼</th><th class="num">讀數</th><th class="num">誤差 = 讀數 − 砝碼</th><th class="num">建議的合格範圍</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1 g</td><td class="num"></td><td class="num"></td><td class="num">±0.5 g</td></tr>
+            <tr><td class="num">10 g</td><td class="num"></td><td class="num"></td><td class="num">±0.5 g</td></tr>
+            <tr><td class="num">50 g</td><td class="num"></td><td class="num"></td><td class="num">±0.5 g</td></tr>
+            <tr><td class="num">100 g</td><td class="num"></td><td class="num"></td><td class="num">±1 g</td></tr>
+            <tr><td class="num">200 g</td><td class="num"></td><td class="num"></td><td class="num">±2 g</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src">合格範圍是本手冊建議的標準：誤差不超過 0.5 g 或砝碼的 1%，取較大的那個。這不是原廠規格。</p>
+      <p>也可以用電腦程式記錄，比看監控視窗方便。先關掉 Arduino 的序列埠監控視窗，同一個連接埠一次只能給一個程式用。</p>
+      <div class="codeblk"><div class="cap"><span>在 lerobot 環境裡執行，COM5 換成 Nano 的連接埠</span><button class="btn" type="button" data-copy>複製</button></div><pre>conda activate lerobot
+pip install pyserial
+python force_probe.py monitor --port COM5 --seconds 5 --csv check_100g.csv</pre></div>
+      <dl class="kv">
+        <dt>歸零</dt><dd><code>python force_probe.py tare --port COM5</code></dd>
+        <dt>校正</dt><dd><code>python force_probe.py cal 100 --port COM5</code></dd>
+        <dt>原始讀數</dt><dd><code>python force_probe.py raw --port COM5</code></dd>
+      </dl>
+      <div class="note tip"><b class="k">找不到 Nano 是哪個連接埠</b><p>執行 <code>lerobot-find-port</code>，照提示拔掉 Nano 的 USB 再按 Enter，它會告訴你是哪一個。手臂驅動板在 A-06 也是這樣找的，兩個連接埠不要搞混。</p></div>
+      <label class="check"><input type="checkbox" id="ck-b05"><span><b>檢查點</b>出現 <code>OK,CAL,</code> 而且數字在 2360 到 3650 之間；5 個砝碼的誤差都在建議範圍內；拿掉砝碼會回到 0。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="b06">
+    <header><span class="code">B-06</span><h3>讓手臂推蘑菇頭，推到目標力量就停</h3></header>
+    <div class="body">
+      <!--ANIM:push-->
+      <ol class="do">
+        <li><strong>確認執行臂已經校準。</strong>就是 A-16 那一步，而且要記得當時用的 <code>--robot.id</code>。</li>
+        <li><strong>把治具裝進夾爪。</strong>治具座 24 mm 寬的兩面讓兩根爪夾住，治具座前緣和爪尖對齊，舌片和荷重元要伸出爪子外面。再用小束帶穿過治具座上的溝槽，把治具座和兩根爪綁在一起。</li>
+        <li><strong>固定手把。</strong>把遊戲手把用夾子或膠帶固定在桌上，不能被推走。</li>
+        <li><strong>擺好起始位置。</strong>用手把手臂帶到推頭尖端離蘑菇頭幾毫米的地方，推頭的方向對準蘑菇頭。手腕旋轉保持在 0 度附近時，手腕上下彎曲的關節剛好會讓推頭沿著量力的方向移動。</li>
+        <li><strong>先用小力量試跑。</strong>一手扶著手臂，手不要碰到推頭和荷重元，執行下面第一段指令。畫面要你按 Enter 時按下去，程式會先歸零，再讓馬達出力。看到 <code>start wrist_flex.pos = …</code> 代表馬達已經撐住手臂，這時才慢慢放手。</li>
+        <li><strong>方向錯了就反過來。</strong>手臂往遠離蘑菇頭的方向動，或讀數變成負的，就把指令裡的 <code>--direction 1</code> 改成 <code>--direction -1</code>。</li>
+        <li><strong>正式推 50 g。</strong>試跑正常，再執行第二段指令。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>試跑：目標 20 g、最多移動 5 度。COM5 是 Nano，COM3 是手臂</span><button class="btn" type="button" data-copy>複製</button></div><pre>python force_probe.py push --port COM5 --robot-port COM3 --robot-id my_awesome_follower_arm --joint wrist_flex --direction 1 --target 20 --max-travel 5</pre></div>
+      <div class="codeblk"><div class="cap"><span>正式：目標 50 g、安全上限 300 g</span><button class="btn" type="button" data-copy>複製</button></div><pre>python force_probe.py push --port COM5 --robot-port COM3 --robot-id my_awesome_follower_arm --joint wrist_flex --direction 1 --target 50 --limit 300</pre></div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>程式會自動停下來的情況</th><th>畫面訊息</th></tr></thead>
+          <tbody>
+            <tr><td>到達目標力量，維持 2 秒後退回起點</td><td><code>target reached</code></td></tr>
+            <tr><td>超過安全上限，立刻後退 3 度</td><td><code>HARD LIMIT</code></td></tr>
+            <tr><td>讀數小於 −20 g，方向錯了</td><td><code>negative force</code></td></tr>
+            <tr><td>移動超過 15 度還沒碰到東西</td><td><code>without reaching the target</code></td></tr>
+            <tr><td>超過 0.6 秒沒收到力量資料</td><td><code>force sensor silent</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note stop"><b class="k">緊急停止</b><p>按一次 Ctrl+C：停止並退回起點。再按一次 Ctrl+C：馬達立刻斷電，手臂會軟掉往下掉。所以手臂下方不要放東西，手要放在電源開關旁邊。</p></div>
+      <ul class="do">
+        <li>程式每 0.1 秒移動一次。還沒接觸時每次 0.2 度，推頭尖端大約前進 0.75 mm；碰到東西之後步伐會自動變小。</li>
+        <li>每一筆力量和角度都會存進 <code>push_log.csv</code>，可以用 Excel 打開畫圖。</li>
+        <li>LeRobot 預設把夾爪的力氣限制在一半左右，所以治具座一定要用束帶綁住，只靠夾爪夾會滑掉。</li>
+        <li>結束後馬達預設會繼續出力，撐住手臂。加上 <code>--release-torque</code>，結束時就會放掉出力。</li>
+      </ul>
+      <div class="note tip"><b class="k">最後的實際驗證</b><p>把蘑菇頭換成廚房用電子秤，讓推頭往秤面推 50 g，比較秤上的數字和程式顯示的數字。兩個接近，就代表整套系統可以用了。</p></div>
+      <details class="fold"><summary>電腦端完整程式碼 force_probe.py</summary><!--CODE:assets/force/force_probe.py|force_probe.py--></details>
+      <p class="src">這支程式由本手冊撰寫，類別和參數已對照 LeRobot 0.6.2 原始碼確認，也在模擬的 Nano 和模擬手臂上測過到達目標、超過上限、方向相反、感測器斷線、連按兩次 Ctrl+C 等 7 種情境。還沒有在實體手臂上跑過，第一次請一定用上面的試跑指令。</p>
+      <label class="check"><input type="checkbox" id="ck-b06"><span><b>檢查點</b>試跑出現 <code>target reached</code>，手臂退回起點；正式推 50 g 時，電子秤上的數字和程式顯示接近。恭喜，階段 B 完成。</span></label>
+    </div>
+  </article>
+</section>

@@ -94,23 +94,45 @@ function initCopy(){
   });
 }
 
-/* ---------- downloads (zip bundles) ---------- */
+/* ---------- binary files published as base64 text ---------- */
+function fetchBin(url){
+  return fetch(url).then(function(r){ if(!r.ok) throw {code:"fetch"}; return r.text(); }).then(function(b64){
+    var bin = atob(b64.trim()); var u = new Uint8Array(bin.length);
+    for(var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return u.buffer;
+  });
+}
+function fetchAny(url){
+  if(/\/stl64\//.test(url)) return fetchBin(url);
+  return fetch(url).then(function(r){ if(!r.ok) throw {code:"fetch"}; return r.arrayBuffer(); });
+}
+
+/* ---------- downloads (zip bundles built in the browser) ---------- */
+var ZIPS = window.__SO101_ZIPS || {};
+function buildZip(spec){
+  if(!window.JSZip) return Promise.reject({code:"nozip"});
+  var zip = new JSZip();
+  var root = zip.folder(spec.folder);
+  (spec.text || []).forEach(function(t){ root.file(t[0], t[1]); });
+  return Promise.all(spec.files.map(function(f){
+    return fetchAny(f[0]).then(function(buf){ root.file(f[1], buf); });
+  })).then(function(){ return zip.generateAsync({type:"blob", compression:"DEFLATE", compressionOptions:{level:6}}); });
+}
 function initDownloads(){
-  var btns = document.querySelectorAll("[data-download]");
+  var btns = document.querySelectorAll("[data-zip]");
   if(!btns.length) return;
   var dlPromise = (window.claude && typeof window.claude.use === "function") ? window.claude.use("downloads") : Promise.resolve(null);
   btns.forEach(function(btn){
     var msg = btn.parentElement.querySelector(".msg");
+    var spec = ZIPS[btn.getAttribute("data-zip")];
+    if(!spec){ btn.hidden = true; return; }
     btn.addEventListener("click", function(){
       btn.disabled = true;
-      if(msg) msg.textContent = "準備檔案中…";
+      if(msg) msg.textContent = "打包中，檔案較多請稍候…";
       dlPromise.then(function(dl){
         if(!dl){ throw {code:"unavailable"}; }
-        return fetch(btn.getAttribute("data-download")).then(function(r){
-          if(!r.ok) throw {code:"fetch"};
-          return r.blob();
-        }).then(function(blob){
-          return dl.save({filename: btn.getAttribute("data-filename"), data: blob});
+        return buildZip(spec).then(function(blob){
+          return dl.save({filename: spec.name, data: blob});
         });
       }).then(function(){
         if(msg) msg.textContent = "已交給瀏覽器下載。";
@@ -119,7 +141,8 @@ function initDownloads(){
         if(msg){
           if(c === "declined") msg.textContent = "你取消了下載。";
           else if(c === "rate_limited") msg.textContent = "已經有一個下載視窗開著，請先處理它。";
-          else msg.textContent = "這個檢視模式不能下載。請在 claude.ai 開啟本頁，或改用下方 GitHub 連結與程式碼複製。";
+          else if(c === "fetch" || c === "nozip") msg.textContent = "打包失敗，請重新整理頁面再試，或改用 GitHub 連結下載。";
+          else msg.textContent = "這個檢視模式不能下載。請在 claude.ai 開啟本頁，或改用 GitHub 連結與程式碼複製。";
         }
       }).then(function(){ btn.disabled = false; });
     });
@@ -192,7 +215,8 @@ function makeViewer(root){
     if(metaUse) metaUse.textContent = btn.getAttribute("data-use") || "";
     status.textContent = "載入 3D 模型中…";
     var base = btn.getAttribute("data-base") || root.getAttribute("data-base") || "assets/stl/";
-    var p = cache[file] || (cache[file] = fetch(base + encodeURIComponent(file)).then(function(r){ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); }).then(function(buf){ return loader.parse(buf); }));
+    var url = base + encodeURIComponent(file) + (base.indexOf("stl64") >= 0 ? ".txt" : "");
+    var p = cache[file] || (cache[file] = fetchAny(url).then(function(buf){ return loader.parse(buf); }));
     p.then(function(geo){
       if(mesh){ scene.remove(mesh); }
       if(!geo.attributes.normal) geo.computeVertexNormals();

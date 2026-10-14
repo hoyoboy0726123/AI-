@@ -1,14 +1,23 @@
 """Assemble the SOP page: template + content sections + scripts -> dist/index.html."""
-import pathlib, re, sys
+import base64, pathlib, re, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import widgets
+import zips
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = ROOT / "src"
+
+# Binary STL is not a served type, so the page loads base64 copies from assets/stl64/.
+STL64 = ROOT / "assets/stl64"
+STL64.mkdir(exist_ok=True)
+for stl in [*(ROOT / "assets/stl").glob("*.stl"), *(ROOT / "assets/stl/gauges").glob("*"), *(ROOT / "assets/force").glob("*.stl")]:
+    out = STL64 / (stl.name + ".txt")
+    if not out.exists() or out.stat().st_mtime < stl.stat().st_mtime:
+        out.write_text(base64.b64encode(stl.read_bytes()).decode("ascii"), encoding="ascii")
 tpl = (ROOT / "index.html").read_text(encoding="utf-8")
 parts = sorted(SRC.glob("content_*.html"))
 content = "\n".join(p.read_text(encoding="utf-8") for p in parts)
-scripts = "\n".join((SRC / n).read_text(encoding="utf-8") for n in ["app.js", "scenes2.js", "scenes3.js"] if (SRC / n).exists())
+scripts = zips.js(ROOT) + "\n".join((SRC / n).read_text(encoding="utf-8") for n in ["app.js", "scenes2.js", "scenes3.js"] if (SRC / n).exists())
 if "</script" in scripts.lower():
     sys.exit("script text contains a closing script tag")
 content = re.sub(r"<!--ANIM:(\w+)-->", lambda m: widgets.anim(m.group(1)), content)

@@ -1,0 +1,40 @@
+{
+  "name": "SO-101-force-kit.zip",
+  "folder": "SO-101-force-kit",
+  "files": [
+    [
+      "assets/force/so101_force/so101_force.ino.txt",
+      "so101_force/so101_force.ino"
+    ],
+    [
+      "assets/force/force_probe.py.txt",
+      "force_probe.py"
+    ],
+    [
+      "assets/stl64/probe_block.stl.txt",
+      "stl/probe_block.stl"
+    ],
+    [
+      "assets/stl64/probe_tip.stl.txt",
+      "stl/probe_tip.stl"
+    ],
+    [
+      "assets/force/probe_tool.scad.txt",
+      "cad/probe_tool.scad"
+    ],
+    [
+      "assets/force/gen_probe_tool.py.txt",
+      "cad/gen_probe_tool.py"
+    ],
+    [
+      "assets/scripts/first_move.py.txt",
+      "first_move.py"
+    ]
+  ],
+  "text": [
+    [
+      "README.txt",
+      "SO-101 force kit (TAL221 500 g + HX711 + Arduino Nano)\n\nso101_force/so101_force.ino  Arduino Nano firmware. Library: \"HX711 Arduino Library\" by Bogdan Necula 0.7.5. Serial 115200.\nforce_probe.py               PC script: monitor / tare / cal / raw / push. Needs: pip install pyserial (push also needs LeRobot).\nstl/probe_block.stl          Clamp block (gripped by the SO-101 jaws). PLA or PETG, 0.2 mm layers, 4 walls, 40% infill or more.\nstl/probe_tip.stl            Probe tip, screwed to the free end (no wires) of the TAL221.\ncad/probe_tool.scad          Same jig in OpenSCAD. Measure your load cell and edit hole_pitch, hole_from_end, cell_head_len, clamp_w.\ncad/gen_probe_tool.py        Python generator for the same jig (manifold3d + trimesh).\nfirst_move.py                First LeRobot test for the SO-101 follower.\n\nScrews: 2 x M3x10 (fixed end), 2 x M3x12 + 2 x M3 nuts (probe tip). One small zip tie for the jaws, one for the wires.\nThese files were written for the SO-101 SOP. Firmware compiled for arduino:avr:nano; scripts tested offline only, not on real hardware.\n"
+    ]
+  ]
+}

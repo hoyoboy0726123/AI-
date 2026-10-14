@@ -10,8 +10,8 @@ ANIMS = {
         "驅動板接上電源與 USB-C，在電腦執行設定指令", "照畫面提示一次只接一顆馬達，按 Enter 寫入 ID", "6 顆馬達都完成"]},
     "forcewire": {"vb": "0 0 720 330", "title": "荷重元、HX711、Arduino Nano 接線", "steps": [
         "認識三個零件", "荷重元的 4 條線接到 HX711", "HX711 接到 Arduino Nano，Nano 用 USB 接電腦", "Nano 把讀數傳到電腦"]},
-    "jig": {"vb": "0 0 720 330", "title": "治具組裝", "steps": [
-        "荷重元固定端鎖上治具座", "受力端裝上推頭", "細線用束帶固定，不讓它受力", "夾爪夾緊治具座"]},
+    "jig": {"vb": "0 0 720 340", "title": "治具組裝", "steps": [
+        "荷重元有線的那一端，用 2 顆 M3×10 鎖在舌片上", "沒有線的那一端，裝上推頭", "細線穿過固定柱，不讓線受力", "夾爪夾住治具座，再用束帶綁住兩根爪"]},
     "calibrate": {"vb": "0 0 680 330", "title": "校準流程", "steps": [
         "上臂朝上、前臂朝前，擺到中間位置，按 Enter", "除了手腕旋轉，每個關節慢慢轉到兩端", "全部轉完，按 Enter 存檔"]},
     "teleop": {"vb": "0 0 680 330", "title": "雙臂遙控", "steps": [
@@ -23,7 +23,7 @@ ANIMS = {
 }
 
 VIEWERS = {
-    "parts": {"base": "assets/stl/", "hint": "拖曳旋轉　滾輪或雙指縮放", "groups": [
+    "parts": {"base": "assets/stl64/", "hint": "拖曳旋轉　滾輪或雙指縮放", "groups": [
         ("共用零件", [
             ("Base_SO101.stl", "底座", "執行臂、主控臂都要"),
             ("Base_motor_holder_SO101.stl", "馬達座 甲，關節 1", "執行臂、主控臂都要"),
@@ -46,11 +46,15 @@ VIEWERS = {
             ("Trigger_SO101.stl", "扳機", "只有主控臂"),
         ]),
     ]},
-    "plates": {"base": "assets/stl/", "hint": "官方 Bambu A1 mini 列印盤排版，減面後", "groups": [
+    "plates": {"base": "assets/stl64/", "hint": "官方 Bambu A1 mini 列印盤排版，減面後", "groups": [
         ("列印盤", [("BambuLabA1mini_Follower_SO101_lite.stl", "執行臂整盤", "階段 A 列印"),
                     ("BambuLabA1mini_Leader_SO101_lite.stl", "主控臂整盤", "階段 C 列印")]),
     ]},
-    "overview": {"base": "assets/stl/", "hint": "拖曳旋轉　滾輪或雙指縮放", "groups": [
+    "jig": {"base": "assets/stl64/", "hint": "本手冊設計的治具，已轉成列印方向", "groups": [
+        ("力感測治具", [("probe_block.stl", "治具座", "夾在夾爪裡，PLA 或 PETG"),
+                        ("probe_tip.stl", "推頭", "鎖在荷重元沒有線的那一端")]),
+    ]},
+    "overview": {"base": "assets/stl64/", "hint": "拖曳旋轉　滾輪或雙指縮放", "groups": [
         ("完整手臂", [("SO101_Assembly_lite.stl", "SO-101 組裝完成", "官方組裝模型，減面後")]),
     ]},
 }
@@ -94,7 +98,7 @@ def viewer(name, pressed=None):
     )
 
 
-NAMES = {f: (lab, use) for _g, items in VIEWERS["parts"]["groups"] for f, lab, use in items}
+NAMES = {f: (lab, use) for v in ("parts", "jig") for _g, items in VIEWERS[v]["groups"] for f, lab, use in items}
 
 
 def parts(spec):

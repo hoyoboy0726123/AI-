@@ -100,6 +100,7 @@ static void saveCalibration(float cpg) {
 static bool readRaw(long &out) {
   if (!scale.wait_ready_timeout(READY_TIMEOUT_MS, 1)) return false;
   out = scale.read();
+  lastSampleMs = millis();   // keeps loop() from warning after a long t / c / r
   return true;
 }
 
