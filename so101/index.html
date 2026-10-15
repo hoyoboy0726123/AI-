@@ -448,7 +448,7 @@ footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-siz
           <thead><tr><th>線材</th><th>建議</th><th>原因</th></tr></thead>
           <tbody>
             <tr><td><strong>PLA+</strong></td><td>首選，官方指定</td><td>收縮最小、尺寸最準、最好印。官方 README 和代印說明都指定 PLA+，量規和零件的鬆緊也是照它設計的。</td></tr>
-            <tr><td>PETG</td><td>可以，第二選擇</td><td>比較韌、比較耐熱，螺絲直接鎖進塑膠時比較不會裂。缺點是容易牽絲，孔和凹槽常常偏緊，一定要用它重印量規確認。</td></tr>
+            <tr><td>PETG</td><td>可以，第二選擇。<strong>官方沒有提到</strong></td><td>比較韌、比較耐熱，螺絲直接鎖進塑膠時比較不會裂。缺點是容易牽絲，孔和凹槽常常偏緊，一定要用它重印量規確認。</td></tr>
             <tr><td>ABS、ASA</td><td>新手不建議</td><td>收縮大、容易翹邊，要有密閉的印表機。馬達凹槽和孔位最容易跑掉。</td></tr>
             <tr><td>碳纖 PLA、碳纖 PETG</td><td>進階選項</td><td>尺寸很穩、很硬，但會磨損噴嘴，要換硬化鋼噴嘴。</td></tr>
             <tr><td>絲綢 PLA、木質、TPU</td><td>不要用</td><td>絲綢 PLA 層與層之間比較弱，容易斷；TPU 太軟，撐不住手臂。</td></tr>
@@ -477,6 +477,7 @@ footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-siz
         <p style="margin:0"><strong>本手冊建議的做法：</strong>手臂主體用 PLA+ 熱熔列印；光固化拿來印小而要求精度的零件，例如階段 B 的推頭 <code>probe_tip</code>。</p>
         <p class="src" style="margin:0">官方只指定 PLA+，沒有提到光固化。這一段是本手冊依官方零件尺寸和材料特性整理的建議。</p>
       </div></details>
+      <p class="src">官方只指定 PLA+：SO-101 的 README、代印說明 3DPRINT.md 都寫 PLA+，舊款 SO-100 寫 PLA。官方文件沒有提到 PETG、ABS、ASA、碳纖或光固化，上表除了 PLA+ 以外，都是本手冊依材料特性整理的建議，官方沒有測試過。官方只在選配的柔性夾爪裡用到 TPU。</p>
       <div class="note warn"><b class="k">同一捲線材印到底</b><p>不同品牌、甚至同品牌不同顏色，收縮都會有一點差異。量規用哪一捲印，整隻手臂就用同一捲印。中途換線材，就重印量規再確認一次。線材受潮會讓尺寸變胖、牽絲變多，開封久的線材先烘乾。</p></div>
       <p><strong>官方設計的孔有多大。</strong>本手冊直接量了官方 STEP 設計檔，手臂上和螺絲有關的孔是這幾種：</p>
       <div class="tbl">
