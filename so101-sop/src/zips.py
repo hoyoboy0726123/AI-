@@ -12,6 +12,10 @@ Full print plates (Ender / Prusa / Bambu A1 mini) are in STL/SO101/Follower and 
 Individual/ has 15 files. WaveShare_Mounting_Plate_SO101 and Seeedstudio_Mounting_Plate_SO101
 are the same part for two driver-board brands: print only the one for your board, so 14 parts per print list.
 Individual 資料夾有 15 個檔案。兩個驅動板固定板只印你的驅動板品牌那一個，所以實際要印 14 種。
+
+Gauges/ has 4 files: print Gauge_0 and Gauge_tight_1 if you test with an STS3215 servo,
+or the two Lego_Size_Test files if you test with a 4x2 Lego brick. Not both pairs.
+Gauges 資料夾有 4 個檔案：用馬達試塞就印 Gauge_0 和 Gauge_tight_1；用樂高積木試塞才印兩個 Lego_Size_Test。
 """
 
 

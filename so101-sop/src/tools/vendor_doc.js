@@ -83,11 +83,11 @@ const doc = new Document({
       children: [t('SO-101 零件列印需求說明　第 ', { size: 18, color: INK2 }), new TextRun({ children: [PageNumber.CURRENT], size: 18, color: INK2, font: FONT }), t(' 頁', { size: 18, color: INK2 })] })] }) },
     children: [
       new Paragraph({ style: 'Title', children: [t('SO-101 機械手臂零件列印需求說明')] }),
-      p([t('開源機械手臂 SO-101 結構零件　材料 PLA+　共 23 件，另加量規 2 件', { color: INK2 })], { spacing: { after: 200 } }),
+      p([t('開源機械手臂 SO-101 結構零件　材料 PLA+　零件 23 件＋量規 2 件，總共 25 件', { color: INK2 })], { spacing: { after: 200 } }),
       table([1900, 2919, 1900, 2919], ['項目', '內容', '項目', '內容'], [
         ['訂購單位', '', '聯絡人', ''],
         ['電話', '', '需求日期', ''],
-        ['材料', 'PLA+', '數量', '23 件＋量規 2 件'],
+        ['材料', 'PLA+，FDM 熱熔列印', '總數量', [b('25 件'), t('（零件 23＋量規 2）')]],
       ]),
       gap(),
       p('您好，這批是開源機械手臂 SO-101 的結構零件，零件要裝馬達、鎖螺絲，尺寸精度比外觀重要。麻煩依照以下規格列印，謝謝！'),
@@ -98,6 +98,11 @@ const doc = new Document({
       bullet([t('第 1 到 9 項是兩隻手臂共用的零件，'), b('每種各印 2 個'), t('；第 10 到 14 項各印 1 個。')]),
       gap(),
       table([700, 4538, 3200, 1200], ['#', '檔名', '零件名稱', '數量'], partRows, { center: [0, 3], total: true }),
+      gap(),
+      callout('總數一次看清楚', [
+        t('附件 zip 裡共有 '), b('19 個 STL'), t('：Individual 資料夾 15 個、Gauges 資料夾 4 個。其中 '), b('3 個不用印'),
+        t('：Seeedstudio_Mounting_Plate_SO101、Lego_Size_Test_02_zero、Lego_Size_Test_02_minuspoint1。其餘 16 種照數量列印，'),
+        b('總共 25 件'), t('：上表零件 23 件，加上第四節的量規 2 件。')], GREEN_SOFT, GREEN),
       gap(),
       callout('請注意：資料夾裡的檔案比表格多', [
         t('附件 zip 的 Individual 資料夾有 '), b('15 個'), t('檔案，表格只有 14 種。多出來的 '), b('Seeedstudio_Mounting_Plate_SO101.stl'),
@@ -121,7 +126,7 @@ const doc = new Document({
 
       h1('二、材料與參數'),
       table([2600, 7038], ['項目', '規格'], [
-        ['材料', [b('PLA+')]],
+        ['材料', [b('PLA+'), t('，用 '), b('FDM 熱熔列印'), t('。請不要用光固化樹脂，樹脂零件太重、太脆，不適合這支手臂。')]],
         ['線材', [t('所有零件'), b('用同一品牌、同一捲線材'), t('，不同捲的收縮會有差異。線材請先烘乾。')]],
         ['噴嘴／層高', '0.4 mm 噴嘴，0.2 mm 層高'],
         ['填充', '20%'],
@@ -137,11 +142,13 @@ const doc = new Document({
       num([t('支撐請完全清除，'), b('特別是馬達凹槽和螺絲孔'), t('，不能留殘渣。')], 'num'),
 
       h1('四、請先印量規確認'),
-      p('正式下單前，請先用同一捲線材、同一組參數印下面兩個量規，寄給我們試裝馬達：'),
-      table([4819, 4819], ['檔名', '位置'], [
-        [[t('Gauge_0.STL', { font: { ascii: 'Consolas', hAnsi: 'Consolas' } })], 'zip 內的 Gauges 資料夾'],
-        [[t('Gauge_tight_1.STL', { font: { ascii: 'Consolas', hAnsi: 'Consolas' } })], 'zip 內的 Gauges 資料夾'],
-      ]),
+      p('正式下單前，請先用同一捲線材、同一組參數印量規，寄給我們試裝馬達。zip 的 Gauges 資料夾有 4 個檔案，只印前 2 個：'),
+      table([4200, 3438, 2000], ['檔名', '用途', '數量'], [
+        [[t('Gauge_0.STL', { font: { ascii: 'Consolas', hAnsi: 'Consolas' } })], '用馬達試塞的量規', [b('1')]],
+        [[t('Gauge_tight_1.STL', { font: { ascii: 'Consolas', hAnsi: 'Consolas' } })], '用馬達試塞的量規，較緊', [b('1')]],
+        [[t('Lego_Size_Test_02_zero.STL', { font: { ascii: 'Consolas', hAnsi: 'Consolas' } })], '用樂高積木試塞，我們用不到', [t('不用印', { color: RED, bold: true })]],
+        [[t('Lego_Size_Test_02_minuspoint1.STL', { font: { ascii: 'Consolas', hAnsi: 'Consolas' } })], '用樂高積木試塞，我們用不到', [t('不用印', { color: RED, bold: true })]],
+      ], { center: [2] }),
       gap(),
       p([t('我們確認鬆緊沒問題後，再用'), b('完全相同的設定'), t('印正式零件。')]),
 
@@ -161,7 +168,7 @@ const doc = new Document({
         ['馬達凹槽和螺絲孔內沒有殘留支撐', '☐'],
         ['活動爪 Moving_Jaw 尖端包裝時有保護', '☐'],
         [[b('每種零件分袋包裝，袋子上標示檔名'), t('（第 3 項和第 7 項外形很像）')], '☐'],
-        ['23 件數量齊全', '☐'],
+        [[t('數量齊全：零件 23 件＋量規 2 件，'), b('共 25 件'), t('。Motor_holder_SO101_Base 和 Motor_holder_SO101_Wrist 都是各 2 個')], '☐'],
       ], { center: [1] }),
 
       h1('六、選購：力感測治具'),
