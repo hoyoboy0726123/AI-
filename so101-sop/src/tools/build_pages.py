@@ -45,6 +45,8 @@ def main():
     SITE.mkdir()
     (SITE / "index.html").write_text(page, encoding="utf-8")
     files = site_files(html)
+    for doc in sorted((ROOT / "docs").glob("*.docx")):  # documents linked from the page
+        files["docs/" + doc.name] = doc
     for dst, src in files.items():
         out = SITE / dst
         out.parent.mkdir(parents=True, exist_ok=True)
