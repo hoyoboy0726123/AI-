@@ -44,9 +44,9 @@ PART_IDS = {
 }
 
 LABELS = {
-    "base": "底座", "motor1": "馬達 1", "holder1": "第一個馬達座", "plate": "驅動板固定板",
-    "shoulder": "肩部零件", "holder2": "肩部馬達座", "motor2": "馬達 2", "upper_arm": "上臂",
-    "motor3": "馬達 3", "forearm": "前臂", "holder4": "馬達座 4", "motor4": "馬達 4",
+    "base": "底座", "motor1": "馬達 1", "holder1": "馬達 1 固定座", "plate": "驅動板固定板",
+    "shoulder": "肩部零件", "holder2": "馬達 2 固定座", "motor2": "馬達 2", "upper_arm": "上臂",
+    "motor3": "馬達 3", "forearm": "前臂", "holder4": "馬達 4 固定座", "motor4": "馬達 4",
     "wrist": "手腕座", "motor5": "馬達 5", "motor6": "馬達 6", "gripper_body": "夾爪本體",
     "jaw": "活動爪", "leader_holder": "主控臂手腕座", "handle": "握把", "trigger": "扳機",
 }
@@ -55,9 +55,9 @@ LABELS = {
 JOINTS = [
     {"id": "j1", "title": "關節 1", "subs": [
         (["base", "motor1"], "馬達 1 放進底座，上下各 2 顆 M2×6 固定"),
-        (["holder1"], "套上第一個馬達座，左右各 1 顆 M2×6"),
+        (["holder1"], "套上馬達 1 固定座，左右各 1 顆 M2×6"),
         (["shoulder"], "裝上肩部零件，上下各 4 顆 M3×6"),
-        (["holder2"], "裝上肩部馬達座"),
+        (["holder2"], "裝上馬達 2 固定座"),
     ]},
     {"id": "j2", "title": "關節 2", "subs": [
         (["motor2"], "馬達 2 從上方滑入，4 顆 M2×6 固定"),
@@ -68,7 +68,7 @@ JOINTS = [
         (["forearm"], "前臂接到馬達 3，每側 4 顆 M3×6"),
     ]},
     {"id": "j4", "title": "關節 4", "subs": [
-        (["holder4"], "套上馬達座 4"),
+        (["holder4"], "套上馬達 4 固定座"),
         (["motor4"], "馬達 4 滑入，4 顆 M2×6 固定"),
     ]},
     {"id": "j5", "title": "關節 5", "subs": [

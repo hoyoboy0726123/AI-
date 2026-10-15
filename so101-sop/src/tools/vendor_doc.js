@@ -4,8 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, ShadingType,
-  AlignmentType, HeadingLevel, LevelFormat, BorderStyle, Footer, PageNumber, TableLayoutType,
+  AlignmentType, HeadingLevel, LevelFormat, BorderStyle, Footer, PageNumber, TableLayoutType, ImageRun,
 } = require('docx');
+const ROOT = path.resolve(__dirname, '../..');
 
 const OUT = process.argv[2];
 const GREEN = '1D6B4F', GREEN_SOFT = 'DCEBE3', AMBER_SOFT = 'F8EDD6', RED = 'AE2A20', GREY = 'CFD9D3', INK2 = '4C5C54';
@@ -48,9 +49,9 @@ function callout(title, text, fill, color) {
 const gap = () => new Paragraph({ children: [], spacing: { after: 60 } });
 
 const shared = [
-  ['Base_SO101', '底座'], ['Base_motor_holder_SO101', '第一個馬達座'], ['Motor_holder_SO101_Base', '肩部馬達座'],
+  ['Base_SO101', '底座'], ['Base_motor_holder_SO101', '馬達 1 固定座'], ['Motor_holder_SO101_Base', '馬達 2 固定座'],
   ['Rotation_Pitch_SO101', '肩部零件'], ['Upper_arm_SO101', '上臂'], ['Under_arm_SO101', '前臂'],
-  ['Motor_holder_SO101_Wrist', '馬達座 4'], ['Wrist_Roll_Pitch_SO101', '手腕座'], ['WaveShare_Mounting_Plate_SO101', '驅動板固定板（Waveshare 版）'],
+  ['Motor_holder_SO101_Wrist', '馬達 4 固定座'], ['Wrist_Roll_Pitch_SO101', '手腕座'], ['WaveShare_Mounting_Plate_SO101', '驅動板固定板（Waveshare 版）'],
 ];
 const single = [
   ['Wrist_Roll_Follower_SO101', '夾爪本體（執行臂）'], ['Moving_Jaw_SO101', '活動爪（執行臂）'],
@@ -99,6 +100,21 @@ const doc = new Document({
       table([700, 4538, 3200, 1200], ['#', '檔名', '零件名稱', '數量'], partRows, { center: [0, 3], total: true }),
       gap(),
       callout('請注意', [t('請'), b('不要印 SO101 Assembly.stl'), t('，那是整隻手臂的參考模型，不是零件。驅動板固定板只印 Waveshare 版，Seeedstudio_Mounting_Plate_SO101 不用印。')], AMBER_SOFT, '8F5B00'),
+      gap(),
+      p([b('長得幾乎一樣的兩個零件，請分開包裝：'), t('第 3 項 Motor_holder_SO101_Base 和第 7 項 Motor_holder_SO101_Wrist 外形非常像，尺寸只差 1 mm 多。差別在底邊：第 3 項底下有兩個突出的小卡勾，第 7 項底邊是平的，有三條橫紋。')]),
+      new Table({ width: { size: W, type: WidthType.DXA }, columnWidths: [4819, 4819], layout: TableLayoutType.FIXED, rows: [
+        new TableRow({ children: [['Motor_holder_SO101_Base', '第 3 項　馬達 2 固定座', '底下有小卡勾　55.1 × 38.1 × 28.0 mm'], ['Motor_holder_SO101_Wrist', '第 7 項　馬達 4 固定座', '底邊平的有橫紋　56.4 × 36.9 × 28.0 mm']].map(([f, title, note]) => {
+          const img = fs.readFileSync(path.join(ROOT, 'assets/img/parts', f + '_side.png'));
+          const h = img.readUInt32BE(20), w = img.readUInt32BE(16);
+          return new TableCell({ width: { size: 4819, type: WidthType.DXA }, borders, margins: { top: 80, bottom: 80, left: 110, right: 110 }, children: [
+            new Paragraph({ alignment: AlignmentType.CENTER, children: [new ImageRun({ type: 'png', data: img, transformation: { width: 150, height: Math.round(150 * h / w) },
+              altText: { title: f, description: title + '，' + note, name: f } })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, children: [b(title)], spacing: { before: 60 } }),
+            new Paragraph({ alignment: AlignmentType.CENTER, children: [t(f + '.stl', { size: 18 })] }),
+            new Paragraph({ alignment: AlignmentType.CENTER, children: [t(note, { size: 18, color: INK2 })] }),
+          ] });
+        }) }),
+      ] }),
 
       h1('二、材料與參數'),
       table([2600, 7038], ['項目', '規格'], [
@@ -141,6 +157,7 @@ const doc = new Document({
         ['接合面、馬達凹槽、孔位沒有打磨或噴漆', '☐'],
         ['馬達凹槽和螺絲孔內沒有殘留支撐', '☐'],
         ['活動爪 Moving_Jaw 尖端包裝時有保護', '☐'],
+        [[b('每種零件分袋包裝，袋子上標示檔名'), t('（第 3 項和第 7 項外形很像）')], '☐'],
         ['23 件數量齊全', '☐'],
       ], { center: [1] }),
 

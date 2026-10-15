@@ -27,16 +27,16 @@
   <article class="step" id="a09">
     <header><span class="code">A-09</span><h3>關節 1：底座與肩部旋轉，馬達 ID 1</h3></header>
     <div class="body">
-      <!--PARTS:Base_SO101.stl,Base_motor_holder_SO101.stl,Rotation_Pitch_SO101.stl,Motor_holder_SO101_Base.stl|依官方 URDF 模型確認：第一個馬達座 Base_motor_holder 固定在底座上；肩部馬達座 Motor_holder_SO101_Base 跟著肩部一起轉，關節 2 的馬達就裝在它裡面。-->
+      <!--PARTS:Base_SO101.stl,Base_motor_holder_SO101.stl,Rotation_Pitch_SO101.stl,Motor_holder_SO101_Base.stl|依官方 URDF 模型確認：馬達 1 固定座 Base_motor_holder_SO101 在底座上，包住馬達 1；馬達 2 固定座 Motor_holder_SO101_Base 跟著肩部一起轉，關節 2 的馬達就裝在它裡面。兩個檔名都有 Base，請看完整檔名分辨。-->
       <!--ASMSTEP:follower:j1-->
       <ol class="do">
         <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
         <li>把第一顆馬達放進底座。</li>
         <li>用 4 顆 M2 × 6 固定馬達：上面 2 顆、下面 2 顆。</li>
-        <li>套上第一個馬達座，兩側各用 1 顆 M2 × 6 固定。</li>
+        <li>套上馬達 1 固定座 <code>Base_motor_holder_SO101</code>，兩側各用 1 顆 M2 × 6 固定。</li>
         <li>裝上肩部零件。</li>
         <li>肩部零件上面鎖 4 顆 M3 × 6，下面也鎖 4 顆 M3 × 6。</li>
-        <li>裝上肩部馬達座。</li>
+        <li>裝上馬達 2 固定座 <code>Motor_holder_SO101_Base</code>。</li>
       </ol>
       <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint1_v2.mp4" target="_blank" rel="noopener">關節 1 組裝</a></p>
       <label class="check"><input type="checkbox" id="ck-a09"><span><b>檢查點</b>用手轉肩部零件，可以順暢左右旋轉，沒有卡住或晃動；所有螺絲都鎖上了。</span></label>
@@ -77,11 +77,11 @@
   <article class="step" id="a12">
     <header><span class="code">A-12</span><h3>關節 4：手腕俯仰，馬達 ID 4</h3></header>
     <div class="body">
-      <!--PARTS:Motor_holder_SO101_Wrist.stl|官方叫它「馬達座 4」，已用官方 URDF 模型確認是這個零件。-->
+      <!--PARTS:Motor_holder_SO101_Wrist.stl|官方叫它 motor holder 4，已用官方 URDF 模型確認是這個零件。它和馬達 2 固定座長得幾乎一樣，分辨方法看 A-04。-->
       <!--ASMSTEP:follower:j4-->
       <ol class="do">
         <li>裝上兩片舵盤，上面那片用 1 顆 M3 × 6 鎖住，下面那片不用鎖。</li>
-        <li>套上馬達座 4。</li>
+        <li>套上馬達 4 固定座 <code>Motor_holder_SO101_Wrist</code>。</li>
         <li>把第四顆馬達滑進去。</li>
         <li>用 4 顆 M2 × 6 固定第四顆馬達。</li>
       </ol>

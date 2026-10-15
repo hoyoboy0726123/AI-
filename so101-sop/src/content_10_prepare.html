@@ -152,12 +152,12 @@
           <thead><tr><th>零件檔名</th><th>用途</th><th class="num">數量</th></tr></thead>
           <tbody>
             <tr><td><code>Base_SO101</code></td><td>底座</td><td class="num">1</td></tr>
-            <tr><td><code>Base_motor_holder_SO101</code></td><td>第一個馬達座，關節 1 用，固定在底座上</td><td class="num">1</td></tr>
-            <tr><td><code>Motor_holder_SO101_Base</code></td><td>肩部馬達座，關節 1 時裝上，之後放馬達 2</td><td class="num">1</td></tr>
+            <tr><td><code>Base_motor_holder_SO101</code></td><td>馬達 1 固定座：在底座上，包住馬達 1。官方叫 first motor holder</td><td class="num">1</td></tr>
+            <tr><td><code>Motor_holder_SO101_Base</code></td><td>馬達 2 固定座：在肩部，包住馬達 2，關節 1 時先裝上。官方叫 shoulder motor holder</td><td class="num">1</td></tr>
             <tr><td><code>Rotation_Pitch_SO101</code></td><td>肩部零件</td><td class="num">1</td></tr>
             <tr><td><code>Upper_arm_SO101</code></td><td>上臂</td><td class="num">1</td></tr>
             <tr><td><code>Under_arm_SO101</code></td><td>前臂</td><td class="num">1</td></tr>
-            <tr><td><code>Motor_holder_SO101_Wrist</code></td><td>馬達座 4</td><td class="num">1</td></tr>
+            <tr><td><code>Motor_holder_SO101_Wrist</code></td><td>馬達 4 固定座：在前臂靠手腕那一端，包住馬達 4。官方叫 motor holder 4</td><td class="num">1</td></tr>
             <tr><td><code>Wrist_Roll_Pitch_SO101</code></td><td>手腕座</td><td class="num">1</td></tr>
             <tr><td><code>Wrist_Roll_Follower_SO101</code></td><td>夾爪本體，執行臂專用</td><td class="num">1</td></tr>
             <tr><td><code>Moving_Jaw_SO101</code></td><td>活動爪，執行臂專用</td><td class="num">1</td></tr>
@@ -165,6 +165,11 @@
           </tbody>
           <tfoot><tr><td>合計</td><td></td><td class="num">11</td></tr></tfoot>
         </table>
+      </div>
+      <div class="note warn"><b class="k">最容易搞混的兩個零件</b><p>馬達 2 固定座和馬達 4 固定座長得幾乎一樣，尺寸只差 1 mm 多。分辨方法看底邊：馬達 2 固定座底下有兩個突出的小卡勾；馬達 4 固定座底邊是平的，有三條橫紋。拆下平台後就分袋，袋子上寫好檔名。</p></div>
+      <div class="pgrid">
+        <figure class="pimg"><img src="assets/img/parts/Motor_holder_SO101_Base_side.webp" alt="馬達 2 固定座側面，底邊有兩個突出的小卡勾" width="800" height="600" loading="lazy"><figcaption><b>馬達 2 固定座：底下有小卡勾</b><code>Motor_holder_SO101_Base</code><span>55.1 × 38.1 × 28.0 mm，裝在肩部</span></figcaption></figure>
+        <figure class="pimg"><img src="assets/img/parts/Motor_holder_SO101_Wrist_side.webp" alt="馬達 4 固定座側面，底邊平整有三條橫紋" width="800" height="600" loading="lazy"><figcaption><b>馬達 4 固定座：底邊平的，有橫紋</b><code>Motor_holder_SO101_Wrist</code><span>56.4 × 36.9 × 28.0 mm，裝在手腕這一端</span></figcaption></figure>
       </div>
       <p class="src">檔名與數量照官方 README。中文名稱對應官方組裝文字的叫法，對應關係已用官方 URDF 模型確認：每個檔案和模型裡的零件尺寸、體積都一致。</p>
       <label class="check"><input type="checkbox" id="ck-a04"><span><b>檢查點</b>11 個零件都在，對照上表與 3D 檢視器確認；馬達凹槽和螺絲孔裡沒有殘留支撐；M3 螺絲能穿過每個 3.2 mm 孔，馬達能壓進每個凹槽。</span></label>

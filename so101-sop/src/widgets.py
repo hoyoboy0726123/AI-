@@ -26,12 +26,12 @@ VIEWERS = {
     "parts": {"base": "assets/stl64/", "hint": "拖曳旋轉　滾輪或雙指縮放", "groups": [
         ("共用零件", [
             ("Base_SO101.stl", "底座", "執行臂、主控臂都要"),
-            ("Base_motor_holder_SO101.stl", "第一個馬達座，關節 1", "執行臂、主控臂都要"),
-            ("Motor_holder_SO101_Base.stl", "肩部馬達座，關節 1", "執行臂、主控臂都要"),
+            ("Base_motor_holder_SO101.stl", "馬達 1 固定座", "執行臂、主控臂都要"),
+            ("Motor_holder_SO101_Base.stl", "馬達 2 固定座", "執行臂、主控臂都要"),
             ("Rotation_Pitch_SO101.stl", "肩部零件", "執行臂、主控臂都要"),
             ("Upper_arm_SO101.stl", "上臂", "執行臂、主控臂都要"),
             ("Under_arm_SO101.stl", "前臂", "執行臂、主控臂都要"),
-            ("Motor_holder_SO101_Wrist.stl", "馬達座 4", "執行臂、主控臂都要"),
+            ("Motor_holder_SO101_Wrist.stl", "馬達 4 固定座", "執行臂、主控臂都要"),
             ("Wrist_Roll_Pitch_SO101.stl", "手腕座", "執行臂、主控臂都要"),
             ("WaveShare_Mounting_Plate_SO101.stl", "驅動板固定板 Waveshare", "依驅動板品牌二選一"),
             ("Seeedstudio_Mounting_Plate_SO101.stl", "驅動板固定板 Seeed", "依驅動板品牌二選一"),
