@@ -99,7 +99,10 @@ const doc = new Document({
       gap(),
       table([700, 4538, 3200, 1200], ['#', '檔名', '零件名稱', '數量'], partRows, { center: [0, 3], total: true }),
       gap(),
-      callout('請注意', [t('請'), b('不要印 SO101 Assembly.stl'), t('，那是整隻手臂的參考模型，不是零件。驅動板固定板只印 Waveshare 版，Seeedstudio_Mounting_Plate_SO101 不用印。')], AMBER_SOFT, '8F5B00'),
+      callout('請注意：資料夾裡的檔案比表格多', [
+        t('附件 zip 的 Individual 資料夾有 '), b('15 個'), t('檔案，表格只有 14 種。多出來的 '), b('Seeedstudio_Mounting_Plate_SO101.stl'),
+        t(' 是另一個品牌驅動板用的固定板，這次'), b('不用印'), t('。如果是從 GitHub 下載，資料夾裡是 16 個檔案，另外多一個 '), b('SO101 Assembly.stl'),
+        t('，那是整隻手臂的參考模型，也'), b('不要印'), t('。')], AMBER_SOFT, '8F5B00'),
       gap(),
       p([b('長得幾乎一樣的兩個零件，請分開包裝：'), t('第 3 項 Motor_holder_SO101_Base 和第 7 項 Motor_holder_SO101_Wrist 外形非常像，尺寸只差 1 mm 多。差別在底邊：第 3 項底下有兩個突出的小卡勾，第 7 項底邊是平的，有三條橫紋。')]),
       new Table({ width: { size: W, type: WidthType.DXA }, columnWidths: [4819, 4819], layout: TableLayoutType.FIXED, rows: [

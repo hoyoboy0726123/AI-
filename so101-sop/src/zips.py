@@ -8,6 +8,10 @@ Commit: a758567c3978dfeefe282ede0500085a48fe8f78 (2026-10-06)
 Paths: STL/SO101/Individual/*.stl and STL/Gauges/*.STL
 License: Apache License 2.0, see LICENSE in this folder.
 Full print plates (Ender / Prusa / Bambu A1 mini) are in STL/SO101/Follower and STL/SO101/Leader of the source repository.
+
+Individual/ has 15 files. WaveShare_Mounting_Plate_SO101 and Seeedstudio_Mounting_Plate_SO101
+are the same part for two driver-board brands: print only the one for your board, so 14 parts per print list.
+Individual 資料夾有 15 個檔案。兩個驅動板固定板只印你的驅動板品牌那一個，所以實際要印 14 種。
 """
 
 
