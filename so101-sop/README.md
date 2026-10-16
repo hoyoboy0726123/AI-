@@ -17,6 +17,7 @@
 | `assets/stl/` | 官方 SO-ARM100 STL 原檔，Apache-2.0 |
 | `assets/img/` | 官方照片與零件算繪圖 |
 | `assets/force/` | 力感測：Arduino 韌體、`force_probe.py`、治具 STL 與 OpenSCAD 原始檔 |
+| `assets/dpad/` | 延伸：D-pad 指尖，官方夾爪本體和活動爪加上套筒的修改版，Apache-2.0 |
 | `assets/scripts/first_move.py` | 第一次用 Python 控制手臂 |
 
 ## 產生網頁

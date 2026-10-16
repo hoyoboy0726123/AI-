@@ -11,7 +11,7 @@ SRC = ROOT / "src"
 STL64 = ROOT / "assets/stl64"
 STL64.mkdir(exist_ok=True)
 for stl in [*(ROOT / "assets/stl").glob("*.stl"), *(ROOT / "assets/stl/gauges").glob("*"), *(ROOT / "assets/force").glob("*.stl"),
-            *(ROOT / "assets/asm").glob("*.stl")]:
+            *(ROOT / "assets/asm").glob("*.stl"), *(ROOT / "assets/dpad").glob("*.stl")]:
     out = STL64 / (stl.name + ".txt")
     if not out.exists() or out.stat().st_mtime < stl.stat().st_mtime:
         out.write_text(base64.b64encode(stl.read_bytes()).decode("ascii"), encoding="ascii")

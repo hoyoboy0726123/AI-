@@ -54,6 +54,10 @@ VIEWERS = {
         ("力感測治具", [("probe_block.stl", "治具座", "夾在夾爪裡，PLA 或 PETG"),
                         ("probe_tip.stl", "推頭", "鎖在荷重元沒有線的那一端")]),
     ]},
+    "dpad": {"base": "assets/stl64/", "hint": "拖曳旋轉　滾輪或雙指縮放", "groups": [
+        ("D-pad 指尖", [("Wrist_Roll_Follower_SO101_DPad.stl", "夾爪本體 + 套筒", "取代官方夾爪本體"),
+                        ("Moving_Jaw_SO101_DPad.stl", "活動爪 + 套筒", "取代官方活動爪")]),
+    ]},
     "overview": {"base": "assets/stl64/", "hint": "拖曳旋轉　滾輪或雙指縮放", "groups": [
         ("完整手臂", [("SO101_Assembly_lite.stl", "SO-101 組裝完成", "官方組裝模型，減面後")]),
     ]},

@@ -1,0 +1,50 @@
+<section class="part" id="p5" data-phase="D" data-toc="延伸　D-pad 指尖">
+  <div class="part-head">
+    <span class="tag">延伸</span>
+    <h2>D-pad 指尖：讓夾爪夾住十字鍵</h2>
+    <p>這是執行臂的選配零件：官方夾爪本體和活動爪，各加上一個套筒。換上之後，夾爪可以從兩端夾住遊戲搖桿的十字鍵。套筒是照特定一款搖桿的十字鍵做的，不保證每一款都適用。這一章只說明列印和換裝，手冊其他步驟都不變。</p>
+  </div>
+  <figure style="max-width:340px"><div class="photo"><img src="assets/img/dpad/dpad_tips.webp" alt="換上 D-pad 指尖的 SO-101 夾爪算繪圖，兩根爪的尖端下方各多了一個套筒" width="427" height="600" loading="lazy"></div><figcaption>換上兩個追加零件的夾爪。爪尖下方的方塊就是套筒。</figcaption></figure>
+
+  <article class="step" id="d01">
+    <header><span class="code">D-01</span><h3>列印兩個追加零件</h3></header>
+    <div class="body">
+      <!--VIEWER:dpad-->
+      <div class="tbl">
+        <table>
+          <thead><tr><th>檔案</th><th>取代官方零件</th><th class="num">數量</th></tr></thead>
+          <tbody>
+            <tr><td><code>Wrist_Roll_Follower_SO101_DPad.stl</code></td><td>夾爪本體 <code>Wrist_Roll_Follower_SO101</code>，固定爪下方多一個套筒</td><td class="num">1</td></tr>
+            <tr><td><code>Moving_Jaw_SO101_DPad.stl</code></td><td>活動爪 <code>Moving_Jaw_SO101</code>，爪尖下方多一個套筒</td><td class="num">1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dl"><button class="btn primary" type="button" data-zip="dpad">下載 D-pad 指尖（zip）</button><span class="msg">內含 2 個 STL、說明和授權檔。</span></div>
+      <ol class="do">
+        <li><strong>材料。</strong>PLA+，和其他零件一樣。</li>
+        <li><strong>擺放方向。</strong>和官方原檔相同。匯入切片軟體後不要按自動朝向。</li>
+        <li><strong>支撐。</strong>全開。印完把套筒裡的支撐清乾淨。</li>
+        <li><strong>端面不要磨。</strong>套筒內側的弧形端面是夾住十字鍵的地方，磨掉會讓十字鍵中心偏離手腕的旋轉軸。</li>
+        <li><strong>另外買墊片。</strong>0.5 mm 厚的背膠矽膠片，硬度 Shore A 40 到 60。剪成約 8 × 3 mm，兩個套筒的端面各貼一片，兩片厚度要一樣。</li>
+      </ol>
+      <div class="note tip"><b class="k">不在 23 件裡</b><p>這是選配零件，不算在階段 A 的 23 件裡，主控臂也不用換。官方原本的夾爪本體和活動爪留著當備品，要換回一般夾爪時裝回去就好。兩個檔案的座標和官方原檔相同，除了套筒，其他部位都沒有改。</p></div>
+      <label class="check"><input type="checkbox" id="ck-d01"><span><b>檢查點</b>兩個零件都印好，套筒裡沒有殘留支撐，端面平滑；矽膠墊也準備好了。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="d02">
+    <header><span class="code">D-02</span><h3>換上新零件</h3></header>
+    <div class="body">
+      <p>換裝的順序和 <a href="#a14">A-14 夾爪組裝</a>相反，螺絲都沿用原本的。</p>
+      <ol class="do">
+        <li><strong>換活動爪。</strong>拆下活動爪，裝上 <code>Moving_Jaw_SO101_DPad</code>，用原來的 M3 × 6 鎖回去。</li>
+        <li><strong>換夾爪本體。</strong>夾爪本體要整個換：先拆活動爪，再拆夾爪馬達，兩側各 2 顆 M2 × 6；最後把本體從第五顆馬達的舵盤拆下，4 顆 M3 × 6。裝上 <code>Wrist_Roll_Follower_SO101_DPad</code> 時順序反過來。</li>
+        <li><strong>貼墊片。</strong>兩個套筒內側的弧形端面各貼一片矽膠墊，壓平，不要超出端面。</li>
+        <li><strong>重新校準。</strong>照 <a href="#a16">A-16</a> 的指令重新校準一次執行臂，讓夾爪的開合範圍重新記錄。</li>
+      </ol>
+      <div class="note tip"><b class="k">夾爪關到底時套筒會相碰</b><p>沒有夾東西的時候，夾爪關到底，兩個套筒的內側會剛好碰在一起。這個位置和官方夾爪原本的關閉極限一樣，所以開合範圍沒有變小，是正常的。</p></div>
+      <div class="note tip"><b class="k">用 IK 控制的人</b><p>工具中心點要改到兩個套筒中間：<code>gripper_link</code> 座標 (0, 0, −109.6) mm。官方 URDF 原本在 (−7.9, −0.2, −98.1) mm。</p></div>
+      <label class="check"><input type="checkbox" id="ck-d02"><span><b>檢查點</b>用手輕輕開合活動爪，順暢不卡；關到底時兩個套筒剛好相碰；校準完成。</span></label>
+    </div>
+  </article>
+</section>
