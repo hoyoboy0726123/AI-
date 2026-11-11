@@ -33,7 +33,7 @@ pip install -e ".[feetech]"</pre></div>
       <div class="need"><b>料件</b><span class="chip">驅動板</span><span class="chip">電源供應器</span><span class="chip">USB-C 線</span></div>
       <ol class="do">
         <li><strong>設定跳線。</strong>如果你的驅動板是 Waveshare，官方說明要把板子上的兩個跳線帽都插在 <strong>B</strong> 那一側，也就是 USB 模式。</li>
-        <li><strong>接電源與 USB。</strong>電源供應器插上驅動板，USB-C 線一端接驅動板、一端接電腦。這時候先不要接馬達。</li>
+        <li><strong>接電源與 USB。</strong>電源供應器插上驅動板，USB-C 線一端接驅動板、一端接電腦。這時候先不要接馬達。電源要和執行臂馬達相配：7.4V 馬達用 5V 電源，12V 馬達用 12V 電源。</li>
         <li><strong>執行找連接埠的指令。</strong>程式會請你拔掉 USB 線再按 Enter，它比較拔線前後的差異，就知道哪一個是驅動板。</li>
       </ol>
       <div class="codeblk"><div class="cap"><span>啟用 lerobot 環境後執行</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-find-port</pre></div>
@@ -57,6 +57,7 @@ pip install -e ".[feetech]"</pre></div>
     <div class="body">
       <p>新馬達出廠時 ID 通常都是 1。同一條線上的馬達 ID 必須不同，電腦才分得出誰是誰。這個步驟一次只接一顆馬達，程式會自動寫入 ID 和通訊速率 1,000,000，寫進馬達的記憶體後就不用再做。</p>
       <!--ANIM:motorid-->
+      <div class="note stop"><b class="k">接馬達前再看一次電源</b><p>這一步馬達會直接吃到電源的電壓。12V 電源只能接 12V 版馬達（C018、C047）；7.4V 的 C001、C044、C046 接到 12V 會燒壞。手上同時有執行臂和主控臂馬達的人，先依標籤上的型號分成兩堆，這一步只用執行臂那 6 顆。</p></div>
       <div class="codeblk"><div class="cap"><span>把 COM3 換成你在 A-06 抄下的連接埠</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-setup-motors --robot.type=so101_follower --robot.port=COM3</pre></div>
       <ol class="do">
         <li>程式會先顯示 <code>Connect the controller board to the 'gripper' motor only and press enter.</code>：拿一顆馬達，用 3-pin 線接到驅動板，<strong>只接這一顆</strong>，按 Enter。</li>
