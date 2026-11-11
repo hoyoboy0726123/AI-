@@ -321,7 +321,7 @@ footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-siz
           <h4>規格書 PDF 與硬體說明</h4>
           <ul>
             <li><a href="https://wiki.seeedstudio.com/feetech_servo/" target="_blank" rel="noopener">Feetech 馬達文件中心</a><span class="badge srch">搜尋確認</span>
-              <p>STS3215 系列的規格書都在這裡：執行臂用的 C001，主控臂用的 C044、C046，還有通訊協定文件。</p></li>
+              <p>STS3215 系列的規格書都在這裡：執行臂用的 C001（12V 版是 C018、C047），主控臂用的 C044、C046，還有通訊協定文件。</p></li>
             <li><a href="https://files.seeedstudio.com/Bazaar/product_pdf/101090141.pdf" target="_blank" rel="noopener">STS3215 C044 規格書</a><span class="pdf">PDF</span><span class="badge srch">搜尋確認</span>
               <p>主控臂 ID 1、ID 3 用的 1/191 馬達。</p></li>
             <li><a href="https://www.waveshare.com/wiki/Bus_Servo_Adapter_(A)" target="_blank" rel="noopener">Waveshare 馬達驅動板說明</a><span class="badge srch">搜尋確認</span>
@@ -386,7 +386,7 @@ footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-siz
   <div class="part-head">
     <span class="tag">階段 A</span>
     <h2>單臂：先讓一隻執行臂動起來</h2>
-    <p>執行臂 Follower 是真正去做事的那隻手臂，6 顆馬達都是 STS3215、7.4V、1/345 減速。這個階段做完，你會有一隻能用電腦控制、已經校準好的手臂。</p>
+    <p>執行臂 Follower 是真正去做事的那隻手臂，6 顆馬達都是 STS3215、1/345 減速，有 7.4V 標準版和 12V 高扭力版兩種，選一種就好。這個階段做完，你會有一隻能用電腦控制、已經校準好的手臂。</p>
   </div>
   <div class="two">
     <figure><div class="photo"><img src="assets/img/SO101_Follower.jpg" alt="組裝完成的 SO-101 執行臂，官方照片" width="1600" height="1200" loading="lazy"></div><figcaption>完成品：SO-101 執行臂。照片來源 TheRobotStudio/SO-ARM100，Apache-2.0。</figcaption></figure>
@@ -402,19 +402,31 @@ footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-siz
         <table>
           <thead><tr><th>料件</th><th class="num">數量</th><th class="num">美元</th><th class="num">人民幣</th><th>購買連結</th></tr></thead>
           <tbody>
-            <tr><td>STS3215 伺服馬達 7.4V，1/345 減速，型號 C001</td><td class="num">6</td><td class="num">13.89</td><td class="num">97.72</td><td><a href="https://www.alibaba.com/product-detail/Top-Seller-Low-Cost-Feetech-STS3215_1600999461525.html" target="_blank" rel="noopener">Alibaba</a>　<a href="https://item.taobao.com/item.htm?id=712179366565&amp;skuId=5268252241438" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>STS3215 伺服馬達 7.4V，1/345 減速，型號 C001（標準版）</td><td class="num">6</td><td class="num">13.89</td><td class="num">97.72</td><td><a href="https://www.alibaba.com/product-detail/Top-Seller-Low-Cost-Feetech-STS3215_1600999461525.html" target="_blank" rel="noopener">Alibaba</a>　<a href="https://item.taobao.com/item.htm?id=712179366565&amp;skuId=5268252241438" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>或改買：STS3215 伺服馬達 12V，1/345 減速，型號 C018 或 C047（高扭力版）</td><td class="num">6</td><td class="num">—</td><td class="num">—</td><td><a href="https://www.alibaba.com/product-detail/6PCS-12V-30KG-STS3215-High-Torque_1601216757543.html" target="_blank" rel="noopener">Alibaba 6 顆組</a></td></tr>
             <tr><td>馬達驅動板 Bus Servo Adapter</td><td class="num">1</td><td class="num">10.6</td><td class="num">27</td><td><a href="https://www.amazon.com/Waveshare-Integrates-Control-Circuit-Supports/dp/B0CTMM4LWK/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738817173460&amp;skuId=5096283384143" target="_blank" rel="noopener">天貓</a></td></tr>
             <tr><td>USB-C 傳輸線</td><td class="num">1 組</td><td class="num">7</td><td class="num">23.9</td><td><a href="https://www.amazon.com/Charging-etguuds-Charger-Braided-Compatible/dp/B0B8NWLLW2/?th=1" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=44425281296&amp;skuId=5611379016222" target="_blank" rel="noopener">天貓</a></td></tr>
-            <tr><td>電源供應器</td><td class="num">1</td><td class="num">10</td><td class="num">22.31</td><td><a href="https://www.amazon.com/Facmogu-Switching-Transformer-Compatible-5-5x2-1mm/dp/B087LY41PV/" target="_blank" rel="noopener">Amazon</a>　<a href="https://item.taobao.com/item.htm?id=544824248494&amp;skuId=4974994129990" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>電源供應器 5V（配 7.4V 馬達）</td><td class="num">1</td><td class="num">10</td><td class="num">22.31</td><td><a href="https://www.amazon.com/Facmogu-Switching-Transformer-Compatible-5-5x2-1mm/dp/B087LY41PV/" target="_blank" rel="noopener">Amazon</a>　<a href="https://item.taobao.com/item.htm?id=544824248494&amp;skuId=4974994129990" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>或改買：電源供應器 12V、5A 以上（配 12V 馬達）</td><td class="num">1</td><td class="num">—</td><td class="num">—</td><td>官方沒有指定連結</td></tr>
             <tr><td>桌夾</td><td class="num">2 個</td><td class="num">5</td><td class="num">7.8</td><td><a href="https://www.amazon.com/Mr-Pen-Carpenter-Clamp-6inch/dp/B092L925J4/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738636473238&amp;skuId=5505939904942" target="_blank" rel="noopener">天貓</a></td></tr>
             <tr><td>精密起子組</td><td class="num">1</td><td class="num">6</td><td class="num">14.9</td><td><a href="https://www.amazon.com/Precision-Phillips-Screwdriver-Electronics-Computer/dp/B0DB227RTH" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=675684600845&amp;skuId=4856851392176" target="_blank" rel="noopener">天貓</a></td></tr>
           </tbody>
-          <tfoot><tr><td>合計</td><td></td><td class="num">121.94</td><td class="num">682.23</td><td>約新台幣 3,300 到 3,900 元</td></tr></tfoot>
+          <tfoot><tr><td>合計（標準版）</td><td></td><td class="num">121.94</td><td class="num">682.23</td><td>約新台幣 3,300 到 3,900 元</td></tr></tfoot>
         </table>
       </div>
       <div class="note tip"><b class="k">也可以買整套</b><p>官方合作的套件商：Seeed <a href="https://www.seeedstudio.com/SO-ARM100-Low-Cost-AI-Arm-Kit.html" target="_blank" rel="noopener">國際官網</a>、<a href="https://item.taobao.com/item.htm?id=878010637397&amp;skuId=5915703371829" target="_blank" rel="noopener">淘寶</a>；WowRobo <a href="https://shop.wowrobo.com/products/so-arm101-diy-kit-assembled-version-1" target="_blank" rel="noopener">國際官網</a>、<a href="https://item.taobao.com/item.htm?ft=t&amp;id=860171734711" target="_blank" rel="noopener">淘寶</a>。買套件的話，A-01 到 A-04 的採購和列印可以跳過，直接從 A-05 開始。</p></div>
-      <div class="note warn"><b class="k">注意馬達版本</b><p>執行臂 6 顆都要買 7.4V、1/345 減速的 C001。主控臂用的是另外三種減速比，階段 C 才會用到，現在不要混在一起。</p></div>
-      <label class="check"><input type="checkbox" id="ck-a01"><span><b>檢查點</b>6 顆 C001 馬達、驅動板、USB-C 線、電源、桌夾和起子都在桌上，數量正確。</span></label>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>執行臂馬達</th><th>型號</th><th>減速</th><th class="num">失速扭力（官方）</th><th>要配的電源</th></tr></thead>
+          <tbody>
+            <tr><td>標準版</td><td>7.4V　C001</td><td>1/345</td><td class="num">16.5 kg·cm</td><td>5V</td></tr>
+            <tr><td>高扭力版</td><td>12V　C018 或 C047</td><td>1/345</td><td class="num">30 kg·cm</td><td>12V、5A 以上</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="src">官方 README 說明：7.4V 版的 16.5 kg·cm 是 6V 時的數字，接 5V 電源會略低；官方覺得 7.4V 已經夠用，想要更大力才改買 12V 版，同時要把電源換成 12V、5A 以上。</p>
+      <div class="note warn"><b class="k">6 顆要同一種，主控臂一律 7.4V</b><p>6 顆執行臂馬達串在同一條線上，只接一個電源，所以不能 7.4V 和 12V 混著用。12V 電源接到 7.4V 馬達會燒壞。主控臂用的是另外三種減速比，而且官方說明一律用 7.4V 馬達、5V 電源，階段 C 才會用到，現在先分開放好。</p></div>
+      <label class="check"><input type="checkbox" id="ck-a01"><span><b>檢查點</b>6 顆執行臂馬達（全部是 7.4V 的 C001，或全部是 12V 的 C018／C047）、驅動板、USB-C 線、電壓相配的電源、桌夾和起子都在桌上，數量正確。</span></label>
     </div>
   </article>
 
@@ -596,7 +608,7 @@ pip install -e ".[feetech]"</pre></div>
       <div class="need"><b>料件</b><span class="chip">驅動板</span><span class="chip">電源供應器</span><span class="chip">USB-C 線</span></div>
       <ol class="do">
         <li><strong>設定跳線。</strong>如果你的驅動板是 Waveshare，官方說明要把板子上的兩個跳線帽都插在 <strong>B</strong> 那一側，也就是 USB 模式。</li>
-        <li><strong>接電源與 USB。</strong>電源供應器插上驅動板，USB-C 線一端接驅動板、一端接電腦。這時候先不要接馬達。</li>
+        <li><strong>接電源與 USB。</strong>電源供應器插上驅動板，USB-C 線一端接驅動板、一端接電腦。這時候先不要接馬達。電源要和執行臂馬達相配：7.4V 馬達用 5V 電源，12V 馬達用 12V 電源。</li>
         <li><strong>執行找連接埠的指令。</strong>程式會請你拔掉 USB 線再按 Enter，它比較拔線前後的差異，就知道哪一個是驅動板。</li>
       </ol>
       <div class="codeblk"><div class="cap"><span>啟用 lerobot 環境後執行</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-find-port</pre></div>
@@ -620,6 +632,7 @@ pip install -e ".[feetech]"</pre></div>
     <div class="body">
       <p>新馬達出廠時 ID 通常都是 1。同一條線上的馬達 ID 必須不同，電腦才分得出誰是誰。這個步驟一次只接一顆馬達，程式會自動寫入 ID 和通訊速率 1,000,000，寫進馬達的記憶體後就不用再做。</p>
       <figure class="anim" data-scene="motorid"><div class="stage"><svg viewBox="0 0 680 310" role="img" aria-label="設定 6 顆馬達的 ID"></svg></div><div class="ctrl"><button class="btn primary" type="button" data-act="play">從頭播放</button><button class="btn" type="button" data-act="prev">上一步</button><button class="btn" type="button" data-act="next">下一步</button><span class="sp"></span></div><ol class="steps"><li>驅動板接上電源與 USB-C，在電腦執行設定指令</li><li>照畫面提示一次只接一顆馬達，按 Enter 寫入 ID</li><li>6 顆馬達都完成</li></ol><figcaption style="padding:0 14px 12px">設定 6 顆馬達的 ID：點步驟可以單獨播放那一段。</figcaption></figure>
+      <div class="note stop"><b class="k">接馬達前再看一次電源</b><p>這一步馬達會直接吃到電源的電壓。12V 電源只能接 12V 版馬達（C018、C047）；7.4V 的 C001、C044、C046 接到 12V 會燒壞。手上同時有執行臂和主控臂馬達的人，先依標籤上的型號分成兩堆，這一步只用執行臂那 6 顆。</p></div>
       <div class="codeblk"><div class="cap"><span>把 COM3 換成你在 A-06 抄下的連接埠</span><button class="btn" type="button" data-copy>複製</button></div><pre>lerobot-setup-motors --robot.type=so101_follower --robot.port=COM3</pre></div>
       <ol class="do">
         <li>程式會先顯示 <code>Connect the controller board to the 'gripper' motor only and press enter.</code>：拿一顆馬達，用 3-pin 線接到驅動板，<strong>只接這一顆</strong>，按 Enter。</li>
@@ -782,7 +795,7 @@ pip install -e ".[feetech]"</pre></div>
         <li>用桌夾把底座牢牢夾在桌子邊緣。官方校準圖就是這樣擺的，手臂動起來才不會倒。</li>
         <li>接上電源和 USB-C。</li>
       </ol>
-      <div class="note warn"><b class="k">電源別插錯</b><p>官方說明：標準的 7.4V 馬達配 5V 電源。只有改買 12V 版馬達的人才換 12V、5A 以上的電源。不要把 12V 電源接到 7.4V 馬達上。</p></div>
+      <div class="note warn"><b class="k">電源別插錯</b><p>官方說明：7.4V 馬達（C001、C044、C046）配 5V 電源；12V 馬達（C018、C047）配 12V、5A 以上的電源。12V 電源接到 7.4V 馬達會燒壞。執行臂用 12V 版的人，之後主控臂還是用 5V 電源，兩個電源的插頭可能長得一樣，請在電源和驅動板上各貼一張標籤，例如「12V 執行臂」「5V 主控臂」。</p></div>
       <label class="check"><input type="checkbox" id="ck-a15"><span><b>檢查點</b>6 顆馬達串成一條線，只有 ID 1 接到驅動板；底座用桌夾固定，搖不動。</span></label>
     </div>
   </article>
@@ -1820,12 +1833,12 @@ if __name__ == &quot;__main__&quot;:
           <tbody>
             <tr><td>主控臂 6 顆 STS3215 套組：1/147 C046 三顆、1/191 C044 兩顆、1/345 C001 一顆</td><td class="num">1 組</td><td><a href="https://www.alibaba.com/product-detail/6PCS-7-4V-STS3215-Servos-for_1601428584027.html" target="_blank" rel="noopener">Alibaba 套組</a></td></tr>
             <tr><td>馬達驅動板</td><td class="num">1</td><td><a href="https://www.amazon.com/Waveshare-Integrates-Control-Circuit-Supports/dp/B0CTMM4LWK/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738817173460&amp;skuId=5096283384143" target="_blank" rel="noopener">天貓</a></td></tr>
-            <tr><td>電源供應器</td><td class="num">1</td><td><a href="https://www.amazon.com/Facmogu-Switching-Transformer-Compatible-5-5x2-1mm/dp/B087LY41PV/" target="_blank" rel="noopener">Amazon</a>　<a href="https://item.taobao.com/item.htm?id=544824248494&amp;skuId=4974994129990" target="_blank" rel="noopener">淘寶</a></td></tr>
+            <tr><td>電源供應器 5V</td><td class="num">1</td><td><a href="https://www.amazon.com/Facmogu-Switching-Transformer-Compatible-5-5x2-1mm/dp/B087LY41PV/" target="_blank" rel="noopener">Amazon</a>　<a href="https://item.taobao.com/item.htm?id=544824248494&amp;skuId=4974994129990" target="_blank" rel="noopener">淘寶</a></td></tr>
             <tr><td>桌夾</td><td class="num">2</td><td><a href="https://www.amazon.com/Mr-Pen-Carpenter-Clamp-6inch/dp/B092L925J4/" target="_blank" rel="noopener">Amazon</a>　<a href="https://detail.tmall.com/item.htm?id=738636473238&amp;skuId=5505939904942" target="_blank" rel="noopener">天貓</a></td></tr>
           </tbody>
         </table>
       </div>
-      <p>官方說明主控臂一律用 7.4V 馬達。列印用主控臂的整盤檔：</p>
+      <p>官方說明主控臂一律用 7.4V 馬達，所以主控臂一定接 5V 電源；執行臂就算用的是 12V 版也一樣，兩隻手臂的電源不能互換。列印用主控臂的整盤檔：</p>
       <div class="tbl">
         <table>
           <thead><tr><th>你的印表機</th><th>主控臂整盤檔案</th><th>下載</th></tr></thead>
