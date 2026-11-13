@@ -3,6 +3,7 @@
     <div class="body">
       <ol class="do">
         <li><strong>清乾淨支撐。</strong>官方建議用小起子伸到支撐底下撬起來，最容易清。</li>
+        <li><strong>每顆馬達先試塞一次。</strong>把馬達拿去對每個要裝馬達的凹槽試塞看看，先不要鎖。凹槽官方設計得很緊，印胖一點就塞不進去。塞不進去先別硬壓，照 <a href="#a10">A-10</a> 的方法修內壁，修好再開始組。</li>
         <li><strong>先在每顆馬達插一條 3-pin 線。</strong>官方建議馬達裝進零件前就先插好一條，裝進去之後就很難插了。A-07 留在馬達上的線剛好用上。</li>
         <li><strong>依 ID 擺好馬達。</strong>關節 1 用 ID 1 的馬達，關節 2 用 ID 2，依此類推，夾爪用 ID 6。官方文字寫的「第一顆馬達」「motor 3」指的就是這個編號。</li>
         <li><strong>準備螺絲。</strong>官方料件表沒有列螺絲，組裝會用到兩種，請先確認馬達附的螺絲包，不夠就另外買。</li>
@@ -20,7 +21,7 @@
       <div class="note tip"><b class="k">舵盤是什麼</b><p>馬達出力軸上的圓形塑膠盤，英文叫 horn。每顆馬達有上下兩片，上面那片要用一顆 M3 × 6 鎖住，下面那片官方說不用鎖。</p></div>
       <p><strong>先看一次完整的組裝順序。</strong>下面的 3D 模型會照官方步驟，把零件一個一個裝上去。可以先整段看完，組裝時再回來對照。</p>
       <!--ASM:follower-->
-      <label class="check"><input type="checkbox" id="ck-a08"><span><b>檢查點</b>11 個列印件都清乾淨；6 顆馬達各插好一條 3-pin 線並標好 ID；M2 × 6 和 M3 × 6 螺絲都夠。</span></label>
+      <label class="check"><input type="checkbox" id="ck-a08"><span><b>檢查點</b>11 個列印件都清乾淨；每個馬達凹槽都試塞過，塞得進去；6 顆馬達各插好一條 3-pin 線並標好 ID；M2 × 6 和 M3 × 6 螺絲都夠。</span></label>
     </div>
   </article>
 
@@ -54,6 +55,23 @@
         <li>用 4 顆 M2 × 6 固定第二顆馬達。</li>
         <li>裝上上臂，兩側各用 4 顆 M3 × 6 鎖住。</li>
       </ol>
+      <div class="note warn"><b class="k">馬達塞不進去，先別硬壓</b><p>這個凹槽官方本來就設計得很緊：兩片長邊大面之間，總共只比馬達寬約 0.1 mm；兩個短邊每邊也只留 0.1 mm。列印件稍微印胖一點就會卡住，這不是零件畫錯。12V 和 7.4V 馬達的外殼一樣大，也不是馬達買錯。固定座的牆很薄，硬壓會裂，照下面的方法修一下就好。</p></div>
+      <figure>
+        <div class="photos">
+          <div class="photo"><img src="assets/img/fit/motor2_fit_top.webp" alt="從上方看馬達 2 的凹槽：藍色固定座套在灰色肩部零件上，內壁標成紅色，兩片長邊大面間隙 0 mm，短邊每邊 0.1 mm" width="680" height="840" loading="lazy"></div>
+          <div class="photo"><img src="assets/img/fit/motor2_fit_side.webp" alt="馬達從上方直直滑進凹槽，舵盤那一端朝上" width="680" height="840" loading="lazy"></div>
+        </div>
+        <figcaption>用官方 3D 模型量的間隙。紅色內壁和馬達幾乎沒有空隙，卡住多半就卡在這幾面。模型裡的馬達寬 24.8 mm，實際馬達寬 24.7 mm，所以長邊實際還有約 0.1 mm。</figcaption>
+      </figure>
+      <ol class="do">
+        <li><strong>確認固定座坐到底。</strong>凹槽是固定座和肩部零件合起來的，兩片長邊大面各在一個零件上。手指摸過兩個零件內壁的接縫，要是平的，沒有高低差。</li>
+        <li><strong>清開口和角落。</strong>開口邊緣往內凸的第一層（象腳）、內壁上一條直直的接縫凸點、沒清乾淨的支撐，都用美工刀修掉。</li>
+        <li><strong>確認方向。</strong>舵盤那一端朝上、露在外面，另一端先放進去。3-pin 線的接頭不要卡在邊上。</li>
+        <li><strong>找卡點。</strong>輕輕推進去再拔出來，塑膠上被磨亮或發白的地方就是卡點。</li>
+        <li><strong>刮紅色那幾面。</strong>美工刀的刀刃立起來貼著內壁刮，不要用切的；或用 240 號砂紙包在尺上磨。每次一點點，邊刮邊試塞，總共刮掉約一張 A4 紙的厚度（0.1 mm）通常就夠。內角要多刮一下：列印出來的內角是圓的，馬達的角是直角。</li>
+        <li><strong>鬆緊剛好的樣子。</strong>手用力推得到底，放進去不會晃。要用敲的，就是還太緊。</li>
+      </ol>
+      <div class="note tip"><b class="k">其他凹槽多半也一樣緊</b><p>這個凹槽偏緊，表示這批零件印得偏胖，其他關節的馬達凹槽多半也會偏緊，用同樣的方法修。要請廠商重印的話，請他先印 <code>Gauge_0</code> 試塞馬達；太緊就把孔洞補償加 0.05 到 0.1 mm，象腳補償設 0.15 mm，做法在 <a href="#a03">A-03</a>。</p></div>
       <p>官方影片：<a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Joint2_v2.mp4" target="_blank" rel="noopener">關節 2 組裝</a></p>
       <label class="check"><input type="checkbox" id="ck-a10"><span><b>檢查點</b>上臂可以前後擺動，兩側 8 顆 M3 都鎖上。</span></label>
     </div>
