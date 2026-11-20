@@ -344,6 +344,8 @@ footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-siz
               <p>B-04 燒錄韌體用。</p></li>
             <li><a href="https://github.com/bogde/HX711" target="_blank" rel="noopener">HX711 Arduino Library</a><span class="badge ok">已驗證</span>
               <p>作者 Bogdan Necula，版本 0.7.5。在 Arduino IDE 裡搜尋 <code>HX711 Arduino Library</code> 安裝。</p></li>
+            <li><a href="https://github.com/huggingface/leLab" target="_blank" rel="noopener">LeLab</a><span class="badge ok">已驗證</span>
+              <p>Hugging Face 官方的網頁介面，校準、遙控、錄資料、訓練都用按鈕操作。L-01 安裝。</p></li>
             <li><a href="https://www.feetechrc.com/software.html" target="_blank" rel="noopener">Feetech 官方馬達除錯軟體</a><span class="badge off">官方指定</span>
               <p>Windows 用。官方 README 推薦用它單獨測試馬達。</p></li>
             <li><a href="https://github.com/Kotakku/FT_SCServo_Debug_Qt" target="_blank" rel="noopener">FT_SCServo_Debug_Qt</a><span class="badge ok">已驗證</span>
@@ -364,6 +366,7 @@ footer{margin-top:56px;padding-top:16px;border-top:2px solid var(--ink);font-siz
             <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Gripper_v2.mp4" target="_blank" rel="noopener">夾爪組裝</a><span class="badge off">官方指定</span><p>A-14。</p></li>
             <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/calibrate_so101_2.mp4" target="_blank" rel="noopener">校準示範</a><span class="badge off">官方指定</span><p>A-16、C-04。</p></li>
             <li><a href="https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/lerobot/Leader_v2.mp4" target="_blank" rel="noopener">主控臂握把組裝</a><span class="badge off">官方指定</span><p>C-03。</p></li>
+            <li><a href="https://youtu.be/VqyKUuW9V1g" target="_blank" rel="noopener">LeLab 操作示範</a><span class="badge off">官方指定</span><p>L-05，LeRobot 官方文件的 LeLab 頁附的影片。</p></li>
           </ul>
           <p class="src" style="margin:8px 0 0">影片網址都直接取自目前官方 so101.mdx 原文，放在 Hugging Face 上，撰寫環境連不到所以沒有實際播放過。</p>
         </section>
@@ -1949,7 +1952,117 @@ if __name__ == &quot;__main__&quot;:
         <li>要停止就按 <kbd>Ctrl</kbd> + <kbd>C</kbd>，程式會斷開兩隻手臂。執行臂會放掉出力，記得先扶好或讓它停在桌面附近。</li>
       </ol>
       <div class="note tip"><b class="k">名字很重要</b><p>官方說明：LeRobot 用 <code>id</code> 找校準檔。遙控、錄資料、跑 AI 都要用同一組名字，不然它會以為還沒校準，又要求你重新校準。</p></div>
+      <div class="note tip"><b class="k">想用滑鼠操作</b><p>雙臂都能遙控之後，也可以改用官方的網頁介面 LeLab，校準、遙控、錄資料都是按按鈕，不用打指令。做法在 <a href="#l01">L-01</a>。</p></div>
       <label class="check"><input type="checkbox" id="ck-c05"><span><b>檢查點</b>推主控臂時，執行臂同步做出一樣的動作，夾爪跟著扳機開合。恭喜，整套雙臂完成。</span></label>
+    </div>
+  </article>
+</section>
+
+<section class="part" id="p6" data-phase="L" data-toc="延伸　LeLab 圖形介面">
+  <div class="part-head">
+    <span class="tag">延伸</span>
+    <h2>LeLab：用瀏覽器操作手臂</h2>
+    <p>LeLab 是 Hugging Face 官方的網頁介面，把校準、遙控、錄資料、訓練 AI 都做成按鈕，不用記指令。它要主控臂和執行臂都準備好才能遙控，所以請先完成階段 C，再來用這一章。手冊前面的指令照樣能用，兩邊可以交替使用。</p>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>LeLab 可以做</th><th>還是要用手冊的指令</th></tr></thead>
+      <tbody>
+        <tr><td>找連接埠、校準兩隻手臂</td><td>設定馬達 ID：<a href="#a07">A-07</a>、<a href="#c02">C-02</a></td></tr>
+        <tr><td>雙臂遙控，畫面上有 3D 手臂即時跟著動</td><td>只接執行臂、用 Python 控制：<a href="#a17">A-17</a></td></tr>
+        <tr><td>錄資料、逐格看錄好的資料、重播</td><td>力感測和推按鍵：階段 B</td></tr>
+        <tr><td>在自己電腦或雲端訓練 AI，訓練好直接讓手臂跑</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="src">LeLab 目前只支援 SO-101。本章依 <a href="https://github.com/huggingface/leLab" target="_blank" rel="noopener">huggingface/leLab</a> 原始碼 commit 1894ab5（2026-11-06，Apache-2.0）和 LeRobot 官方文件的 LeLab 頁查證，按鈕名稱照畫面上的英文原文寫。</p>
+
+  <article class="step" id="l01">
+    <header><span class="code">L-01</span><h3>安裝 LeLab</h3></header>
+    <div class="body">
+      <p>LeLab 自己會帶一套 LeRobot 0.7.0，裝在獨立的地方，不會動到 <a href="#a05">A-05</a> 建好的 conda 環境。官方用 <code>uv</code> 這個工具安裝。</p>
+      <ol class="do">
+        <li><strong>安裝 uv。</strong>Windows 在 Miniforge Prompt 執行第一行，macOS 和 Linux 在終端機執行第二行。裝完把視窗關掉，重新開一個。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>Windows</span><button class="btn" type="button" data-copy>複製</button></div><pre>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</pre></div>
+      <div class="codeblk"><div class="cap"><span>macOS / Linux</span><button class="btn" type="button" data-copy>複製</button></div><pre>curl -LsSf https://astral.sh/uv/install.sh | sh</pre></div>
+      <ol class="do" start="2">
+        <li><strong>安裝 LeLab。</strong>這一步要用到 git。Windows 請在 Miniforge Prompt 先執行 <code>conda activate lerobot</code>，A-05 裝的 git 就在這個環境裡。第一次安裝會下載 PyTorch 等大型套件，要等一段時間，硬碟也要留幾 GB。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>所有系統</span><button class="btn" type="button" data-copy>複製</button></div><pre>uv tool install git+https://github.com/huggingface/leLab.git</pre></div>
+      <ol class="do" start="3">
+        <li><strong>啟動。</strong>以後每次要用，執行 <code>lelab</code> 就好，瀏覽器會自動打開 <code>http://127.0.0.1:8000</code>。用 LeLab 的期間，這個終端機視窗不要關，關掉 LeLab 就停了。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>啟動 LeLab</span><button class="btn" type="button" data-copy>複製</button></div><pre>lelab</pre></div>
+      <div class="note tip"><b class="k">出現 port 8000 is already in use</b><p>上一次的 LeLab 還沒完全關掉。執行 <code>lelab --stop</code> 再重新執行 <code>lelab</code>。</p></div>
+      <label class="check"><input type="checkbox" id="ck-l01"><span><b>檢查點</b>執行 <code>lelab</code> 後，瀏覽器自動打開黑色底的 LeLab 首頁。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="l02">
+    <header><span class="code">L-02</span><h3>建立手臂設定</h3></header>
+    <div class="body">
+      <p>LeLab 把一組主控臂加執行臂叫做一個 robot。先幫我們這一組取個名字。</p>
+      <ol class="do">
+        <li><strong>先接好電源和 USB。</strong>兩隻手臂的電源都接上，USB 都接到這台電腦。電源別插錯：執行臂用它馬達對應的電源，主控臂一律 5V，詳見 <a href="#a15">A-15</a>。</li>
+        <li><strong>取名字。</strong>在首頁左上角的手臂選單輸入名字，例如 <code>so101</code>，按 <code>Create "so101"</code>。</li>
+        <li><strong>看狀態。</strong>名字旁邊會顯示 <code>Needs configuration</code>，表示還沒設定連接埠和校準。</li>
+        <li><strong>進入設定。</strong>按名字旁邊的齒輪圖示，滑鼠移上去會顯示 <code>Configure (calibrate)</code>，進入 <code>Device Calibration</code> 頁面。</li>
+      </ol>
+      <label class="check"><input type="checkbox" id="ck-l02"><span><b>檢查點</b>首頁出現你取的名字，按齒輪可以進入 <code>Device Calibration</code> 頁面。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="l03">
+    <header><span class="code">L-03</span><h3>設定連接埠，校準兩隻手臂</h3></header>
+    <div class="body">
+      <p>執行臂和主控臂各做一次。先選 <code>Robot (Follower)</code> 做執行臂，再選 <code>Teleoperator (Leader)</code> 做主控臂。</p>
+      <ol class="do">
+        <li><strong>找連接埠。</strong>按找連接埠的按鈕，畫面出現 <code>Unplug the ... arm</code> 時，拔掉那隻手臂的 USB，LeLab 會自動找出連接埠並記住，找到後再把 USB 插回去。原理和 <a href="#a06">A-06</a> 的 <code>lerobot-find-port</code> 一樣。</li>
+        <li><strong>已經用指令校準過：直接選現有的檔案。</strong>LeLab 和手冊的指令把校準檔存在同一個資料夾。在 <code>Select an existing calibration file</code> 選執行臂的 <code>my_awesome_follower_arm.json</code>，或主控臂的 <code>my_awesome_leader_arm.json</code>，畫面出現 <code>Calibration linked</code> 就好，不用重新校準。</li>
+        <li><strong>還沒校準：先擺姿勢，再按開始。</strong>把手臂擺到中間位置，和 A-16 一樣：上臂朝上、前臂朝前。擺好才按 <code>Start Calibration</code>，LeLab 會在按下的那一刻記下中間位置。</li>
+        <li><strong>每個關節轉到兩端。</strong>和指令版不同，這裡<strong>手腕旋轉也要轉</strong>。每個關節的範圍夠大，旁邊就會出現勾勾。全部打勾後按 <code>Save Calibration</code>，畫面出現 <code>Calibration completed successfully!</code>。</li>
+        <li><strong>換另一隻手臂。</strong>選另一個裝置類型，重複上面的步驟。</li>
+      </ol>
+      <div class="note warn"><b class="k">出現 Motor discontinuity detected</b><p>開始校準時手臂不在中間位置。把每個關節擺回中間，再按一次 <code>Start Calibration</code>。</p></div>
+      <div class="note tip"><b class="k">選了現有的檔案，手臂動作卻怪怪的</b><p>LeLab 用的 LeRobot 版本比手冊新一版。遇到動作方向不對或位置偏掉，就在 LeLab 裡重新校準一次。</p></div>
+      <label class="check"><input type="checkbox" id="ck-l03"><span><b>檢查點</b>兩隻手臂都設好連接埠和校準檔，回到首頁，名字旁邊的狀態變成 <code>Ready</code>。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="l04">
+    <header><span class="code">L-04</span><h3>用 LeLab 雙臂遙控</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li><strong>先擺姿勢。</strong>把兩隻手臂擺成差不多的姿勢，避免執行臂一開始就大幅度跳動。</li>
+        <li><strong>開始遙控。</strong>首頁按黃色的 <code>Teleoperation</code> 按鈕，畫面出現 <code>Teleoperation Started</code>，並切到 3D 手臂畫面。按鈕是紅色、按不下去，表示還有手臂沒設定好，回 L-03 檢查。</li>
+        <li><strong>慢慢推主控臂。</strong>執行臂會跟著動，畫面上的 3D 手臂也會即時跟著動。</li>
+        <li><strong>停止。</strong>按畫面上的返回鍵回首頁，LeLab 就會停止遙控。停下來時執行臂會放掉出力，記得先扶好，或讓它停在桌面附近。</li>
+      </ol>
+      <div class="note warn"><b class="k">一個連接埠一次只能給一個程式用</b><p>用 LeLab 時，先關掉其他正在跑的 <code>lerobot-teleoperate</code> 或 Python 程式。要改回用指令，也要先在 LeLab 停止遙控，或在終端機按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 關掉 LeLab。</p></div>
+      <label class="check"><input type="checkbox" id="ck-l04"><span><b>檢查點</b>推主控臂時，執行臂和畫面上的 3D 手臂都同步動作；按返回鍵後遙控停止。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="l05">
+    <header><span class="code">L-05</span><h3>其他功能：錄資料、訓練、讓 AI 操作</h3></header>
+    <div class="body">
+      <p>這些功能要讓手臂學會一個動作才會用到。錄資料和訓練通常要接攝影機，本手冊還沒有寫攝影機的安裝，這裡先介紹每個按鈕在哪裡，實際操作請看官方影片。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>首頁的位置</th><th>用途</th><th>重點</th></tr></thead>
+          <tbody>
+            <tr><td><code>Dataset</code> 選單</td><td>建立新資料集並開始錄，或打開已經錄好的</td><td>要填 <code>Dataset Name</code>、<code>Task Description</code>、<code>Number of Episodes</code>。錄的時候按空白鍵或 → 換下一段，按 Delete 或 ← 重錄這一段。官方建議至少錄 30 段。</td></tr>
+            <tr><td>打開已錄好的資料集</td><td>逐格看每段的影像和關節動作，可以重播、上傳</td><td>重播會讓執行臂照錄好的動作再做一次，旁邊不要放東西。</td></tr>
+            <tr><td><code>Create a model</code> 的 <code>Training</code></td><td>用錄好的資料訓練 AI</td><td>可以在自己電腦訓練，或用 Hugging Face 的雲端 GPU 訓練。雲端要先執行 <code>hf auth login</code> 登入，而且要付費。</td></tr>
+            <tr><td>首頁下方的工作清單</td><td>看訓練進度，選訓練好的模型讓手臂執行</td><td>讓 AI 操作時，相機的擺放和方向要和錄資料時一樣。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>官方影片：<a href="https://youtu.be/VqyKUuW9V1g" target="_blank" rel="noopener">LeLab 操作示範</a></p>
+      <div class="note tip"><b class="k">按鍵測試還是用階段 B</b><p>LeLab 沒有接力感測器、教點位、設定目標力量這些功能。要讓手臂用固定的力量推按鍵，還是用<a href="#p2">階段 B</a> 的 <code>force_probe.py</code>。</p></div>
+      <label class="check"><input type="checkbox" id="ck-l05"><span><b>檢查點</b>知道錄資料、訓練、讓 AI 操作的按鈕在哪裡；也知道按鍵測試要回階段 B。</span></label>
     </div>
   </article>
 </section>
@@ -2044,6 +2157,7 @@ if __name__ == &quot;__main__&quot;:
       <ul class="src do">
         <li>SO-101 硬體：<a href="https://github.com/TheRobotStudio/SO-ARM100" target="_blank" rel="noopener">TheRobotStudio/SO-ARM100</a>，commit a758567，Apache-2.0。列印檔、照片、料件表、列印設定都來自這裡。</li>
         <li>LeRobot 軟體 0.6.2：<a href="https://github.com/huggingface/lerobot" target="_blank" rel="noopener">huggingface/lerobot</a>，commit ae2b57f，Apache-2.0。安裝、設定馬達、校準、遙控的指令與程式介面來自 <code>docs/source/so101.mdx</code>、<code>installation.mdx</code>、<code>il_robots.mdx</code> 與原始碼。</li>
+        <li>LeLab：<a href="https://github.com/huggingface/leLab" target="_blank" rel="noopener">huggingface/leLab</a>，commit 1894ab5（2026-11-06），Apache-2.0，內含 LeRobot 0.7.0。L-01 到 L-05 的安裝指令、按鈕名稱和校準流程來自它的原始碼和 LeRobot 官方文件 <code>docs/source/lelab.mdx</code>（commit 83883ae）。</li>
         <li>官方線上組裝說明：<a href="https://huggingface.co/docs/lerobot/so101" target="_blank" rel="noopener">huggingface.co/docs/lerobot/so101</a>。</li>
         <li>力感測：TAL221 荷重元、HX711、<a href="https://github.com/bogde/HX711" target="_blank" rel="noopener">bogde/HX711</a> 函式庫，細節列在階段 B。</li>
         <li>零件圖：由本手冊用官方 STL 算繪；3D 檢視器載入的也是官方 STL 原檔，組裝總圖為減面版本。</li>
