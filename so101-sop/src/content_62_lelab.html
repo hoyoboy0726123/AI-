@@ -16,7 +16,7 @@
       </tbody>
     </table>
   </div>
-  <p class="src">LeLab 目前只支援 SO-101。本章依 <a href="https://github.com/huggingface/leLab" target="_blank" rel="noopener">huggingface/leLab</a> 原始碼 commit 1894ab5（2026-11-06，Apache-2.0）和 LeRobot 官方文件的 LeLab 頁查證，按鈕名稱照畫面上的英文原文寫。</p>
+  <p class="src">LeLab 目前只支援 SO-101。本章依 <a href="https://github.com/huggingface/leLab" target="_blank" rel="noopener">huggingface/leLab</a> 原始碼 commit 1894ab5（2026-11-06，Apache-2.0）和 LeRobot 官方文件的 LeLab 頁查證，按鈕名稱照畫面上的英文原文寫。截圖是用同一版原始碼，在沒有接手臂的電腦上顯示的示意畫面：版面和按鈕和實際一樣，手臂名稱、連接埠和數字是假的。</p>
 
   <article class="step" id="l01">
     <header><span class="code">L-01</span><h3>安裝 LeLab</h3></header>
@@ -35,6 +35,8 @@
         <li><strong>啟動。</strong>以後每次要用，執行 <code>lelab</code> 就好，瀏覽器會自動打開 <code>http://127.0.0.1:8000</code>。用 LeLab 的期間，這個終端機視窗不要關，關掉 LeLab 就停了。</li>
       </ol>
       <div class="codeblk"><div class="cap"><span>啟動 LeLab</span><button class="btn" type="button" data-copy>複製</button></div><pre>lelab</pre></div>
+      <figure><div class="photo"><img src="assets/img/lelab/lelab_welcome.webp" alt="LeLab 第一次打開的畫面：黑色底的首頁上出現 Welcome to LeLab 視窗，有 Take the tour 和 Maybe later 兩個按鈕" width="1200" height="600" loading="lazy"></div><figcaption>第一次打開會出現歡迎視窗，問你要不要看官方導覽。<ol class="marks"><li><code>Take the tour</code>：兩分鐘的官方導覽，第一次建議看一遍。</li><li><code>Maybe later</code>：先跳過，之後按右上角的 <code>Tour</code> 可以再看。</li></ol></figcaption></figure>
+      <div class="note tip"><b class="k">右上角的 HF not configured</b><p>表示還沒登入 Hugging Face。遙控和校準不用登入；上傳資料、雲端訓練才需要，到時候再照 <a href="#l05">L-05</a> 登入就好。</p></div>
       <div class="note tip"><b class="k">出現 port 8000 is already in use</b><p>上一次的 LeLab 還沒完全關掉。執行 <code>lelab --stop</code> 再重新執行 <code>lelab</code>。</p></div>
       <label class="check"><input type="checkbox" id="ck-l01"><span><b>檢查點</b>執行 <code>lelab</code> 後，瀏覽器自動打開黑色底的 LeLab 首頁。</span></label>
     </div>
@@ -46,40 +48,50 @@
       <p>LeLab 把一組主控臂加執行臂叫做一個 robot。先幫我們這一組取個名字。</p>
       <ol class="do">
         <li><strong>先接好電源和 USB。</strong>兩隻手臂的電源都接上，USB 都接到這台電腦。電源別插錯：執行臂用它馬達對應的電源，主控臂一律 5V，詳見 <a href="#a15">A-15</a>。</li>
-        <li><strong>取名字。</strong>在首頁左上角的手臂選單輸入名字，例如 <code>so101</code>，按 <code>Create "so101"</code>。</li>
-        <li><strong>看狀態。</strong>名字旁邊會顯示 <code>Needs configuration</code>，表示還沒設定連接埠和校準。</li>
-        <li><strong>進入設定。</strong>按名字旁邊的齒輪圖示，滑鼠移上去會顯示 <code>Configure (calibrate)</code>，進入 <code>Device Calibration</code> 頁面。</li>
+        <li><strong>取名字。</strong>點首頁左上角的手臂選單，輸入名字，例如 <code>so101</code>，按 <code>Create "so101"</code>。</li>
       </ol>
-      <label class="check"><input type="checkbox" id="ck-l02"><span><b>檢查點</b>首頁出現你取的名字，按齒輪可以進入 <code>Device Calibration</code> 頁面。</span></label>
+      <figure><div class="photo"><img src="assets/img/lelab/lelab_create.webp" alt="手臂選單打開，輸入 so101 後出現 Create so101 選項" width="1200" height="336" loading="lazy"></div><figcaption><ol class="marks"><li>點手臂選單，輸入名字，例如 <code>so101</code>。</li><li>按 <code>Create "so101"</code> 建立。</li></ol></figcaption></figure>
+      <ol class="do" start="3">
+        <li><strong>看狀態。</strong>名字旁邊顯示 <code>Needs configuration</code>，表示還沒設定連接埠和校準，這時遙控按鈕是暗紅色、按不下去。</li>
+        <li><strong>進入設定。</strong>按名字旁邊的齒輪圖示，進入 <code>Calibrate "so101"</code> 頁面。</li>
+      </ol>
+      <figure><div class="photo"><img src="assets/img/lelab/lelab_needs.webp" alt="首頁的手臂 so101 顯示 Needs configuration，旁邊有齒輪和垃圾桶圖示，Teleoperation 按鈕是暗紅色" width="1200" height="384" loading="lazy"></div><figcaption><ol class="marks"><li><code>Needs configuration</code>：還沒設定連接埠和校準。</li><li>齒輪：進入設定與校準頁。</li><li>遙控按鈕是暗紅色，兩隻手臂都設定好才能按。</li></ol></figcaption></figure>
+      <label class="check"><input type="checkbox" id="ck-l02"><span><b>檢查點</b>首頁出現你取的名字，按齒輪可以進入 <code>Calibrate "so101"</code> 頁面。</span></label>
     </div>
   </article>
 
   <article class="step" id="l03">
     <header><span class="code">L-03</span><h3>設定連接埠，校準兩隻手臂</h3></header>
     <div class="body">
-      <p>執行臂和主控臂各做一次。先選 <code>Robot (Follower)</code> 做執行臂，再選 <code>Teleoperator (Leader)</code> 做主控臂。</p>
+      <p>主控臂和執行臂各做一次。<code>Device Type</code> 預設是主控臂 <code>Teleoperator (Leader)</code>，做完再切換到執行臂 <code>Robot (Follower)</code>。</p>
+      <figure style="max-width:620px"><div class="photo"><img src="assets/img/lelab/lelab_calib.webp" alt="Calibrate so101 頁面：左邊 Configuration 有 Device Type、Port 和 Find 按鈕、Start Calibration、Advanced 和 Robot calibration 清單，右邊是 Status 和校準示範影片" width="1200" height="874" loading="lazy"></div><figcaption>校準頁。圖上的 Advanced 已經展開，平常是收起來的。<ol class="marks"><li><code>Device Type</code>：先做主控臂 <code>Teleoperator (Leader)</code>，再切到執行臂 <code>Robot (Follower)</code>。</li><li><code>Find</code>：找連接埠，照畫面指示拔掉那隻手臂的 USB。</li><li><code>Advanced</code>：用指令校準過，就在這裡選現有的校準檔，不用重校。</li><li><code>Start Calibration</code>：還沒校準才按，先把手臂擺到中間位置再按。</li><li><code>Robot calibration</code>：兩隻手臂都打勾就完成了。</li></ol></figcaption></figure>
       <ol class="do">
-        <li><strong>找連接埠。</strong>按找連接埠的按鈕，畫面出現 <code>Unplug the ... arm</code> 時，拔掉那隻手臂的 USB，LeLab 會自動找出連接埠並記住，找到後再把 USB 插回去。原理和 <a href="#a06">A-06</a> 的 <code>lerobot-find-port</code> 一樣。</li>
-        <li><strong>已經用指令校準過：直接選現有的檔案。</strong>LeLab 和手冊的指令把校準檔存在同一個資料夾。在 <code>Select an existing calibration file</code> 選執行臂的 <code>my_awesome_follower_arm.json</code>，或主控臂的 <code>my_awesome_leader_arm.json</code>，畫面出現 <code>Calibration linked</code> 就好，不用重新校準。</li>
+        <li><strong>找連接埠。</strong>按 <code>Port</code> 旁邊的 <code>Find</code>，畫面出現 <code>Unplug the ... arm</code> 時，拔掉那隻手臂的 USB，LeLab 會自動找出連接埠並填好，找到後再把 USB 插回去。原理和 <a href="#a06">A-06</a> 的 <code>lerobot-find-port</code> 一樣。</li>
+        <li><strong>已經用指令校準過：直接選現有的檔案。</strong>LeLab 和手冊的指令把校準檔存在同一個資料夾。按 <code>Advanced</code> 展開，在下拉選單選主控臂的 <code>my_awesome_leader_arm</code>，或執行臂的 <code>my_awesome_follower_arm</code>，畫面出現 <code>Calibration linked</code> 就好，不用重新校準。</li>
         <li><strong>還沒校準：先擺姿勢，再按開始。</strong>把手臂擺到中間位置，和 A-16 一樣：上臂朝上、前臂朝前。擺好才按 <code>Start Calibration</code>，LeLab 會在按下的那一刻記下中間位置。</li>
-        <li><strong>每個關節轉到兩端。</strong>和指令版不同，這裡<strong>手腕旋轉也要轉</strong>。每個關節的範圍夠大，旁邊就會出現勾勾。全部打勾後按 <code>Save Calibration</code>，畫面出現 <code>Calibration completed successfully!</code>。</li>
-        <li><strong>換另一隻手臂。</strong>選另一個裝置類型，重複上面的步驟。</li>
+        <li><strong>每個關節轉到兩端。</strong>右邊會列出 6 個關節。和指令版不同，這裡<strong>手腕旋轉 <code>wrist_roll</code> 也要轉</strong>，要轉將近一整圈。每個關節的範圍夠大，旁邊就會出現綠色勾勾。全部打勾後按 <code>Save Calibration</code>，畫面出現 <code>Calibration completed successfully!</code>。</li>
+      </ol>
+      <figure style="max-width:620px"><div class="photo"><img src="assets/img/lelab/lelab_calib_rec.webp" alt="校準進行中：右邊 Live Position Data 列出 6 個關節，前三個有綠色勾勾，下面是橘色的 Save Calibration 按鈕；左邊按鈕變成紅色的 Cancel Calibration" width="1200" height="1148" loading="lazy"></div><figcaption>校準進行中。這張圖的前三個關節已經打勾，後三個還要繼續轉。<ol class="marks"><li>範圍夠大的關節，旁邊會出現綠色勾勾。</li><li>還沒打勾的繼續轉到兩端；手腕旋轉 <code>wrist_roll</code> 要轉將近一整圈。</li><li>全部打勾後按 <code>Save Calibration</code>，還沒全勾時它是橘色的。</li><li>要重來就按 <code>Cancel Calibration</code>。</li></ol></figcaption></figure>
+      <ol class="do" start="5">
+        <li><strong>換另一隻手臂。</strong>把 <code>Device Type</code> 切到另一隻手臂，重複上面的步驟。左下的 <code>Robot calibration</code> 清單，兩隻手臂都打勾就完成了。</li>
       </ol>
       <div class="note warn"><b class="k">出現 Motor discontinuity detected</b><p>開始校準時手臂不在中間位置。把每個關節擺回中間，再按一次 <code>Start Calibration</code>。</p></div>
       <div class="note tip"><b class="k">選了現有的檔案，手臂動作卻怪怪的</b><p>LeLab 用的 LeRobot 版本比手冊新一版。遇到動作方向不對或位置偏掉，就在 LeLab 裡重新校準一次。</p></div>
-      <label class="check"><input type="checkbox" id="ck-l03"><span><b>檢查點</b>兩隻手臂都設好連接埠和校準檔，回到首頁，名字旁邊的狀態變成 <code>Ready</code>。</span></label>
+      <label class="check"><input type="checkbox" id="ck-l03"><span><b>檢查點</b><code>Robot calibration</code> 底下兩隻手臂都打勾；按左上角的返回鍵回首頁，名字旁邊的狀態變成 <code>Ready</code>。</span></label>
     </div>
   </article>
 
   <article class="step" id="l04">
     <header><span class="code">L-04</span><h3>用 LeLab 雙臂遙控</h3></header>
     <div class="body">
+      <figure><div class="photo"><img src="assets/img/lelab/lelab_ready.webp" alt="設定完成的首頁：so101 旁邊顯示 Ready，黃色的 Teleoperation 按鈕可以按，下面是 Dataset 和 Create a model 的 Training" width="1200" height="384" loading="lazy"></div><figcaption>設定完成的首頁。之後每次打開 LeLab，都從這裡開始。<ol class="marks"><li><code>Ready</code>：兩隻手臂都設定好了。</li><li><code>Teleoperation</code>：開始雙臂遙控。</li><li><code>Dataset</code>：錄資料、看錄好的資料。</li><li><code>Create a model</code> 的 <code>Training</code>：訓練 AI。</li></ol></figcaption></figure>
       <ol class="do">
         <li><strong>先擺姿勢。</strong>把兩隻手臂擺成差不多的姿勢，避免執行臂一開始就大幅度跳動。</li>
-        <li><strong>開始遙控。</strong>首頁按黃色的 <code>Teleoperation</code> 按鈕，畫面出現 <code>Teleoperation Started</code>，並切到 3D 手臂畫面。按鈕是紅色、按不下去，表示還有手臂沒設定好，回 L-03 檢查。</li>
-        <li><strong>慢慢推主控臂。</strong>執行臂會跟著動，畫面上的 3D 手臂也會即時跟著動。</li>
-        <li><strong>停止。</strong>按畫面上的返回鍵回首頁，LeLab 就會停止遙控。停下來時執行臂會放掉出力，記得先扶好，或讓它停在桌面附近。</li>
+        <li><strong>開始遙控。</strong>首頁按黃色的 <code>Teleoperation</code>，畫面出現 <code>Teleoperation Started</code>，並切到 3D 手臂畫面。</li>
+        <li><strong>慢慢推主控臂。</strong>執行臂會跟著動，畫面上的 3D 手臂也會即時跟著動。右上角顯示 <code>Live Robot Data</code>，表示正在收到手臂的資料。</li>
+        <li><strong>停止。</strong>按左上角的返回鍵回首頁，LeLab 就會停止遙控。停下來時執行臂會放掉出力，記得先扶好，或讓它停在桌面附近。</li>
       </ol>
+      <figure><div class="photo"><img src="assets/img/lelab/lelab_teleop.webp" alt="遙控畫面：左邊是黃色的 3D SO-101 手臂和 Live Robot Data 標示，左上角有返回鍵，右邊是 Cameras 面板" width="1200" height="731" loading="lazy"></div><figcaption>遙控畫面。3D 手臂的姿勢會跟著真的執行臂改變。<ol class="marks"><li>返回鍵：回首頁，同時停止遙控。</li><li><code>Live Robot Data</code>：正在收到手臂的即時資料。</li><li>3D 手臂會跟著執行臂一起動。</li><li><code>Cameras</code>：有接攝影機時，可以打開來看畫面。</li></ol></figcaption></figure>
       <div class="note warn"><b class="k">一個連接埠一次只能給一個程式用</b><p>用 LeLab 時，先關掉其他正在跑的 <code>lerobot-teleoperate</code> 或 Python 程式。要改回用指令，也要先在 LeLab 停止遙控，或在終端機按 <kbd>Ctrl</kbd> + <kbd>C</kbd> 關掉 LeLab。</p></div>
       <label class="check"><input type="checkbox" id="ck-l04"><span><b>檢查點</b>推主控臂時，執行臂和畫面上的 3D 手臂都同步動作；按返回鍵後遙控停止。</span></label>
     </div>
@@ -88,18 +100,21 @@
   <article class="step" id="l05">
     <header><span class="code">L-05</span><h3>其他功能：錄資料、訓練、讓 AI 操作</h3></header>
     <div class="body">
-      <p>這些功能要讓手臂學會一個動作才會用到。錄資料和訓練通常要接攝影機，本手冊還沒有寫攝影機的安裝，這裡先介紹每個按鈕在哪裡，實際操作請看官方影片。</p>
+      <p>這些功能要讓手臂學會一個動作才會用到。錄資料和訓練通常要接攝影機，本手冊還沒有寫攝影機的安裝，這裡先介紹每個畫面怎麼看，實際操作請看官方影片。</p>
       <div class="tbl">
         <table>
           <thead><tr><th>首頁的位置</th><th>用途</th><th>重點</th></tr></thead>
           <tbody>
-            <tr><td><code>Dataset</code> 選單</td><td>建立新資料集並開始錄，或打開已經錄好的</td><td>要填 <code>Dataset Name</code>、<code>Task Description</code>、<code>Number of Episodes</code>。錄的時候按空白鍵或 → 換下一段，按 Delete 或 ← 重錄這一段。官方建議至少錄 30 段。</td></tr>
+            <tr><td><code>Dataset</code> 選單</td><td>建立新資料集並開始錄，或打開已經錄好的</td><td>輸入新名字會出現 <code>Configure Recording</code> 視窗。錄的時候按空白鍵或 → 換下一段，按 Delete 或 ← 重錄這一段。官方建議至少錄 30 段。</td></tr>
             <tr><td>打開已錄好的資料集</td><td>逐格看每段的影像和關節動作，可以重播、上傳</td><td>重播會讓執行臂照錄好的動作再做一次，旁邊不要放東西。</td></tr>
-            <tr><td><code>Create a model</code> 的 <code>Training</code></td><td>用錄好的資料訓練 AI</td><td>可以在自己電腦訓練，或用 Hugging Face 的雲端 GPU 訓練。雲端要先執行 <code>hf auth login</code> 登入，而且要付費。</td></tr>
-            <tr><td>首頁下方的工作清單</td><td>看訓練進度，選訓練好的模型讓手臂執行</td><td>讓 AI 操作時，相機的擺放和方向要和錄資料時一樣。</td></tr>
+            <tr><td><code>Create a model</code> 的 <code>Training</code></td><td>用錄好的資料訓練 AI</td><td>可以在自己電腦免費訓練，或用 Hugging Face 的雲端 GPU，雲端按小時計費。</td></tr>
+            <tr><td>首頁下方的 <code>Jobs</code></td><td>看訓練進度，選訓練好的模型讓手臂執行</td><td>讓 AI 操作時，相機的擺放和方向要和錄資料時一樣。</td></tr>
           </tbody>
         </table>
       </div>
+      <figure style="max-width:560px"><div class="photo"><img src="assets/img/lelab/lelab_record.webp" alt="Configure Recording 視窗：Dataset Name、Task Description、Number of Episodes、Episode duration 和 Reset duration 欄位" width="1200" height="1444" loading="lazy"></div><figcaption>錄資料的設定視窗。圖上的名稱和動作描述是範例。<ol class="marks"><li><code>Dataset Name</code>：資料集名稱，只能用英文、數字和 <code>. _ -</code>。</li><li><code>Task Description</code>：用一句英文描述這個動作。</li><li><code>Number of Episodes</code>：要錄幾段，官方建議 30 段以上。</li><li>每段錄幾秒，以及每段之間留幾秒把東西放回原位。</li></ol></figcaption></figure>
+      <figure style="max-width:620px"><div class="photo"><img src="assets/img/lelab/lelab_train.webp" alt="Training 頁面：Run training on 選單、Dataset Repository ID、Policy 預設 ACT、Training Steps、Batch Size 和 Start Training 按鈕" width="1200" height="1157" loading="lazy"></div><figcaption>訓練頁。選雲端 GPU 時，頁面最上方會要求貼上 Hugging Face 權杖。<ol class="marks"><li><code>Run training on</code>：選本機（免費）或雲端 GPU（按小時計費）。</li><li>選要拿來訓練的資料集。</li><li><code>Policy</code>：AI 模型的種類，預設是 ACT。</li><li>設定好按 <code>Start Training</code>。</li></ol></figcaption></figure>
+      <div class="note tip"><b class="k">登入 Hugging Face</b><p>上傳資料和雲端訓練要先登入：在 Miniforge Prompt 執行 <code>conda activate lerobot</code>，再執行 <code>hf auth login</code>，照提示貼上 Hugging Face 的權杖，然後回 LeLab 按 <code>I've logged in — recheck</code>。沒登入也能在自己電腦錄資料和訓練；登入後，資料集會存成「你的帳號/資料集名稱」。</p></div>
       <p>官方影片：<a href="https://youtu.be/VqyKUuW9V1g" target="_blank" rel="noopener">LeLab 操作示範</a></p>
       <div class="note tip"><b class="k">按鍵測試還是用階段 B</b><p>LeLab 沒有接力感測器、教點位、設定目標力量這些功能。要讓手臂用固定的力量推按鍵，還是用<a href="#p2">階段 B</a> 的 <code>force_probe.py</code>。</p></div>
       <label class="check"><input type="checkbox" id="ck-l05"><span><b>檢查點</b>知道錄資料、訓練、讓 AI 操作的按鈕在哪裡；也知道按鍵測試要回階段 B。</span></label>
