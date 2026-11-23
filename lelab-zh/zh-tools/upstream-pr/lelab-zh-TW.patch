@@ -1,0 +1,1702 @@
+diff --git a/README.md b/README.md
+index f511dfb..332dc57 100644
+--- a/README.md
++++ b/README.md
+@@ -78,6 +78,10 @@ Before inference, select the same rotation used for the training dataset. Check
+ Checkpoint image dimensions do not establish image orientation. For example, 0° and 180° have the same dimensions.
+ The setting applies to new observations; it does not change existing recordings or checkpoints.
+ 
++## Interface language
++
++LeLab can show its interface in Traditional Chinese. Use the **中文 / EN** button above the `?` help button to switch; the choice is remembered. Browsers set to Traditional Chinese start in Chinese. See [frontend/src/i18n/README.md](frontend/src/i18n/README.md) to add or fix translations.
++
+ ## Resources
+ 
+ - **[LeRobot](https://github.com/huggingface/lerobot):** the underlying library — go here for everything beyond the UI.
+diff --git a/frontend/package.json b/frontend/package.json
+index 2906968..ec1617c 100644
+--- a/frontend/package.json
++++ b/frontend/package.json
+@@ -9,6 +9,7 @@
+     "build": "vite build",
+     "build:dev": "vite build --mode development",
+     "lint": "eslint .",
++    "i18n:check": "node scripts/i18n-check.mjs",
+     "preview": "vite preview"
+   },
+   "dependencies": {
+diff --git a/frontend/scripts/i18n-check.mjs b/frontend/scripts/i18n-check.mjs
+new file mode 100644
+index 0000000..48f17ba
+--- /dev/null
++++ b/frontend/scripts/i18n-check.mjs
+@@ -0,0 +1,141 @@
++#!/usr/bin/env node
++// Lists the English UI strings in frontend/src that the zh-TW dictionary does not cover yet.
++// Run after changing UI text:   npm run i18n:check   (or node scripts/i18n-check.mjs)
++//   --dump     print every UI string found (JSON), translated or not
++//   --strict   exit 1 when strings are missing (for CI)
++// See src/i18n/README.md.
++import fs from "node:fs";
++import path from "node:path";
++import { fileURLToPath } from "node:url";
++import ts from "typescript";
++
++const HERE = path.dirname(fileURLToPath(import.meta.url));
++const SRC = path.resolve(HERE, "../src");
++const DICT_FILE = path.join(SRC, "i18n/zh-TW.json");
++const args = new Set(process.argv.slice(2));
++
++// Attributes whose string values are shown to the user.
++const UI_ATTRS = new Set(["placeholder", "title", "aria-label", "alt", "label", "description", "tooltip", "message"]);
++// Object keys whose string values end up on screen (toasts, dialogs, menus).
++const UI_KEYS = new Set(["title", "description", "label", "placeholder", "message", "body", "heading", "text", "hint", "cta", "tooltip", "action"]);
++// Attributes that are never user-facing text.
++const SKIP_ATTRS = new Set(["className", "class", "id", "key", "href", "src", "type", "role", "variant", "size", "name", "value",
++  "htmlFor", "data-tour", "data-testid", "rel", "target", "side", "align", "orientation", "mode", "autoComplete", "inputMode"]);
++const SKIP_CALLS = new Set(["cn", "clsx", "fetch", "fetchWithHeaders", "require", "console.log", "console.warn", "console.error",
++  "console.info", "console.debug", "localStorage.getItem", "localStorage.setItem", "sessionStorage.getItem", "sessionStorage.setItem",
++  "addEventListener", "removeEventListener", "querySelector", "querySelectorAll", "getItem", "setItem", "removeItem", "logger"]);
++
++export const normalize = (s) => s.replace(/\s+/g, " ").trim();
++
++// A string looks like UI prose if it has a letter, is not code-ish, and reads like words.
++function looksLikeUiText(s) {
++  if (!/[A-Za-z]/.test(s)) return false;
++  if (/^(https?:|\/|\.\/|@\/|#|data:|ws:)/.test(s)) return false;          // urls and paths
++  if (/^[a-z0-9_.:/-]+$/.test(s)) return false;                           // identifiers, keys, css tokens
++  if (/^[A-Z0-9_]+$/.test(s) && s.length > 1 && !/^[A-Z][a-z]/.test(s)) return /^[A-Z]{2,5}$/.test(s) ? false : false;
++  if (/\b(bg|text|border|flex|grid|px|py|mx|my|mt|mb|ml|mr|pt|pb|gap|w|h|rounded|hover|focus|items|justify)-/.test(s)) return false;
++  if (/[{};=<>]|=>/.test(s)) return false;                                 // code fragments
++  if (/^[A-Z][a-zA-Z]+$/.test(s)) return true;                            // single capitalized word: "Ready"
++  if (/\s/.test(s)) return true;                                          // phrases
++  return /[.!?…:]$/.test(s);
++}
++
++function callName(node) {
++  const e = node.expression;
++  if (ts.isIdentifier(e)) return e.text;
++  if (ts.isPropertyAccessExpression(e)) {
++    const left = ts.isIdentifier(e.expression) ? e.expression.text : ts.isPropertyAccessExpression(e.expression) ? e.expression.name.text : "";
++    return left ? `${left}.${e.name.text}` : e.name.text;
++  }
++  return "";
++}
++
++function insideSkippedContext(node) {
++  for (let p = node.parent; p; p = p.parent) {
++    if (ts.isJsxAttribute(p)) return SKIP_ATTRS.has(p.name.getText());
++    if (ts.isCallExpression(p)) {
++      const n = callName(p);
++      if (SKIP_CALLS.has(n) || SKIP_CALLS.has(n.split(".").pop())) return true;
++    }
++    if (ts.isImportDeclaration(p) || ts.isExportDeclaration(p)) return true;
++    if (ts.isPropertyAssignment(p) && p.initializer !== node && !ts.isObjectLiteralExpression(p.initializer)) return false;
++    if (ts.isElementAccessExpression(p)) return true;
++    if (ts.isCaseClause(p)) return p.expression === node || p.expression.pos <= node.pos && node.end <= p.expression.end;
++    if (ts.isBinaryExpression(p) && [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken,
++      ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken].includes(p.operatorToken.kind)) return true;
++    if (ts.isTypeNode(p) || ts.isLiteralTypeNode(p)) return true;
++    if (ts.isFunctionLike(p) || ts.isSourceFile(p)) return false;
++  }
++  return false;
++}
++
++export function extract(srcDir = SRC) {
++  const found = new Map();   // text -> Set(file)
++  const templates = new Map(); // pattern text -> Set(file)
++  const add = (map, text, file) => { if (!map.has(text)) map.set(text, new Set()); map.get(text).add(file); };
++  const files = [];
++  (function walk(d) {
++    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
++      const p = path.join(d, e.name);
++      if (e.isDirectory()) { if (e.name !== "i18n") walk(p); continue; }
++      if (/\.(tsx?|jsx?)$/.test(e.name) && !/\.test\.|\.spec\.|\.d\.ts$/.test(e.name)) files.push(p);
++    }
++  })(srcDir);
++  for (const file of files) {
++    const rel = path.relative(srcDir, file);
++    const sf = ts.createSourceFile(file, fs.readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true,
++      file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
++    const visit = (node) => {
++      if (ts.isJsxText(node)) {
++        const t = normalize(node.getText());
++        if (t && /[A-Za-z]/.test(t)) add(found, t, rel);
++      } else if (ts.isJsxAttribute(node) && node.initializer && ts.isStringLiteral(node.initializer)) {
++        const t = normalize(node.initializer.text);
++        if (UI_ATTRS.has(node.name.getText()) && /[A-Za-z]/.test(t)) add(found, t, rel);
++      } else if ((ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) && !ts.isJsxAttribute(node.parent)) {
++        const t = normalize(node.text);
++        const key = ts.isPropertyAssignment(node.parent) && node.parent.initializer === node ? node.parent.name.getText() : "";
++        if (!insideSkippedContext(node) && (UI_KEYS.has(key) ? /[A-Za-z]/.test(t) : looksLikeUiText(t))) add(found, t, rel);
++      } else if (ts.isTemplateExpression(node) && !insideSkippedContext(node)) {
++        let t = node.head.text; node.templateSpans.forEach((s, i) => { t += `{${i}}` + s.literal.text; });
++        t = normalize(t);
++        if (looksLikeUiText(t.replace(/\{\d+\}/g, "x"))) add(templates, t, rel);
++      }
++      ts.forEachChild(node, visit);
++    };
++    visit(sf);
++  }
++  return { found, templates };
++}
++
++function main() {
++  const dict = JSON.parse(fs.readFileSync(DICT_FILE, "utf8"));
++  const strings = dict.strings || {};
++  const ignore = new Set(dict.ignore || []);
++  const patterns = (dict.patterns || []).map(([re, rep]) => [new RegExp(re), rep]);
++  const covered = (t) => t in strings || ignore.has(t) || patterns.some(([re]) => re.test(t));
++  const { found, templates } = extract();
++  if (args.has("--dump")) {
++    console.log(JSON.stringify({ strings: [...found.keys()].sort(), templates: [...templates.keys()].sort() }, null, 1));
++    return;
++  }
++  const missing = [...found.keys()].filter((t) => !covered(t)).sort();
++  // Try the template with every placeholder as "1", then with the first as "1" and the rest empty ("episode{1}").
++  const variants = (t) => [t.replace(/\{\d+\}/g, "1"), t.replace(/\{0\}/g, "1").replace(/\{\d+\}/g, "")];
++  const missingTpl = [...templates.keys()].filter((t) => !ignore.has(t) && !variants(t).some((v) => patterns.some(([re]) => re.test(v)))).sort();
++  const stale = Object.keys(strings).filter((k) => !found.has(k)).sort();
++  console.log(`zh-TW dictionary: ${Object.keys(strings).length} strings, ${patterns.length} patterns, ${ignore.size} ignored`);
++  console.log(`UI strings in source: ${found.size}; not translated yet: ${missing.length}`);
++  for (const t of missing) console.log(`  MISSING  ${JSON.stringify(t)}   (${[...found.get(t)].join(", ")})`);
++  if (missingTpl.length) {
++    console.log(`Text built from variables (add a pattern if it shows on screen): ${missingTpl.length}`);
++    for (const t of missingTpl) console.log(`  TEMPLATE ${JSON.stringify(t)}   (${[...templates.get(t)].join(", ")})`);
++  }
++  if (args.has("--stale") && stale.length) {
++    console.log(`Dictionary entries no longer in source (safe to keep; backend messages live here too): ${stale.length}`);
++    for (const t of stale) console.log(`  UNUSED   ${JSON.stringify(t)}`);
++  }
++  if (args.has("--strict") && missing.length) process.exit(1);
++}
++
++if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+diff --git a/frontend/src/i18n/README.md b/frontend/src/i18n/README.md
+new file mode 100644
+index 0000000..8f48a31
+--- /dev/null
++++ b/frontend/src/i18n/README.md
+@@ -0,0 +1,48 @@
++# Interface translations
++
++LeLab can show its interface in Traditional Chinese (`zh-TW`). A floating **中文 / EN** button sits above the `?` help button on every page. The choice is saved in `localStorage` (`lelab.lang`). Browsers set to Traditional Chinese (`zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`) start in Chinese; everyone else starts in English.
++
++## How it works
++
++Components keep their English strings; nothing in them changes. `translator.ts` watches the rendered page with a `MutationObserver` and replaces any text node, `placeholder`, `title`, `aria-label` or `alt` whose whole text is a key in `zh-TW.json`. When React re-renders a node with new English text, the observer translates it again. Switching back to English restores the original text.
++
++Not translated: input values, `<code>`, `<pre>`, `<kbd>`, `<textarea>`, and anything inside an element with `data-no-i18n`. Joint names, file names, robot and dataset names, and model names (ACT, SmolVLA, ...) stay in English on purpose.
++
++A string with no translation simply stays in English, so new UI text never breaks anything.
++
++## Files
++
++| File                           | Purpose                                                                                                                                                                                                                             |
++| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `zh-TW.json`                   | `strings`: exact English → Chinese. `patterns`: regex → replacement for text built from variables, such as `Create "so101"`; captured values are translated too when they are keys. `ignore`: strings deliberately left in English. |
++| `translator.ts`                | String lookup and the DOM translator.                                                                                                                                                                                               |
++| `index.ts`                     | Starts the translator and adds the toggle button. Imported once from `main.tsx`.                                                                                                                                                    |
++| `i18n.test.tsx`                | Tests for the dictionary, string lookup, and React re-renders.                                                                                                                                                                      |
++| `../../scripts/i18n-check.mjs` | Extracts UI strings from `src/` with the TypeScript parser and lists those missing from `zh-TW.json`.                                                                                                                               |
++
++## After changing UI text
++
++```bash
++npm run i18n:check            # lists strings not in zh-TW.json yet
++npm run i18n:check -- --stale # also lists dictionary entries no longer in the source
++npx vitest run src/i18n
++```
++
++Add each missing string to `strings` in `zh-TW.json`. If a string is built from variables, add a regex to `patterns` instead. If it should stay in English, add it to `ignore`.
++
++## Terms used in zh-TW
++
++| English               | 中文     |
++| --------------------- | -------- |
++| Leader / Teleoperator | 主控臂   |
++| Follower / Robot      | 執行臂   |
++| Teleoperation         | 遙控     |
++| Calibration           | 校準     |
++| Dataset               | 資料集   |
++| Episode               | 片段     |
++| Reset (time)          | 歸位     |
++| Policy                | 策略模型 |
++| Inference             | 推論     |
++| Checkpoint            | 檢查點   |
++| Job                   | 工作     |
++| Port                  | 連接埠   |
+diff --git a/frontend/src/i18n/i18n.test.tsx b/frontend/src/i18n/i18n.test.tsx
+new file mode 100644
+index 0000000..0466f32
+--- /dev/null
++++ b/frontend/src/i18n/i18n.test.tsx
+@@ -0,0 +1,116 @@
++// @vitest-environment jsdom
++// Tests for the zh-TW add-on: dictionary sanity, string translation, and the DOM layer
++// staying correct while React re-renders.
++import React, { act, useState } from "react";
++import { createRoot, Root } from "react-dom/client";
++import { afterEach, beforeEach, describe, expect, test } from "vitest";
++import dict from "./zh-TW.json";
++import { DomTranslator, Translator, normalize, type Dictionary } from "./translator";
++
++const tick = () => new Promise((r) => setTimeout(r, 0));
++const translator = new Translator(dict as Dictionary);
++
++describe("dictionary", () => {
++  test("keys are normalized and values are strings", () => {
++    for (const [k, v] of Object.entries(dict.strings)) {
++      expect(k).toBe(normalize(k));
++      expect(typeof v).toBe("string");
++    }
++  });
++  test("patterns compile and use only captured groups", () => {
++    for (const [re, rep] of dict.patterns as [string, string][]) {
++      const groups = new RegExp(re + "|").exec("")!.length - 1;
++      for (const m of rep.matchAll(/\$(\d)/g)) expect(+m[1]).toBeLessThanOrEqual(groups);
++    }
++  });
++});
++
++describe("Translator", () => {
++  test("translates whole strings and keeps outer spaces", () => {
++    expect(translator.translate("Start Calibration")).toBe("開始校準");
++    expect(translator.translate("  Start   Calibration ")).toBe(" 開始校準 ");
++  });
++  test("leaves unknown text, numbers and user data alone", () => {
++    expect(translator.translate("so101_dpad_up")).toBeNull();
++    expect(translator.translate("2540")).toBeNull();
++    expect(translator.translate("Start Calibration now")).toBeNull();
++  });
++  test("patterns fill in values and translate known values", () => {
++    expect(translator.translate('Create "so101"')).toBe("建立「so101」");
++    expect(translator.translate("Calibration started for teleop")).toBe("已開始校準：主控臂");
++    expect(translator.translate("Episode 3 of 10")).toBe("第 3 段，共 10 段");
++  });
++});
++
++describe("DomTranslator with React", () => {
++  let host: HTMLDivElement;
++  let root: Root;
++  let dom: DomTranslator;
++  let setLabel: (s: string) => void = () => {};
++
++  function Probe() {
++    const [label, set] = useState("Start Calibration");
++    setLabel = set;
++    return (
++      <div>
++        <button type="button" title="Delete robot">{label}</button>
++        <input placeholder="Search jobs" defaultValue="Ready" />
++        <span data-no-i18n="">Ready</span>
++        <p>Recording with <strong>so101</strong></p>
++      </div>
++    );
++  }
++
++  beforeEach(async () => {
++    Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
++    host = document.createElement("div");
++    document.body.appendChild(host);
++    dom = new DomTranslator(translator, host);
++    dom.start("zh-TW");
++    root = createRoot(host);
++    await act(async () => root.render(<Probe />));
++    await tick();
++  });
++  afterEach(() => { act(() => root.unmount()); dom.stop(); host.remove(); });
++
++  test("renders Chinese text and attributes", () => {
++    expect(host.querySelector("button")!.textContent).toBe("開始校準");
++    expect(host.querySelector("button")!.getAttribute("title")).toBe("刪除手臂");
++    expect(host.querySelector("input")!.getAttribute("placeholder")).toBe("搜尋工作");
++    expect(host.querySelector("p")!.textContent).toBe("使用手臂：so101");
++  });
++
++  test("does not touch input values or opted-out elements", () => {
++    expect(host.querySelector("input")!.value).toBe("Ready");
++    expect(host.querySelector("span")!.textContent).toBe("Ready");
++  });
++
++  test("follows React updates and switches both ways", async () => {
++    await act(async () => setLabel("Cancel Calibration"));
++    await tick();
++    expect(host.querySelector("button")!.textContent).toBe("取消校準");
++
++    dom.setLanguage("en");
++    await tick();
++    expect(host.querySelector("button")!.textContent).toBe("Cancel Calibration");
++    expect(host.querySelector("button")!.getAttribute("title")).toBe("Delete robot");
++    expect(host.querySelector("input")!.getAttribute("placeholder")).toBe("Search jobs");
++
++    await act(async () => setLabel("Save Calibration"));
++    await tick();
++    expect(host.querySelector("button")!.textContent).toBe("Save Calibration");
++
++    dom.setLanguage("zh-TW");
++    await tick();
++    expect(host.querySelector("button")!.textContent).toBe("儲存校準");
++    expect(host.querySelector("p")!.textContent).toBe("使用手臂：so101");
++  });
++
++  test("text React adds later is translated too", async () => {
++    const extra = document.createElement("div");
++    extra.textContent = "Teleoperation Started";
++    host.appendChild(extra);
++    await tick();
++    expect(extra.textContent).toBe("已開始遙控");
++  });
++});
+diff --git a/frontend/src/i18n/index.ts b/frontend/src/i18n/index.ts
+new file mode 100644
+index 0000000..9e598e6
+--- /dev/null
++++ b/frontend/src/i18n/index.ts
+@@ -0,0 +1,64 @@
++// Entry point for interface translations. main.tsx imports this file once; nothing else refers to it.
++// It starts the DOM translator and adds a floating 中文 / EN button. See src/i18n/README.md.
++import dict from "./zh-TW.json";
++import { DomTranslator, Translator, type Lang, type Dictionary } from "./translator";
++
++const STORAGE_KEY = "lelab.lang";
++
++function initialLanguage(): Lang {
++  try {
++    const saved = localStorage.getItem(STORAGE_KEY);
++    if (saved === "en" || saved === "zh-TW") return saved;
++  } catch {
++    // Storage can be unavailable (private mode); fall through to the browser language.
++  }
++  // Traditional Chinese browsers start in Chinese; everyone else starts in English and can switch.
++  return /^zh-(TW|HK|MO|Hant)\b/i.test(navigator.language || "") ? "zh-TW" : "en";
++}
++
++function saveLanguage(lang: Lang): void {
++  try { localStorage.setItem(STORAGE_KEY, lang); } catch { /* non-fatal */ }
++}
++
++function makeToggle(dom: DomTranslator): HTMLButtonElement {
++  const btn = document.createElement("button");
++  btn.type = "button";
++  btn.id = "lelab-lang-toggle";
++  btn.setAttribute("data-no-i18n", "");
++  btn.setAttribute("translate", "no");
++  const paint = () => {
++    const zh = dom.language === "zh-TW";
++    btn.textContent = zh ? "EN" : "中文";
++    btn.title = zh ? "Switch to English" : "切換成中文";
++    btn.setAttribute("aria-label", btn.title);
++    document.documentElement.lang = zh ? "zh-Hant" : "en";
++  };
++  Object.assign(btn.style, {
++    position: "fixed", right: "16px", bottom: "80px", zIndex: "2147483000",  // above LeLab's ? help button
++    minWidth: "56px", height: "40px", padding: "0 14px", borderRadius: "999px",
++    border: "1px solid #4b5563", background: "#111827", color: "#f9fafb",
++    font: "600 14px/1 system-ui, -apple-system, 'Segoe UI', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif",
++    letterSpacing: "0.02em", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,.35)",
++  } satisfies Partial<CSSStyleDeclaration>);
++  btn.addEventListener("click", () => {
++    const next: Lang = dom.language === "zh-TW" ? "en" : "zh-TW";
++    dom.setLanguage(next);
++    saveLanguage(next);
++    paint();
++  });
++  paint();
++  return btn;
++}
++
++export function startI18n(): DomTranslator {
++  const dom = new DomTranslator(new Translator(dict as Dictionary), document.body);
++  dom.start(initialLanguage());
++  document.body.appendChild(makeToggle(dom));
++  return dom;
++}
++
++if (typeof document !== "undefined" && !(window as unknown as { __lelabI18n?: unknown }).__lelabI18n) {
++  const run = () => { (window as unknown as { __lelabI18n?: DomTranslator }).__lelabI18n = startI18n(); };
++  if (document.body) run();
++  else document.addEventListener("DOMContentLoaded", run, { once: true });
++}
+diff --git a/frontend/src/i18n/translator.ts b/frontend/src/i18n/translator.ts
+new file mode 100644
+index 0000000..26652b6
+--- /dev/null
++++ b/frontend/src/i18n/translator.ts
+@@ -0,0 +1,157 @@
++// Interface translations for LeLab, applied to the rendered page.
++//
++// Components keep their English strings. This module watches the DOM and swaps any text
++// node or UI attribute whose whole text is a dictionary key for its translation, and swaps
++// it back when the user picks English. A string without a translation stays in English,
++// so new UI text never breaks; `npm run i18n:check` lists the strings still to translate.
++// See src/i18n/README.md.
++
++export type Lang = "en" | "zh-TW";
++
++export interface Dictionary {
++  strings: Record<string, string>;
++  patterns?: [string, string][];
++  ignore?: string[];
++}
++
++const ATTRS = ["placeholder", "title", "aria-label", "alt"] as const;
++// Text inside these is user data, code, or not rendered; never translate it.
++const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEXTAREA", "CODE", "PRE", "KBD", "CANVAS"]);
++const OPT_OUT = "[data-no-i18n],[translate='no'],[contenteditable='true']";
++
++export const normalize = (s: string): string => s.replace(/\s+/g, " ").trim();
++
++export class Translator {
++  private strings: Map<string, string>;
++  private patterns: [RegExp, string][];
++
++  constructor(dict: Dictionary) {
++    this.strings = new Map(Object.entries(dict.strings));
++    this.patterns = (dict.patterns ?? []).map(([re, rep]) => [new RegExp(re), rep]);
++  }
++
++  /** Chinese for an English UI string, or null when it is not in the dictionary. Keeps outer spaces. */
++  translate(text: string): string | null {
++    const key = normalize(text);
++    if (!key || !/[A-Za-z]/.test(key)) return null;
++    let out = this.strings.get(key);
++    if (out === undefined) {
++      for (const [re, rep] of this.patterns) {
++        if (re.test(key)) {
++          out = key.replace(re, (...m) => rep.replace(/\$(\d)/g, (_, i) => this.translate(m[+i] ?? "") ?? m[+i] ?? ""));
++          break;
++        }
++      }
++    }
++    if (out === undefined) return null;
++    // Keep the spaces that separate this text from its neighbours, except next to full-width punctuation.
++    const fullWidth = /[\u3000-\u303f\uff00-\uffef]/;
++    const lead = /^\s/.test(text) && out && !fullWidth.test(out[0]) ? " " : "";
++    const trail = /\s$/.test(text) && out && !fullWidth.test(out[out.length - 1]) ? " " : "";
++    return lead + out + trail;
++  }
++}
++
++interface TextRecord { original: string; shown: string }
++
++/** Keeps the live DOM in the chosen language as React re-renders it. */
++export class DomTranslator {
++  private lang: Lang = "en";
++  private texts = new WeakMap<Text, TextRecord>();
++  private attrs = new WeakMap<Element, Map<string, TextRecord>>();
++  private observer: MutationObserver | null = null;
++
++  constructor(private translator: Translator, private root: Node = document.body) {}
++
++  get language(): Lang { return this.lang; }
++
++  start(lang: Lang): void {
++    this.lang = lang;
++    this.walk(this.root);
++    this.observer = new MutationObserver((records) => this.onMutations(records));
++    this.observer.observe(this.root, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: [...ATTRS] });
++  }
++
++  stop(): void { this.observer?.disconnect(); this.observer = null; }
++
++  setLanguage(lang: Lang): void {
++    if (lang === this.lang) return;
++    this.lang = lang;
++    this.walk(this.root);
++  }
++
++  private skip(el: Element | null): boolean {
++    for (let e = el; e; e = e.parentElement) {
++      if (SKIP_TAGS.has(e.tagName.toUpperCase())) return true;
++      if (e.matches?.(OPT_OUT)) return true;
++    }
++    return false;
++  }
++
++  private walk(node: Node): void {
++    if (node.nodeType === Node.TEXT_NODE) { this.applyText(node as Text); return; }
++    if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return;
++    if (node.nodeType === Node.ELEMENT_NODE) {
++      const el = node as Element;
++      if (this.skip(el)) return;
++      for (const a of ATTRS) if (el.hasAttribute(a)) this.applyAttr(el, a);
++    }
++    for (let c = node.firstChild; c; c = c.nextSibling) this.walk(c);
++  }
++
++  private onMutations(records: MutationRecord[]): void {
++    for (const r of records) {
++      if (r.type === "characterData") this.applyText(r.target as Text);
++      else if (r.type === "attributes" && r.attributeName) this.applyAttr(r.target as Element, r.attributeName);
++      else r.addedNodes.forEach((n) => this.walk(n));
++    }
++  }
++
++  private applyText(node: Text): void {
++    const value = node.nodeValue ?? "";
++    let rec = this.texts.get(node);
++    if (rec && value === rec.shown) {
++      if (this.lang === "en" && rec.shown !== rec.original) this.write(node, rec, rec.original);
++      else if (this.lang !== "en" && rec.shown === rec.original) this.translateInto(node, rec);
++      return;
++    }
++    if (!rec) {
++      if (!/[A-Za-z]/.test(value) || this.skip(node.parentElement)) return;
++      rec = { original: value, shown: value };
++      this.texts.set(node, rec);
++    } else {
++      rec.original = value; rec.shown = value;   // React wrote new English text
++    }
++    if (this.lang !== "en") this.translateInto(node, rec);
++  }
++
++  private translateInto(node: Text, rec: TextRecord): void {
++    const zh = this.translator.translate(rec.original);
++    if (zh !== null && zh !== rec.shown) this.write(node, rec, zh);
++  }
++
++  private write(node: Text, rec: TextRecord, value: string): void {
++    rec.shown = value;
++    node.nodeValue = value;
++  }
++
++  private applyAttr(el: Element, name: string): void {
++    const value = el.getAttribute(name);
++    if (value === null) return;
++    let map = this.attrs.get(el);
++    let rec = map?.get(name);
++    if (rec && value === rec.shown) {
++      const want = this.lang === "en" ? rec.original : this.translator.translate(rec.original) ?? rec.original;
++      if (want !== value) { rec.shown = want; el.setAttribute(name, want); }
++      return;
++    }
++    if (!/[A-Za-z]/.test(value)) return;
++    if (!map) { map = new Map(); this.attrs.set(el, map); }
++    rec = { original: value, shown: value };
++    map.set(name, rec);
++    if (this.lang !== "en") {
++      const zh = this.translator.translate(value);
++      if (zh !== null) { rec.shown = zh; el.setAttribute(name, zh); }
++    }
++  }
++}
+diff --git a/frontend/src/i18n/zh-TW.json b/frontend/src/i18n/zh-TW.json
+new file mode 100644
+index 0000000..977aa26
+--- /dev/null
++++ b/frontend/src/i18n/zh-TW.json
+@@ -0,0 +1,1104 @@
++{
++ "strings": {
++  "(installed via": "（安裝方式：",
++  "), which this environment doesn't have yet. Install it to train this policy.": "），這個環境還沒有安裝。安裝後才能訓練這個策略模型。",
++  ", e.g. 3, 7, 10-12.": "，例如 3, 7, 10-12。",
++  ", which has": "，它有",
++  ". This usually takes about 10 seconds.": "。通常大約 10 秒。",
++  "A dataset is a set of episodes: one attempt at your task each. Episode time is how long each attempt runs; reset time is the pause to reposition objects between attempts. Aim for 10 to 50 clean episodes to start.": "資料集由很多「片段」組成，每個片段就是做一次任務。片段時間是每次做多久；歸位時間是兩次之間讓你把物品擺回原位的時間。一開始先錄 10 到 50 個乾淨的片段。",
++  "A new version is available": "有新版本",
++  "A replay is already running": "已經在重播",
++  "A robot with this name already exists": "已經有同名的手臂",
++  "ACT (Action Chunking Transformer)": "ACT（Action Chunking Transformer）",
++  "About HuggingFace Hub Upload": "關於上傳到 Hugging Face Hub",
++  "Action Steps": "動作步數",
++  "Add Camera": "新增攝影機",
++  "Add cameras (if your task needs sight)": "新增攝影機（任務需要看東西時）",
++  "Add dataset": "新增資料集",
++  "Advance": "下一步",
++  "Advanced": "進階",
++  "Advanced Parameters": "進階參數",
++  "After running, your browser will open the local LeLab app.": "執行後，瀏覽器會打開本機的 LeLab。",
++  "All cameras": "所有攝影機",
++  "Already exists": "已經存在",
++  "Also delete this dataset from the HuggingFace Hub": "同時從 Hugging Face Hub 刪除這個資料集",
++  "Another local training is already running": "已經有另一個本機訓練在執行",
++  "Another training is already running. Stop it first.": "已經有另一個訓練在執行，請先停止它。",
++  "Apply to all": "全部套用",
++  "At least one episode must stay in the dataset.": "資料集裡至少要留一個片段。",
++  "Attached cameras": "已連接的攝影機",
++  "Auto": "自動",
++  "Available Cameras": "可用的攝影機",
++  "Back": "返回",
++  "Back to Home": "回首頁",
++  "Back to Jobs": "回工作清單",
++  "Backend:": "後端：",
++  "Base Model Path": "基礎模型路徑",
++  "Batch Size": "批次大小",
++  "Bind a physical camera to each camera the dataset was recorded with. Resolution comes from the dataset.": "為資料集錄製時用的每支攝影機，指定一支實體攝影機。解析度沿用資料集的設定。",
++  "Bind a physical camera to each name the policy was trained with. Resolution comes from the checkpoint. Use the same rotation as the training data.": "為策略模型訓練時用的每個攝影機名稱，指定一支實體攝影機。解析度沿用檢查點的設定，旋轉角度要和訓練資料一樣。",
++  "Browse dataset": "瀏覽資料集",
++  "Calibrate": "校準",
++  "Calibrate the arms": "校準手臂",
++  "Calibrate, record, train, run. You can reopen this tour anytime from the ? button in the corner. Happy building.": "校準、錄製、訓練、執行。隨時可以按角落的 ? 按鈕重新打開導覽。祝你玩得開心！",
++  "Calibration Demo:": "校準示範：",
++  "Calibration Failed": "校準失敗",
++  "Calibration Started": "已開始校準",
++  "Calibration Stopped": "已停止校準",
++  "Calibration already active": "校準已經在進行",
++  "Calibration cancelled": "已取消校準",
++  "Calibration completed successfully": "校準完成",
++  "Calibration completed successfully!": "校準完成！",
++  "Calibration has been stopped": "校準已停止",
++  "Calibration linked": "已連結校準檔",
++  "Calibration started": "已開始校準",
++  "Calibration stopped": "已停止校準",
++  "Calibration teaches the app each joint's range of motion so movements map correctly. Run it once for the leader arm, then the follower. Press Start and follow the on-screen steps.": "校準是讓程式知道每個關節能轉多遠，動作才會對得上。主控臂做一次，再換執行臂做一次。按「開始校準」後照畫面指示做。",
++  "Camera Added": "已新增攝影機",
++  "Camera Already Added": "攝影機已經新增過了",
++  "Camera Configuration": "攝影機設定",
++  "Camera Name": "攝影機名稱",
++  "Camera Removed": "已移除攝影機",
++  "Camera Resources Ready": "攝影機已準備好",
++  "Camera has been removed from the configuration.": "已從設定中移除攝影機。",
++  "Camera permission not granted.": "沒有取得攝影機權限。",
++  "Camera streams released successfully. Starting recording...": "已釋放攝影機畫面，開始錄製…",
++  "Cameras": "攝影機",
++  "Cameras are off": "攝影機已關閉",
++  "Cancel": "取消",
++  "Cancel Calibration": "取消校準",
++  "Cancelled": "已取消",
++  "Capture:": "擷取：",
++  "Checking HF…": "正在檢查 Hugging Face…",
++  "Checking training environment…": "正在檢查訓練環境…",
++  "Checkpoint": "檢查點",
++  "Choose rotation": "選擇旋轉角度",
++  "Chunk Size": "Chunk 大小",
++  "Clear": "清除",
++  "Click here to view the calibration video": "按這裡看校準影片",
++  "Close": "關閉",
++  "Comma-separated joints kept absolute when relative actions are on.": "開啟相對動作時，這些關節仍用絕對位置，以逗號分隔。",
++  "Completed": "已完成",
++  "Compute target": "運算位置",
++  "Configuration": "設定",
++  "Configuration file not found": "找不到設定檔",
++  "Configure": "設定",
++  "Configure (calibrate)": "設定（校準）",
++  "Configure Inference": "設定推論",
++  "Configure Recording": "設定錄製",
++  "Configure the robot first.": "請先設定手臂。",
++  "Configured Cameras (": "已設定的攝影機（",
++  "Connecting": "連接中",
++  "Connecting feed…": "正在連接畫面…",
++  "Connecting to device...": "正在連接裝置…",
++  "Connecting to inference…": "正在連接推論…",
++  "Connecting to recording session...": "正在連接錄製工作階段…",
++  "Connecting to the device. Please ensure it's connected.": "正在連接裝置，請確認裝置已接上。",
++  "Connection Error": "連線錯誤",
++  "Continue": "繼續",
++  "Copied": "已複製",
++  "Copy": "複製",
++  "Copy command": "複製指令",
++  "Copy command to clipboard": "複製指令",
++  "Copy failed": "複製失敗",
++  "Copy install command": "複製安裝指令",
++  "Correct the camera settings in Calibration.": "請到校準頁修正攝影機設定。",
++  "Cost shown is per running hour. Final policy uploads to your HF account when training completes.": "顯示的費用是每小時的價格。訓練完成後，策略模型會上傳到你的 Hugging Face 帳號。",
++  "Could not check the task edits": "無法檢查任務的修改",
++  "Could not complete calibration step": "無法完成這個校準步驟",
++  "Could not complete step": "無法完成這一步",
++  "Could not confirm the session was stopped — it may still be recording. Try again.": "無法確認工作階段已停止，可能還在錄製，請再試一次。",
++  "Could not confirm whether recording started. Making sure nothing was left running…": "無法確認錄製是否已開始，正在確認沒有東西還在執行…",
++  "Could not connect to backend. Using session data.": "無法連線到後端，改用這次工作階段的資料。",
++  "Could not connect to the backend server.": "無法連線到後端伺服器。",
++  "Could not delete the dataset.": "無法刪除資料集。",
++  "Could not link calibration": "無法連結校準檔",
++  "Could not load complete dataset information. Using session data.": "無法讀取完整的資料集資訊，改用這次工作階段的資料。",
++  "Could not load episode": "無法讀取片段",
++  "Could not merge the selected datasets.": "無法合併選取的資料集。",
++  "Could not move the episodes.": "無法移動片段。",
++  "Could not read dataset": "無法讀取資料集",
++  "Could not read this dataset": "無法讀取這個資料集",
++  "Could not replay this episode": "無法重播這個片段",
++  "Could not save the port to this robot.": "無法把連接埠存到這隻手臂的設定。",
++  "Could not save the task.": "無法儲存任務。",
++  "Could not stop the robot": "無法停止手臂",
++  "Could not stop the session": "無法停止工作階段",
++  "Couldn't load job": "無法讀取工作",
++  "Couldn't load jobs:": "無法讀取工作清單：",
++  "Couldn't load policy config:": "無法讀取策略模型設定：",
++  "Couldn't start inference": "無法開始推論",
++  "Create a model": "建立模型",
++  "Create a token at": "到這裡建立權杖：",
++  "Create new dataset…": "建立新的資料集…",
++  "Create new robot…": "建立新的手臂…",
++  "DEL / ←": "Delete / ←",
++  "Data must be of type \"DataTransfer\"": "資料格式必須是 DataTransfer",
++  "Dataset": "資料集",
++  "Dataset Configuration": "資料集設定",
++  "Dataset Deleted": "已刪除資料集",
++  "Dataset Name *": "資料集名稱 *",
++  "Dataset Repository ID *": "資料集 ID *",
++  "Dataset Summary": "資料集摘要",
++  "Dataset Upload": "上傳資料集",
++  "Dataset repository ID is required": "請填寫資料集 ID",
++  "Dataset saved locally. You can upload it manually later.": "資料集已存在本機，之後可以再手動上傳。",
++  "Dataset will be publicly accessible on HuggingFace Hub": "資料集會在 Hugging Face Hub 上公開",
++  "Datasets merged": "已合併資料集",
++  "Default": "預設",
++  "Delete": "刪除",
++  "Delete Failed": "刪除失敗",
++  "Delete dataset from disk": "從硬碟刪除資料集",
++  "Delete dataset from disk?": "要從硬碟刪除資料集嗎？",
++  "Delete failed": "刪除失敗",
++  "Delete job": "刪除工作",
++  "Delete reference": "刪除參考畫面",
++  "Delete robot": "刪除手臂",
++  "Delete robot config": "刪除手臂設定",
++  "Delete robot config?": "要刪除手臂設定嗎？",
++  "Delete this run? This wipes the output directory.": "要刪除這次訓練嗎？輸出資料夾會一起清除。",
++  "Deleting…": "刪除中…",
++  "Destination": "目的地",
++  "Detect the USB port for your": "偵測這隻手臂的 USB 連接埠：",
++  "Detection Failed": "偵測失敗",
++  "Device": "裝置",
++  "Device Calibration": "裝置校準",
++  "Device Type *": "裝置類型 *",
++  "Diffusion Policy": "Diffusion Policy",
++  "Disconnect the": "拔掉",
++  "Disconnected": "已斷線",
++  "Display name (optional)": "顯示名稱（選填）",
++  "Documentation": "說明文件",
++  "Don't ask me again": "不要再問我",
++  "Done": "完成",
++  "Drive the follower arm by moving the leader. It's a good way to confirm calibration feels right before you record anything. This button unlocks once the arm is calibrated.": "移動主控臂來帶動執行臂。錄資料前先用這個確認校準是否正確。手臂校準好之後，這個按鈕才能按。",
++  "Drop Urdf Files Here": "把 URDF 檔拖到這裡",
++  "EPISODE": "片段",
++  "ETA": "預計完成",
++  "Edit task": "編輯任務",
++  "Embodiment Tag": "Embodiment 標籤",
++  "Enable Image Augmentations": "啟用影像增強",
++  "Encodes frames in real time during capture so each episode saves almost instantly. Uncheck to fall back to the slower PNG-then-encode flow.": "錄製時即時編碼影像，每個片段幾乎能立刻存好。取消勾選會改用比較慢的先存 PNG 再編碼方式。",
++  "End Episode": "結束這個片段",
++  "End Session": "結束錄製",
++  "Episode": "片段",
++  "Episode duration (seconds)": "每個片段的時間（秒）",
++  "Episodes": "片段",
++  "Episodes Recorded:": "已錄製片段：",
++  "Episodes moved": "已移動片段",
++  "Episodes to Add": "要新增的片段數量",
++  "Error": "錯誤",
++  "Error Starting Recording": "開始錄製時發生錯誤",
++  "Error Starting Teleoperation": "開始遙控時發生錯誤",
++  "Error loading Urdf": "載入 URDF 時發生錯誤",
++  "Error processing files": "處理檔案時發生錯誤",
++  "Error reading Urdf file": "讀取 URDF 檔時發生錯誤",
++  "Error:": "錯誤：",
++  "Exit tour": "離開導覽",
++  "Failed": "失敗",
++  "Failed to create": "建立失敗",
++  "Failed to delete": "刪除失敗",
++  "Failed to detect port": "偵測連接埠失敗",
++  "Failed to read Urdf file content": "讀取 URDF 檔內容失敗",
++  "Failed to save configuration": "無法儲存設定",
++  "Failed to save port": "儲存連接埠失敗",
++  "Failed to start calibration": "開始校準失敗",
++  "Failed to start port detection": "無法開始偵測連接埠",
++  "Failed to start recording session.": "無法開始錄製。",
++  "Failed to start.": "無法開始。",
++  "Failed to stop calibration": "無法停止校準",
++  "Failed to stop recording.": "無法停止錄製。",
++  "Failed to upload dataset to HuggingFace Hub.": "上傳資料集到 Hugging Face Hub 失敗。",
++  "File not found in records": "紀錄裡找不到這個檔案",
++  "Finalizing dataset…": "正在完成資料集…",
++  "Find": "尋找",
++  "Finish": "完成",
++  "Finish the earlier step to unlock this, or continue with Next whenever you like.": "完成前一個步驟就能解鎖，也可以隨時按「下一步」繼續。",
++  "Follower": "執行臂",
++  "Follower (Robot)": "執行臂（Follower）",
++  "Frames": "影格",
++  "Get Started with LeLab": "開始使用 LeLab",
++  "Getting ready…": "準備中…",
++  "Gradient Clipping": "梯度裁剪",
++  "Guided tour": "導覽",
++  "HF not configured": "尚未登入 Hugging Face",
++  "HF ·": "HF ·",
++  "Hide": "隱藏",
++  "Hugging Face CLI not configured": "尚未登入 Hugging Face CLI",
++  "Hugging Face access required for cloud training": "雲端訓練需要 Hugging Face 權限",
++  "Hugging Face authenticated": "已登入 Hugging Face",
++  "Hugging Face not configured — show login instructions": "尚未登入 Hugging Face，顯示登入說明",
++  "HuggingFace Hub dataset repository ID": "Hugging Face Hub 上的資料集 ID",
++  "HuggingFace repo of the pretrained GR00T backbone to fine-tune.": "要微調的 GR00T 預訓練模型，在 Hugging Face 上的位置。",
++  "I've logged in — recheck": "我登入了，重新檢查",
++  "Idle": "待命",
++  "If the robot has to see what it's doing, add one or more cameras here. They're saved with this robot and reused when you record. Skip this if your task doesn't need vision.": "如果手臂需要看東西才能做事，在這裡新增攝影機。攝影機會存在這隻手臂的設定裡，錄製時沿用。任務不需要視覺就可以跳過。",
++  "Import": "匯入",
++  "Import a model": "匯入模型",
++  "Import model": "匯入模型",
++  "Important:": "重要：",
++  "Imported": "已匯入",
++  "Imported models (": "匯入的模型（",
++  "Importing…": "匯入中…",
++  "Index": "編號",
++  "Inference": "推論",
++  "Inference finished": "推論結束",
++  "Inference is already active. Stop it first.": "推論已經在執行，請先停止。",
++  "Inference is currently active. Stop it first.": "推論正在執行，請先停止。",
++  "Inference seems hung": "推論好像卡住了",
++  "Inference started": "已開始推論",
++  "Inference stopped": "已停止推論",
++  "Install": "安裝",
++  "Install Complete": "安裝完成",
++  "Install Failed": "安裝失敗",
++  "Install Now": "立即安裝",
++  "Install already in progress": "已經在安裝",
++  "Install complete. Restart": "安裝完成。請重新啟動",
++  "Install failed.": "安裝失敗。",
++  "Install started": "已開始安裝",
++  "Installing": "安裝中",
++  "Installing…": "安裝中…",
++  "Interrupted": "已中斷",
++  "Invalid Camera": "攝影機無效",
++  "Invalid camera rotation": "攝影機旋轉角度無效",
++  "Invalid configuration name": "設定名稱無效",
++  "Invalid dataset path": "資料集路徑無效",
++  "Invalid device type": "裝置類型無效",
++  "Invalid name": "名稱無效",
++  "Invalid robot name": "手臂名稱無效",
++  "Invalid rotation": "旋轉角度無效",
++  "Job removed": "已移除工作",
++  "Job stopping": "工作停止中",
++  "Jobs": "工作",
++  "Joint motion": "關節動作",
++  "Joint motion unavailable —": "無法顯示關節動作：",
++  "Joint:": "關節：",
++  "Keep dataset": "保留資料集",
++  "Keep recording": "繼續錄製",
++  "Keep running": "繼續執行",
++  "Later": "稍後",
++  "LeLab is already open in another tab": "LeLab 已經在另一個分頁打開",
++  "LeLab runs on your machine. Click the command to copy it, then paste in a terminal:": "LeLab 在你自己的電腦上執行。點一下指令就會複製，再貼到終端機：",
++  "LeLab update available": "LeLab 有新版本",
++  "Leader": "主控臂",
++  "Leader (Teleoperator)": "主控臂（Leader）",
++  "Learning Rate": "學習率",
++  "Letters, numbers,": "只能用英文字母、數字、",
++  "Links a calibration file already on this computer to this arm, so you do not have to calibrate again.": "把這台電腦上已經有的校準檔連結到這隻手臂，就不用重新校準。",
++  "Live Camera Feed": "即時攝影機畫面",
++  "Live Position Data": "即時位置資料",
++  "Live Robot Data": "即時手臂資料",
++  "Loading Urdf model...": "正在載入 URDF 模型…",
++  "Loading cameras...": "正在載入攝影機…",
++  "Loading dataset information...": "正在讀取資料集資訊…",
++  "Loading datasets…": "正在讀取資料集…",
++  "Loading episode…": "正在讀取片段…",
++  "Loading job…": "正在讀取工作…",
++  "Loading policy & connecting hardware…": "正在載入策略模型並連接硬體…",
++  "Loading robot...": "正在載入手臂…",
++  "Loading...": "載入中…",
++  "Loading…": "載入中…",
++  "Local": "本機",
++  "Local jobs (": "本機工作（",
++  "Local path or Hugging Face repo id": "本機路徑或 Hugging Face 上的 ID",
++  "Local — your machine (free)": "本機：用你的電腦（免費）",
++  "Log Frequency": "記錄頻率",
++  "Log in to Hugging Face to push your datasets and trained models to the Hub, so you can back them up, share them, or train in the cloud.": "登入 Hugging Face，就能把資料集和訓練好的模型上傳到 Hub，用來備份、分享或在雲端訓練。",
++  "Log in to Hugging Face to set the repository owner.": "登入 Hugging Face 後，會以你的帳號作為擁有者。",
++  "Log in to Hugging Face to use cloud compute": "登入 Hugging Face 才能使用雲端運算",
++  "Logging & Checkpointing": "記錄與檢查點",
++  "Loss": "Loss（損失）",
++  "Lost connection to backend": "和後端的連線中斷了",
++  "MOTORS": "馬達",
++  "Make dataset private": "設為私人資料集",
++  "Make sure to start the calibration with the robot in a middle position — all joints in the middle of their ranges. See the calibration demo below for the correct starting pose.": "開始校準時，手臂要擺在中間位置，每個關節都在可動範圍的中間。正確的起始姿勢請看下面的校準示範。",
++  "Max duration (seconds)": "最長時間（秒）",
++  "Maybe later": "以後再說",
++  "Merge": "合併",
++  "Merge datasets": "合併資料集",
++  "Merge local datasets": "合併本機資料集",
++  "Merged dataset name": "合併後的資料集名稱",
++  "Merged into": "已合併到",
++  "Merging…": "合併中…",
++  "Microphone permission not granted.": "沒有取得麥克風權限。",
++  "Misc": "其他",
++  "Missing Information": "資料不完整",
++  "Missing dataset details": "缺少資料集資訊",
++  "Missing name": "缺少名稱",
++  "Missing port": "缺少連接埠",
++  "More actions": "更多動作",
++  "Motor": "馬達",
++  "Motor discontinuity detected": "偵測到馬達位置跳動",
++  "Move ALL joints through their FULL ranges of motion - from minimum to maximum positions. Ensure each joint moves significantly from its starting position.": "把「所有」關節都轉過「完整」範圍，從最小轉到最大，每個關節都要明顯離開起始位置。",
++  "Move EACH joint through its full range. A check appears next to each joint once its range is wide enough.": "把「每一個」關節都轉到兩端。範圍夠大時，關節旁邊會出現勾勾。",
++  "Move episodes": "移動片段",
++  "Move episodes to another dataset": "把片段移到另一個資料集",
++  "Moving…": "移動中…",
++  "Multiple models available": "有多個模型可以選",
++  "Mute": "靜音",
++  "My imported policy": "我匯入的策略模型",
++  "Needs configuration": "需要設定",
++  "Network error": "網路錯誤",
++  "New episodes are added to": "新的片段會加到",
++  "New to teaching a robot arm? A two-minute guided tour walks you through the whole loop, no jargon required.": "第一次教機器手臂做事嗎？兩分鐘的導覽會帶你走過完整流程，不需要專業術語。",
++  "Next": "下一步",
++  "Next frame (→)": "下一格（→）",
++  "No Configuration": "沒有設定",
++  "No Dataset Information": "沒有資料集資訊",
++  "No Urdf file found": "找不到 URDF 檔",
++  "No action stream": "沒有動作資料",
++  "No active cloud jobs.": "沒有進行中的雲端工作。",
++  "No active local jobs. Start one from the Training page.": "沒有進行中的本機工作。可以到訓練頁開始一個。",
++  "No active recording session": "目前沒有在錄製",
++  "No active teleoperation session": "目前沒有在遙控",
++  "No browser match": "瀏覽器裡找不到對應的攝影機",
++  "No calibration active": "目前沒有在校準",
++  "No camera selected": "還沒選攝影機",
++  "No cameras are configured for this robot.": "這隻手臂還沒有設定攝影機。",
++  "No cameras configured for this robot. Add them during calibration to see live feeds here.": "這隻手臂還沒有設定攝影機。在校準頁新增後，這裡就會顯示即時畫面。",
++  "No cameras configured. Add a camera to get started.": "還沒有設定攝影機。新增一支攝影機開始吧。",
++  "No cameras detected": "沒有偵測到攝影機",
++  "No checkpoints available for this job yet.": "這個工作還沒有檢查點。",
++  "No checkpoints yet — wait for the first save.": "還沒有檢查點，請等第一次存檔。",
++  "No datasets available.": "沒有可用的資料集。",
++  "No datasets in the local LeRobot cache. Record one, or download it from the Hub first.": "本機的 LeRobot 快取裡沒有資料集。先錄一個，或從 Hub 下載。",
++  "No datasets yet. Type a name to create one.": "還沒有資料集。輸入名稱來建立一個。",
++  "No datasets.": "沒有資料集。",
++  "No episodes in this dataset.": "這個資料集沒有片段。",
++  "No frame to capture yet": "還沒有可以擷取的畫面",
++  "No inference is active": "目前沒有在推論",
++  "No local jobs match your search.": "沒有符合搜尋的本機工作。",
++  "No online jobs match your search.": "沒有符合搜尋的雲端工作。",
++  "No recording configuration found.": "找不到錄製設定。",
++  "No recording session is active": "目前沒有在錄製",
++  "No reference saved": "沒有存參考畫面",
++  "No replay is running": "目前沒有在重播",
++  "No robot selected": "還沒選手臂",
++  "No robots yet. Type a name to create one.": "還沒有手臂。輸入名字來建立一個。",
++  "No teleoperation session is active": "目前沒有在遙控",
++  "No thumbnails": "沒有縮圖",
++  "No training logs yet. Start training to see output.": "還沒有訓練紀錄。開始訓練後會顯示在這裡。",
++  "Notifications (F8)": "通知 (F8)",
++  "Number of Episodes": "片段數量",
++  "Number of Workers": "Worker 數量",
++  "Off": "關",
++  "On": "開",
++  "Online jobs (": "雲端工作（",
++  "Only one tab can control the robot at a time. Switch back to the original tab, or take over here — the other tab will lock.": "同一時間只能有一個分頁控制手臂。請切回原本的分頁，或在這裡接手，另一個分頁會被鎖住。",
++  "Only you will be able to access this dataset": "只有你能存取這個資料集",
++  "Oops! Page not found": "找不到這個頁面",
++  "Open Calibration from a robot's gear icon on the Landing page.": "請從首頁手臂旁邊的齒輪圖示進入校準頁。",
++  "Open Calibration from a robot's gear icon on the Landing page. Each robot has its own calibration; running this page directly is not supported.": "請從首頁手臂旁邊的齒輪圖示進入校準頁。每隻手臂各有自己的校準，不能直接打開這一頁。",
++  "Open Hub job page": "打開 Hub 上的工作頁面",
++  "Open LeLab": "打開 LeLab",
++  "Open setup guide": "打開設定說明",
++  "Optimizer": "最佳化器",
++  "Or update manually": "或手動更新",
++  "Overriding the backend can reorder camera indices on macOS.": "在 macOS 上更換後端，可能會改變攝影機的編號順序。",
++  "PREPARING SESSION": "準備中",
++  "Phase time": "這個階段的時間",
++  "Pick a checkpoint and confirm hardware. The selected policy will drive the follower autonomously for the configured duration.": "選一個檢查點並確認硬體。選好的策略模型會在設定的時間內自動控制執行臂。",
++  "Pick a configured robot and dataset parameters for recording.": "選一隻設定好的手臂，並設定錄製參數。",
++  "Pick or name your arm": "選擇或命名你的手臂",
++  "Play / pause (Space)": "播放／暫停（空白鍵）",
++  "Play on robot": "在手臂上播放",
++  "Please complete a recording session first.": "請先完成一次錄製。",
++  "Please enter a dataset name and task description.": "請輸入資料集名稱和任務描述。",
++  "Please enter a task description.": "請輸入任務描述。",
++  "Please select a camera and provide a name.": "請選一支攝影機並取個名字。",
++  "Please start recording from the main page.": "請從首頁開始錄製。",
++  "Please upload a folder containing a .urdf file.": "請上傳含有 .urdf 檔的資料夾。",
++  "Point at a local directory or a Hugging Face repo. It appears as a job you can run inference on.": "指定一個本機資料夾或 Hugging Face 上的模型，它會出現在工作清單，可以拿來推論。",
++  "Policy": "策略模型",
++  "Port *": "連接埠 *",
++  "Port Detected": "已偵測到連接埠",
++  "Port Detected Successfully": "成功偵測到連接埠",
++  "Port Detection": "偵測連接埠",
++  "Port saved": "已儲存連接埠",
++  "Powered by": "技術提供：",
++  "Preparing 3D visualization": "正在準備 3D 畫面",
++  "Preparing Camera Resources": "正在準備攝影機",
++  "Press": "按",
++  "Press the play button on a finished model to let the robot attempt the task on its own, using what it learned from your episodes. This is the payoff of the whole loop.": "在訓練好的模型上按播放鍵，手臂就會用從你錄的片段學到的東西，自己試著完成任務。這就是整個流程的成果。",
++  "Preview failed": "預覽失敗",
++  "Preview paused": "預覽已暫停",
++  "Previous": "上一步",
++  "Previous frame (←)": "上一格（←）",
++  "Progress": "進度",
++  "Queued": "排隊中",
++  "REC": "錄",
++  "RESET — GET READY": "歸位：準備下一段",
++  "Random Seed": "隨機種子",
++  "Range complete": "範圍完成",
++  "Range recording completed": "範圍記錄完成",
++  "Re-record": "重錄",
++  "Re-record episode requested successfully": "已要求重錄這個片段",
++  "Re-recording Episode": "重錄這個片段",
++  "Reading dataset…": "正在讀取資料集…",
++  "Reading policy config…": "正在讀取策略模型設定…",
++  "Ready": "就緒",
++  "Record": "錄製",
++  "Record More Episodes": "錄更多片段",
++  "Record a dataset": "錄製資料集",
++  "Record more": "再錄",
++  "Recording Failed": "錄製失敗",
++  "Recording Interrupted": "錄製中斷",
++  "Recording Ranges": "記錄範圍中",
++  "Recording Started": "已開始錄製",
++  "Recording complete — redirecting to upload…": "錄製完成，正在前往上傳頁…",
++  "Recording is already active": "已經在錄製",
++  "Recording is currently active. Stop it first.": "正在錄製，請先停止。",
++  "Recording started successfully": "已開始錄製",
++  "Recording stop requested successfully": "已要求停止錄製",
++  "Recording with": "使用手臂：",
++  "Reference overlay opacity": "參考畫面的透明度",
++  "Refresh jobs": "重新整理工作清單",
++  "Relative Exclude Joints": "不用相對動作的關節",
++  "Release to upload your robot model": "放開就會上傳手臂模型",
++  "Remove this imported model? The source files are left untouched.": "要移除這個匯入的模型嗎？原始檔案不會被動到。",
++  "Replace reference": "替換參考畫面",
++  "Replay": "重播",
++  "Replay failed": "重播失敗",
++  "Replay is currently active. Stop it first.": "正在重播，請先停止。",
++  "Replay started": "已開始重播",
++  "Replay stopped": "已停止重播",
++  "Repository ID:": "ID：",
++  "Rescan for cameras": "重新掃描攝影機",
++  "Rescan for cameras (e.g. after plugging in a new USB camera)": "重新掃描攝影機（例如剛插上新的 USB 攝影機）",
++  "Reset duration (seconds)": "歸位時間（秒）",
++  "Reset time before next episode": "下一段開始前的歸位時間",
++  "Resume from Checkpoint": "從檢查點繼續",
++  "Retry camera feeds": "重新連接攝影機畫面",
++  "Retry camera feeds (e.g. after reconnecting a camera)": "重新連接攝影機畫面（例如攝影機重新插上後）",
++  "Return to Home": "回首頁",
++  "Robot": "手臂",
++  "Robot (Follower)": "執行臂（Follower）",
++  "Robot Configuration": "手臂設定",
++  "Robot calibration": "手臂校準狀態",
++  "Robot name cannot be empty.": "手臂名稱不能空白。",
++  "Robot names cannot contain '/', '\\', or '..'": "手臂名稱不能包含 /、\\ 或 ..",
++  "Robot not found": "找不到這隻手臂",
++  "Rotation": "旋轉角度",
++  "Run": "執行",
++  "Run Configuration": "訓練設定",
++  "Run completed.": "執行完成。",
++  "Run inference": "執行推論",
++  "Run inference with this checkpoint": "用這個檢查點執行推論",
++  "Run on robot": "在手臂上執行",
++  "Run parameters": "執行參數",
++  "Run training on": "訓練位置",
++  "Run your policy": "執行你的策略模型",
++  "Running": "執行中",
++  "Running on": "執行位置：",
++  "SENSORS": "感測器",
++  "SESSION": "工作階段",
++  "SESSION COMPLETE": "錄製完成",
++  "SETTING UP": "設定中",
++  "SPACE / →": "空白鍵 / →",
++  "Save Calibration": "儲存校準",
++  "Save Checkpoints": "儲存檢查點",
++  "Save Frequency": "存檔頻率",
++  "Save task": "儲存任務",
++  "Save token": "儲存權杖",
++  "Saved episodes are kept. The session will end and you'll be taken to the upload page.": "已存好的片段會保留。錄製會結束，並帶你到上傳頁。",
++  "Saved locally as": "已存在本機，名稱：",
++  "Saving tasks…": "正在儲存任務…",
++  "Saving…": "儲存中…",
++  "Scheduling": "排程中",
++  "Scrub episode": "拖曳瀏覽片段",
++  "Search datasets…": "搜尋資料集…",
++  "Search jobs": "搜尋工作",
++  "Search or type new name...": "搜尋或輸入新名稱…",
++  "Search, type a new name, or org/name…": "搜尋、輸入新名稱，或 組織/名稱…",
++  "See what changed": "看更新了什麼",
++  "Select a camera": "選擇攝影機",
++  "Select a dataset to browse its episodes.": "選一個資料集來瀏覽它的片段。",
++  "Select a dataset…": "選擇資料集…",
++  "Select a hardware flavor": "選擇硬體規格",
++  "Select a robot or type a new name": "選擇手臂，或輸入新名字",
++  "Select a valid rotation.": "請選擇有效的旋轉角度。",
++  "Select an existing calibration file": "選擇現有的校準檔",
++  "Select and configure a robot on the Landing page before recording.": "錄製前，請先在首頁選好並設定手臂。",
++  "Select and configure a robot on the Landing page first.": "請先在首頁選好並設定手臂。",
++  "Select and copy the command manually.": "請手動選取並複製指令。",
++  "Select at least one additional dataset.": "請再多選至少一個資料集。",
++  "Select camera": "選擇攝影機",
++  "Select checkpoint": "選擇檢查點",
++  "Select device type": "選擇裝置類型",
++  "Select or create a dataset…": "選擇或建立資料集…",
++  "Select target": "選擇目標",
++  "Select the command and copy manually.": "請手動選取並複製指令。",
++  "Selected camera is not available.": "選的攝影機無法使用。",
++  "Send": "送出",
++  "Sensor": "感測器",
++  "Session Duration:": "錄製時間：",
++  "Set reference": "設為參考畫面",
++  "Set the device's serial port before starting.": "開始前請先設定裝置的連接埠。",
++  "Share on the Hub (optional)": "分享到 Hub（選填）",
++  "Show": "顯示",
++  "Show Camera": "顯示攝影機",
++  "Sign in with Hugging Face to see your cloud jobs.": "登入 Hugging Face 才能看到雲端工作。",
++  "Signed in, runs sync to a private lelab-trackio Space on your account by default.": "登入後，訓練紀錄預設會同步到你帳號下一個私人的 lelab-trackio Space。",
++  "Skip": "跳過",
++  "Skip Upload": "跳過上傳",
++  "Source datasets": "來源資料集",
++  "Start Calibration": "開始校準",
++  "Start Inference": "開始推論",
++  "Start Next Episode": "開始下一段",
++  "Start Recording": "開始錄製",
++  "Start Training": "開始訓練",
++  "Start here. Choose an existing robot, or type a new name to create one. Everything else in the tour hangs off the arm you select.": "從這裡開始。選一隻已有的手臂，或輸入新名字建立一隻。導覽裡的其他步驟都以你選的手臂為主。",
++  "Start inference": "開始推論",
++  "Start the guided tour": "開始導覽",
++  "Start training": "開始訓練",
++  "Starting recording session...": "正在開始錄製…",
++  "Starting…": "啟動中…",
++  "Status": "狀態",
++  "Status:": "狀態：",
++  "Step": "步驟",
++  "Step Completed": "這一步完成了",
++  "Step Failed": "這一步失敗了",
++  "Stop": "停止",
++  "Stop failed": "停止失敗",
++  "Stop inference": "停止推論",
++  "Stop inference?": "要停止推論嗎？",
++  "Stop job": "停止工作",
++  "Stop recording": "停止錄製",
++  "Stop recording?": "要停止錄製嗎？",
++  "Stop robot": "停止手臂",
++  "Stop the recording before editing a dataset": "編輯資料集前請先停止錄製",
++  "Stop this run?": "要停止這次執行嗎？",
++  "Stopping": "停止中",
++  "Stopping calibration...": "正在停止校準…",
++  "Stopping recording": "正在停止錄製",
++  "Stopping session…": "正在停止…",
++  "Stopping…": "停止中…",
++  "Streaming video encoding": "即時影片編碼",
++  "Successfully Uploaded!": "上傳成功！",
++  "Suggestions": "建議",
++  "Switched to default model": "已切換到預設模型",
++  "Tags (comma-separated)": "標籤（以逗號分隔）",
++  "Tags help others discover your dataset on HuggingFace Hub": "標籤可以幫別人在 Hugging Face Hub 找到你的資料集",
++  "Take the tour": "開始導覽",
++  "Task": "任務",
++  "Task Description *": "任務描述 *",
++  "Task description": "任務描述",
++  "Task edit status": "任務修改狀態",
++  "Task not saved": "任務沒有儲存",
++  "Task saved locally only": "任務只存在本機",
++  "Task:": "任務：",
++  "Tasks saved": "已儲存任務",
++  "Teleoperation": "遙控",
++  "Teleoperation Started": "已開始遙控",
++  "Teleoperation is already active": "遙控已經在進行",
++  "Teleoperation is currently active. Stop it first.": "正在遙控，請先停止。",
++  "Teleoperation started successfully": "已開始遙控",
++  "Teleoperation stopped": "已停止遙控",
++  "Teleoperation stopped successfully": "已停止遙控",
++  "Teleoperator (Leader)": "主控臂（Leader）",
++  "Tell the robot what to do...": "告訴手臂要做什麼…",
++  "That's the whole loop": "這就是完整流程",
++  "The Hub copy is updated too.": "Hub 上的副本也一起更新了。",
++  "The arm was disconnected cleanly when you left the page.": "離開頁面時，手臂已正常斷開連線。",
++  "The arm was disconnected cleanly.": "手臂已正常斷開連線。",
++  "The default ARM100 robot model is now displayed.": "現在顯示的是預設的 ARM100 手臂模型。",
++  "The episodes leave": "這些片段會離開",
++  "The follower will hold its current pose. You can launch another run from the job tile.": "執行臂會停在目前的姿勢。可以從工作卡片再執行一次。",
++  "The recording session failed to start.": "錄製無法開始。",
++  "The replay has not released the arm yet": "重播還沒有放開手臂",
++  "The robot may still be recording. Try again, or use Stop recording from the menu.": "手臂可能還在錄製。請再試一次，或從選單按「停止錄製」。",
++  "The task is the instruction a policy is trained on, saved with each episode of": "任務是策略模型訓練時用的指令，會和每個片段一起存在",
++  "These are the cameras set up for this robot. To add or change a camera, configure it on the Calibration page. Save a reference frame to see it as a ghost over the live preview and realign the rig next session.": "這些是這隻手臂設定的攝影機。要新增或修改，請到校準頁設定。存一張參考畫面，它會半透明疊在即時畫面上，下次就能把攝影機擺回同樣的位置。",
++  "This camera is already in the configuration.": "這支攝影機已經在設定裡了。",
++  "This deletes the robot config file from disk. Calibration files are not removed. This cannot be undone.": "這會從硬碟刪除手臂設定檔，校準檔不會被刪除。刪除後無法復原。",
++  "This episode": "這個片段",
++  "This episode has no camera videos on disk.": "這個片段在硬碟上沒有攝影機影片。",
++  "This install can't auto-update (editable or non-git). Update it the way you installed it.": "這個安裝方式不能自動更新（開發模式或不是從 git 安裝）。請用原本安裝的方式更新。",
++  "This is a plugin policy: its package must be installed alongside lelab, or the run will fail to load the policy.": "這是外掛的策略模型：要和 LeLab 一起安裝它的套件，不然會無法載入。",
++  "This permanently removes": "這會永久刪除",
++  "This policy doesn't use cameras.": "這個策略模型不用攝影機。",
++  "This policy is language-conditioned (": "這個策略模型會依照文字指令動作（",
++  "This quick tour walks you from a fresh setup to a robot that runs a policy you trained yourself: calibrate, record, train, run. It takes about two minutes, and you can leave anytime with Esc.": "這個簡短導覽帶你從剛裝好，一路到手臂執行你自己訓練的策略模型：校準、錄製、訓練、執行。大約兩分鐘，隨時可以按 Esc 離開。",
++  "Timed out": "逾時",
++  "Tour": "導覽",
++  "Track with Trackio": "用 Trackio 記錄",
++  "Trackio Project Name": "Trackio 專案名稱",
++  "Trackio Space (optional)": "Trackio Space（選填）",
++  "Train": "訓練",
++  "Train a policy": "訓練策略模型",
++  "Training": "訓練",
++  "Training Extra Not Installed": "沒有安裝訓練需要的套件",
++  "Training Logs": "訓練紀錄",
++  "Training Started": "已開始訓練",
++  "Training Steps": "訓練步數",
++  "Training a": "要訓練",
++  "Training requires the": "訓練需要",
++  "Training starting…": "訓練啟動中…",
++  "Try Again": "再試一次",
++  "Try again": "再試一次",
++  "Try teleoperation (optional)": "試試遙控（選做）",
++  "Trying alternative model...": "正在嘗試另一個模型…",
++  "Turn cameras on or off": "開關攝影機",
++  "Turn cameras on to scan for connected devices and preview them. The browser may briefly open a camera to read device labels, and configured cameras stay active while previews are visible; your browser will ask for camera permission. Nothing is recorded.": "打開攝影機就會掃描已連接的裝置並預覽。瀏覽器可能會短暫打開攝影機讀取裝置名稱，預覽顯示時設定好的攝影機會保持開啟；瀏覽器會詢問攝影機權限。不會錄下任何東西。",
++  "Turn on to watch your cameras while you teleoperate.": "打開就能在遙控時看攝影機畫面。",
++  "Turn your recorded episodes into a policy the robot can run. ACT is fast and a great first choice; SmolVLA is a larger vision-language model. You can train on your own GPU, or rent one in the cloud with a Hugging Face login.": "把錄好的片段訓練成手臂能執行的策略模型。ACT 速度快，很適合第一次用；SmolVLA 是比較大的視覺語言模型。可以用自己的 GPU 訓練，或登入 Hugging Face 租用雲端 GPU。",
++  "Type": "類型",
++  "Type:": "類型：",
++  "Unknown": "未知",
++  "Unknown error": "未知錯誤",
++  "Unmute": "取消靜音",
++  "Unplug the": "拔掉",
++  "Untracked (": "未追蹤（",
++  "Update command copied to clipboard.": "已複製更新指令。",
++  "Update failed": "更新失敗",
++  "Update failed. See the output, or run the command manually.": "更新失敗。請看輸出訊息，或手動執行指令。",
++  "Update now": "立即更新",
++  "Update to get the latest fixes and features 🤗.": "更新以取得最新的修正和功能 🤗。",
++  "Updated": "已更新",
++  "Updated. Restart lelab to apply the new version.": "已更新。重新啟動 lelab 就會套用新版本。",
++  "Updating…": "更新中…",
++  "Upload": "上傳",
++  "Upload Complete": "上傳完成",
++  "Upload Configuration": "上傳設定",
++  "Upload Failed": "上傳失敗",
++  "Upload Skipped": "已跳過上傳",
++  "Upload Successful!": "上傳成功！",
++  "Upload to HuggingFace Hub": "上傳到 Hugging Face Hub",
++  "Uploaded": "已上傳",
++  "Uploading to Hub...": "正在上傳到 Hub…",
++  "Uploads, training, and replay-from-Hub require a logged-in HF CLI. Run this in a terminal:": "上傳、訓練、從 Hub 重播都需要先登入 Hugging Face CLI。請在終端機執行：",
++  "Urdf model loaded successfully": "URDF 模型載入成功",
++  "Use": "使用",
++  "Use Automatic Mixed Precision": "使用自動混合精度",
++  "Use Policy Training Preset": "使用策略模型的訓練預設值",
++  "Use Relative Actions": "使用相對動作",
++  "Use a name without \"/\"": "名稱不能有 /",
++  "Use bfloat16": "使用 bfloat16",
++  "Use custom repo ID…": "使用自訂 ID…",
++  "Use episode numbers from 0 to": "片段編號請用 0 到",
++  "Use policy default": "使用策略模型的預設值",
++  "Use this tab": "使用這個分頁",
++  "View metrics ↗": "查看指標 ↗",
++  "View on Hub": "在 Hub 上查看",
++  "View on Hub ↗": "在 Hub 上查看 ↗",
++  "View on Hugging Face Hub": "在 Hugging Face Hub 上查看",
++  "View on HuggingFace Hub": "在 Hugging Face Hub 上查看",
++  "View on the Hub": "在 Hub 上查看",
++  "Voice Activity": "語音活動",
++  "Voice Command": "語音指令",
++  "Voice commands active": "語音指令已開啟",
++  "Voice commands muted": "語音指令已靜音",
++  "Waiting for first metric tick…": "等待第一筆指標…",
++  "Warning": "警告",
++  "Watch it train": "看它訓練",
++  "Weight Decay": "權重衰減",
++  "Welcome to LeLab": "歡迎使用 LeLab",
++  "Will be saved as": "會存成",
++  "Write": "Write（寫入）",
++  "You'll be asked to grant camera access.": "瀏覽器會詢問攝影機權限。",
++  "You're": "你目前",
++  "You're not logged into the Hugging Face Hub. Run `hf auth login` in your terminal, then retry.": "還沒登入 Hugging Face Hub。請在終端機執行 hf auth login 再試一次。",
++  "Your browser does not support the video tag.": "你的瀏覽器不支援播放影片。",
++  "Your dataset has been uploaded to HuggingFace Hub and is now available for training and sharing.": "資料集已上傳到 Hugging Face Hub，可以拿來訓練和分享了。",
++  "Your training job shows up here with live progress. Once it has a usable checkpoint, a green play button appears on the model so you can run it.": "訓練工作會出現在這裡，並即時顯示進度。有可用的檢查點後，模型上會出現綠色播放鍵，就能執行它。",
++  "access (so trained policies can upload to your account), then paste it below.": "權限（訓練好的模型才能上傳到你的帳號），再貼到下面。",
++  "after its own episodes. It must have the same fps, features and robot type.": "原本的片段後面。FPS、特徵和手臂類型都必須相同。",
++  "again.": "再試一次。",
++  "alternative model": "替代模型",
++  "and go to a new or an existing local dataset. The episodes left in": "，移到新的或現有的本機資料集。留在",
++  "are renumbered.": "的片段會重新編號。",
++  "arm": "",
++  "camera": "攝影機",
++  "episodes, not only episode": "所有片段，不只是片段",
++  "follower": "執行臂",
++  "frame": "影格",
++  "from your local cache. This action cannot be undone.": "，從本機快取刪除。刪除後無法復原。",
++  "in the terminal running": "在執行這個程式的終端機：",
++  "is included. Select at least one more local dataset. Their source files stay unchanged; the merged dataset is saved locally.": "已包含在內。請再多選至少一個本機資料集。來源檔案不會被更動，合併後的資料集存在本機。",
++  "is missing a calibration. Configure it before recording.": "缺少校準。錄製前請先設定。",
++  "is missing a calibration. Configure it before running inference.": "缺少校準。推論前請先設定。",
++  "leader": "主控臂",
++  "log in to HF": "登入 Hugging Face",
++  "of": "／",
++  "on Hub": "在 Hub 上",
++  "only — other characters become": "，其他字元會變成",
++  "package, which isn't installed in this environment. Install it to enable the Training page.": "套件，這個環境還沒安裝。安裝後才能使用訓練頁。",
++  "policy needs": "策略模型需要",
++  "policy:": "策略模型：",
++  "private": "私人",
++  "robot": "執行臂",
++  "robot arm from USB. The port will be detected automatically.": "手臂的 USB，系統會自動偵測連接埠。",
++  "saved to this robot.": "已存到這隻手臂的設定。",
++  "so far.": "到目前為止。",
++  "starting…": "啟動中…",
++  "teleop": "主控臂",
++  "to confirm": "確認",
++  "to enable": "以啟用",
++  "to train": "來訓練",
++  "total frames": "總影格數",
++  "unknown error": "未知錯誤",
++  "warming up…": "暖機中…",
++  "with": "使用",
++  "° clockwise": "° 順時針",
++  "· already added": "· 已經新增過",
++  "· updated": "· 已更新",
++  "• Uploaded datasets can be used for training models and sharing with the community": "• 上傳的資料集可以拿來訓練模型，也能分享給社群",
++  "• You can always upload manually later using the HuggingFace CLI": "• 之後隨時可以用 Hugging Face CLI 手動上傳",
++  "• You need to be logged in to HuggingFace CLI on the server": "• 執行 LeLab 的電腦要先登入 Hugging Face CLI",
++  "• Your dataset will be uploaded to HuggingFace Hub for sharing and collaboration": "• 資料集會上傳到 Hugging Face Hub，方便分享和協作"
++ },
++ "patterns": [
++  [
++   "^Create \"(.+)\"$",
++   "建立「$1」"
++  ],
++  [
++   "^Calibrate \"(.+)\"$",
++   "校準「$1」"
++  ],
++  [
++   "^A robot named \"(.+)\" already exists\\. Pick it from the dropdown or choose a different name\\.$",
++   "已經有叫「$1」的手臂。請從選單選它，或換一個名字。"
++  ],
++  [
++   "^Calibration started for (.+)$",
++   "已開始校準：$1"
++  ],
++  [
++   "^Starting calibration for (.+)$",
++   "開始校準：$1"
++  ],
++  [
++   "^Calibration failed: (.+)$",
++   "校準失敗：$1"
++  ],
++  [
++   "^Started teleoperation for (.+)\\.$",
++   "已開始遙控 $1。"
++  ],
++  [
++   "^Episode (\\d+) of (\\d+)$",
++   "第 $1 段，共 $2 段"
++  ],
++  [
++   "^RECORDING EPISODE (.+)$",
++   "正在錄製第 $1 段"
++  ],
++  [
++   "^Episode (\\d+) will be re-recorded\\.$",
++   "第 $1 段會重新錄製。"
++  ],
++  [
++   "^Episode (\\d+) recording time$",
++   "第 $1 段的錄製時間"
++  ],
++  [
++   "^Started recording (\\d+) episodes$",
++   "開始錄製 $1 段"
++  ],
++  [
++   "^Total session time (.+)$",
++   "總錄製時間 $1"
++  ],
++  [
++   "^(.+) now uses (.+)\\.$",
++   "$1 現在使用 $2。"
++  ],
++  [
++   "^(.+) port detected: (.+)$",
++   "偵測到$1的連接埠：$2"
++  ],
++  [
++   "^Find (.+) port automatically$",
++   "自動找出$1的連接埠"
++  ],
++  [
++   "^(\\d+)s ago$",
++   "$1 秒前"
++  ],
++  [
++   "^(\\d+)m ago$",
++   "$1 分鐘前"
++  ],
++  [
++   "^(\\d+)h ago$",
++   "$1 小時前"
++  ],
++  [
++   "^(\\d+)d ago$",
++   "$1 天前"
++  ],
++  [
++   "^(\\d+) episodes are ready to browse\\.$",
++   "$1 個片段可以瀏覽了。"
++  ],
++  [
++   "^(.+) has been added to the configuration\\.$",
++   "已把 $1 加入設定。"
++  ],
++  [
++   "^(.+) has been removed from disk and the Hub\\.$",
++   "已從硬碟和 Hub 刪除 $1。"
++  ],
++  [
++   "^(.+) has been removed from disk\\.$",
++   "已從硬碟刪除 $1。"
++  ],
++  [
++   "^Dataset (.+) has been uploaded to HuggingFace Hub\\.$",
++   "資料集 $1 已上傳到 Hugging Face Hub。"
++  ],
++  [
++   "^Dataset (.+) uploaded successfully to HuggingFace Hub$",
++   "資料集 $1 已上傳到 Hugging Face Hub"
++  ],
++  [
++   "^Error: (.+)$",
++   "錯誤：$1"
++  ],
++  [
++   "^Could not reach the backend: (.+)$",
++   "無法連線到後端：$1"
++  ],
++  [
++   "^Move (\\d+) episodes?$",
++   "移動 $1 個片段"
++  ],
++  [
++   "^Edit the task of episode (\\d+)$",
++   "編輯第 $1 段的任務"
++  ],
++  [
++   "^Replay this episode on (.+)$",
++   "在 $1 上重播這個片段"
++  ],
++  [
++   "^Remove (.+)$",
++   "移除 $1"
++  ],
++  [
++   "^(.+) needs an extra package$",
++   "$1 需要額外的套件"
++  ],
++  [
++   "^(\\d+) commits? behind$",
++   "落後 $1 個版本"
++  ],
++  [
++   "^Loading model: (.+)$",
++   "正在載入模型：$1"
++  ],
++  [
++   "^Model: (.+)$",
++   "模型：$1"
++  ],
++  [
++   "^Camera (\\d+)$",
++   "攝影機 $1"
++  ],
++  [
++   "^Frame (\\d+)$",
++   "第 $1 格"
++  ],
++  [
++   "^(.+) live feed$",
++   "$1 即時畫面"
++  ],
++  [
++   "^(.+) training$",
++   "$1 訓練"
++  ],
++  [
++   "^Port (.+) saved for (.+)$",
++   "已為$2儲存連接埠 $1"
++  ],
++  [
++   "^Configuration saved for (.+)$",
++   "已儲存$1的設定"
++  ],
++  [
++   "^Failed to start recording: (.+)$",
++   "無法開始錄製：$1"
++  ],
++  [
++   "^Failed to start inference: (.+)$",
++   "無法開始推論：$1"
++  ],
++  [
++   "^Failed to upload dataset: (.+)$",
++   "上傳資料集失敗：$1"
++  ],
++  [
++   "^Failed to delete dataset: (.+)$",
++   "刪除資料集失敗：$1"
++  ],
++  [
++   "^Update failed: (.+)$",
++   "更新失敗：$1"
++  ],
++  [
++   "^Could not read dataset: (.+)$",
++   "無法讀取資料集：$1"
++  ],
++  [
++   "^Releasing (\\d+) camera stream\\(s\\) for recording\\.\\.\\.$",
++   "正在釋放 $1 個攝影機畫面以開始錄製…"
++  ],
++  [
++   "^(\\d+) episode\\(s\\) were saved before the session failed: (.+)$",
++   "錄製失敗前已存好 $1 個片段：$2"
++  ],
++  [
++   "^(.+) moved to (.+), (\\d+) left in (.+)\\.$",
++   "已把 $1 移到 $2，$4 還剩 $3 個。"
++  ],
++  [
++   "^(.+) Correct the camera settings in Calibration\\.$",
++   "$1 請到校準頁修正攝影機設定。"
++  ],
++  [
++   "^Rollout past duration by (.+)s\\. Stopping\\.$",
++   "已超過設定時間 $1 秒，正在停止。"
++  ]
++ ],
++ "ignore": [
++  "&quot; in viewer",
++  "(prefers-color-scheme: dark)",
++  "/dev/tty.usbmodem...",
++  "/path/to/pretrained_model or user/my-policy",
++  "0 0 0 9999px rgba(0,0,0,0.6)",
++  "1px solid #1f2937",
++  "1px solid #374151",
++  "1px solid #475569",
++  "4px 8px",
++  "AbortError",
++  "Adam",
++  "AdamW",
++  "Alert",
++  "AlertDescription",
++  "AlertDialogFooter",
++  "AlertDialogHeader",
++  "AlertTitle",
++  "ApiError",
++  "Backend returned {0} for /stop-recording",
++  "Button",
++  "CPU",
++  "Card",
++  "CardContent",
++  "CardDescription",
++  "CardFooter",
++  "CardHeader",
++  "CardTitle",
++  "CommandShortcut",
++  "Ctrl+C",
++  "DialogFooter",
++  "DialogHeader",
++  "Discord",
++  "DropdownMenuShortcut",
++  "EO-1",
++  "Evo-1",
++  "Exit code {0}. See {1}.",
++  "FOURCC:",
++  "FPS",
++  "FPS:",
++  "Failed to download zip: {0}",
++  "Failed to fetch default Urdf: {0}",
++  "FastWAM",
++  "First model failed to load. Trying {0}",
++  "GR00T N1.7",
++  "Get inference status",
++  "Get job",
++  "Get job log file",
++  "Get job logs",
++  "Get job metrics history",
++  "Ghost",
++  "GitHub",
++  "HTTP {0}",
++  "HTTP {0}, no robot record",
++  "Input",
++  "Install request failed ({0})",
++  "Install request failed: {0}",
++  "Job {0}…",
++  "LeLab",
++  "LeLab Logo",
++  "LeRobot",
++  "LingBot-VA",
++  "List checkpoints",
++  "List datasets",
++  "List episodes",
++  "List hub jobs",
++  "List jobs",
++  "List local datasets",
++  "List runner hardware",
++  "Load episode",
++  "Load motion trace",
++  "Load policy config",
++  "Load reference failed: {0}",
++  "Load thumbnails",
++  "MolmoAct2",
++  "Multi Adam",
++  "Multi-Task DiT",
++  "NotReadableError",
++  "NumberInput",
++  "Open &quot;",
++  "PI0",
++  "PI0 Fast",
++  "PI0.5",
++  "SGD",
++  "Save reference failed: {0}",
++  "SmolVLA",
++  "TD-MPC",
++  "The Hub copy was not updated: {0}.",
++  "The backend returned {0} for /recording-status. Check the server log.",
++  "Trackio",
++  "Unsupported file format: {0}",
++  "VLA-JEPA",
++  "VQ-BeT",
++  "WALL-OSS",
++  "X-VLA",
++  "accelerate",
++  "combined_pick_place",
++  "e.g., pick up the red block",
++  "e.g., pick up the red block and place it on the blue square",
++  "e.g., workspace_cam",
++  "ended {0}",
++  "gripper",
++  "group-[.toast]:text-muted-foreground",
++  "hf auth login",
++  "hf_...",
++  "huggingface.co/settings/tokens",
++  "lelab",
++  "lerobot",
++  "local/",
++  "my_dataset",
++  "new_embodiment",
++  "nvidia/GR00T-N1.7-3B",
++  "org/dataset-name",
++  "pip install accelerate",
++  "robotics, lerobot, manipulation",
++  "started {0}",
++  "step {0}",
++  "translate(-50%, -50%)",
++  "translate(-50%, -50%) rotate({0}deg)",
++  "useApi must be used within an ApiProvider",
++  "useHfAuth must be used within an HfAuthProvider",
++  "useOnboarding must be used within an OnboardingProvider",
++  "useUrdf must be used within a UrdfProvider",
++  "uv tool install --with-executables-from huggingface_hub git+https://github.com/huggingface/leLab.git && lelab",
++  "ws$1:",
++  "x",
++  "your-username/lelab-trackio",
++  "{0} / {1}",
++  "{0} failed: {1}",
++  "{0} {1}",
++  "{0} · {1} · {2}",
++  "{0}: {1}",
++  "{0}h {1}m {2}s",
++  "{0}m {1}s",
++  "{0}×{1} · {2}° clockwise",
++  "| Device:",
++  "· {0}",
++  "· {0} fps",
++  "— {0}"
++ ]
++}
+diff --git a/frontend/src/main.tsx b/frontend/src/main.tsx
+index 719464e..fea5bd0 100644
+--- a/frontend/src/main.tsx
++++ b/frontend/src/main.tsx
+@@ -1,3 +1,4 @@
++import './i18n' // interface translations (中文 / EN toggle), see src/i18n/README.md
+ import { createRoot } from 'react-dom/client'
+ import App from './App.tsx'
+ import './index.css'

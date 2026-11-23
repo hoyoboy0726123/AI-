@@ -1,0 +1,13 @@
+feat(i18n): add Traditional Chinese interface with a 中文/EN toggle
+
+Adds a zh-TW translation layer that works on the rendered page, so no
+component changes: a MutationObserver swaps text nodes and UI
+attributes found in src/i18n/zh-TW.json and follows React re-renders.
+A floating 中文/EN button switches languages and the choice is saved in
+localStorage. Browsers set to Traditional Chinese start in Chinese;
+everyone else keeps English.
+
+npm run i18n:check lists UI strings missing from the dictionary, using
+the TypeScript parser that is already a devDependency.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

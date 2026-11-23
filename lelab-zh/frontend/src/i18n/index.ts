@@ -12,7 +12,8 @@ function initialLanguage(): Lang {
   } catch {
     // Storage can be unavailable (private mode); fall through to the browser language.
   }
-  return /^zh\b/i.test(navigator.language || "") ? "zh-TW" : "en";
+  // Traditional Chinese browsers start in Chinese; everyone else starts in English and can switch.
+  return /^zh-(TW|HK|MO|Hant)\b/i.test(navigator.language || "") ? "zh-TW" : "en";
 }
 
 function saveLanguage(lang: Lang): void {
