@@ -219,6 +219,7 @@
   "Frames": "影格",
   "Get Started with LeLab": "開始使用 LeLab",
   "Getting ready…": "準備中…",
+  "Ghost": "疊影",
   "Gradient Clipping": "梯度裁剪",
   "Guided tour": "導覽",
   "HF not configured": "尚未登入 Hugging Face",
@@ -489,7 +490,7 @@
   "Run training on": "訓練位置",
   "Run your policy": "執行你的策略模型",
   "Running": "執行中",
-  "Running on": "執行位置：",
+  "Running on": "使用手臂：",
   "SENSORS": "感測器",
   "SESSION": "工作階段",
   "SESSION COMPLETE": "錄製完成",
@@ -959,6 +960,34 @@
   [
    "^Rollout past duration by (.+)s\\. Stopping\\.$",
    "已超過設定時間 $1 秒，正在停止。"
+  ],
+  [
+   "^started (.+)$",
+   "開始於 $1"
+  ],
+  [
+   "^(\\d+)×(\\d+) · (\\d+)° clockwise · (\\d+) fps$",
+   "$1×$2 · 順時針 $3° · $4 fps"
+  ],
+  [
+   "^(\\d+)×(\\d+) · (\\d+)° clockwise$",
+   "$1×$2 · 順時針 $3°"
+  ],
+  [
+   "^ended (.+)$",
+   "結束於 $1"
+  ],
+  [
+   "^step (\\d+)$",
+   "第 $1 步"
+  ],
+  [
+   "^(\\d+)h (\\d+)m (\\d+)s$",
+   "$1 小時 $2 分 $3 秒"
+  ],
+  [
+   "^(\\d+)m (\\d+)s$",
+   "$1 分 $2 秒"
   ]
  ],
  "ignore": [
@@ -1011,7 +1040,6 @@
   "Get job log file",
   "Get job logs",
   "Get job metrics history",
-  "Ghost",
   "GitHub",
   "HTTP {0}",
   "HTTP {0}, no robot record",
@@ -1061,7 +1089,6 @@
   "e.g., pick up the red block",
   "e.g., pick up the red block and place it on the blue square",
   "e.g., workspace_cam",
-  "ended {0}",
   "gripper",
   "group-[.toast]:text-muted-foreground",
   "hf auth login",
@@ -1076,8 +1103,6 @@
   "org/dataset-name",
   "pip install accelerate",
   "robotics, lerobot, manipulation",
-  "started {0}",
-  "step {0}",
   "translate(-50%, -50%)",
   "translate(-50%, -50%) rotate({0}deg)",
   "useApi must be used within an ApiProvider",
@@ -1093,9 +1118,6 @@
   "{0} {1}",
   "{0} · {1} · {2}",
   "{0}: {1}",
-  "{0}h {1}m {2}s",
-  "{0}m {1}s",
-  "{0}×{1} · {2}° clockwise",
   "| Device:",
   "· {0}",
   "· {0} fps",

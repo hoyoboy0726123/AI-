@@ -31,9 +31,9 @@
         <li><strong>安裝 LeLab，建議裝中文版。</strong>這一步要用到 git。Windows 請在 Miniforge Prompt 先執行 <code>conda activate lerobot</code>，A-05 裝的 git 就在這個環境裡。第一次安裝會下載 PyTorch 等大型套件，要等一段時間，硬碟也要留幾 GB。兩個版本選一個裝：</li>
       </ol>
       <div class="codeblk"><div class="cap"><span>中文版（推薦）：多了中文／EN 切換按鈕</span><button class="btn" type="button" data-copy>複製</button></div><pre>git clone -b claude/project-review-sos0lj --single-branch https://github.com/hoyoboy0726123/AI-.git
-uv tool install --force --with-executables-from huggingface_hub ./AI-/lelab-zh</pre></div>
+uv tool install --force --torch-backend auto --with-executables-from huggingface_hub ./AI-/lelab-zh</pre></div>
       <div class="codeblk"><div class="cap"><span>官方英文版</span><button class="btn" type="button" data-copy>複製</button></div><pre>uv tool install --with-executables-from huggingface_hub git+https://github.com/huggingface/leLab.git</pre></div>
-      <p class="src">中文版是官方 LeLab 加上我們做的中文切換外掛，放在本手冊同一個 repo 的 <code>lelab-zh</code> 資料夾，官方原始碼一行都沒改。<code>--with-executables-from huggingface_hub</code> 會一起裝好 <code>hf</code> 指令，之後登入 Hugging Face 會用到。</p>
+      <p class="src">中文版是官方 LeLab 加上我們做的中文切換外掛，放在本手冊同一個 repo 的 <code>lelab-zh</code> 資料夾，官方原始碼一行都沒改。<code>--torch-backend auto</code> 會依電腦的 NVIDIA 顯示卡自動裝對應的 PyTorch，之後才能用 GPU 訓練（見 <a href="#t04">T-04</a>）。<code>--with-executables-from huggingface_hub</code> 會一起裝好 <code>hf</code> 指令，之後登入 Hugging Face 會用到。</p>
       <ol class="do" start="3">
         <li><strong>啟動。</strong>以後每次要用，執行 <code>lelab</code> 就好，瀏覽器會自動打開 <code>http://127.0.0.1:8000</code>。用 LeLab 的期間，這個終端機視窗不要關，關掉 LeLab 就停了。</li>
       </ol>
@@ -41,7 +41,7 @@ uv tool install --force --with-executables-from huggingface_hub ./AI-/lelab-zh</
       <figure><div class="photo"><img src="assets/img/lelab/lelab_welcome.webp" alt="LeLab 第一次打開的畫面：黑色底的首頁上出現 Welcome to LeLab 視窗，有 Take the tour 和 Maybe later 兩個按鈕" width="1200" height="600" loading="lazy"></div><figcaption>第一次打開會出現歡迎視窗，問你要不要看官方導覽。<ol class="marks"><li><code>Take the tour</code>：兩分鐘的官方導覽，第一次建議看一遍。</li><li><code>Maybe later</code>：先跳過，之後按右上角的 <code>Tour</code> 可以再看。</li></ol></figcaption></figure>
       <figure><div class="photo"><img src="assets/img/lelab/lelab_zh.webp" alt="中文版 LeLab 首頁：按鈕都是中文，例如遙控、資料集、訓練，右下角有一顆 EN 按鈕" width="1200" height="768" loading="lazy"></div><figcaption>中文版的首頁。<ol class="marks"><li>語言切換按鈕：顯示 <code>EN</code> 時按一下切成英文，顯示「中文」時按一下切回中文。下次打開會記得你的選擇。</li><li>按鈕都變成中文，例如 <code>Teleoperation</code> 變成「遙控」。</li></ol></figcaption></figure>
       <div class="note tip"><b class="k">中文版怎麼對照手冊</b><p>本章寫的是畫面上的英文按鈕名稱。用中文版時，看不出是哪一顆按鈕，就按右下角的 <code>EN</code> 切成英文對照，再按一下切回中文。</p></div>
-      <div class="note tip"><b class="k">中文版怎麼更新</b><p>中文版不會跳出自動更新，避免一按就被換回只有英文的官方版。我們合併好官方的新版本後，在 <code>AI-</code> 資料夾執行 <code>git pull</code>，再執行 <code>uv tool install --force --reinstall-package lelab --with-executables-from huggingface_hub ./lelab-zh</code>。維護方式寫在 <code>lelab-zh/I18N.zh-TW.md</code>。</p></div>
+      <div class="note tip"><b class="k">中文版怎麼更新</b><p>中文版不會跳出自動更新，避免一按就被換回只有英文的官方版。我們合併好官方的新版本後，在 <code>AI-</code> 資料夾執行 <code>git pull</code>，再執行 <code>uv tool install --force --reinstall-package lelab --torch-backend auto --with-executables-from huggingface_hub ./lelab-zh</code>。維護方式寫在 <code>lelab-zh/I18N.zh-TW.md</code>。</p></div>
       <div class="note tip"><b class="k">右上角的 HF not configured</b><p>中文版顯示「尚未登入 Hugging Face」，表示還沒登入。遙控和校準不用登入；上傳資料、雲端訓練才需要，到時候再照 <a href="#l05">L-05</a> 登入就好。</p></div>
       <div class="note tip"><b class="k">出現 port 8000 is already in use</b><p>上一次的 LeLab 還沒完全關掉。執行 <code>lelab --stop</code> 再重新執行 <code>lelab</code>。</p></div>
       <label class="check"><input type="checkbox" id="ck-l01"><span><b>檢查點</b>執行 <code>lelab</code> 後，瀏覽器自動打開黑色底的 LeLab 首頁。</span></label>
@@ -106,7 +106,7 @@ uv tool install --force --with-executables-from huggingface_hub ./AI-/lelab-zh</
   <article class="step" id="l05">
     <header><span class="code">L-05</span><h3>其他功能：錄資料、訓練、讓 AI 操作</h3></header>
     <div class="body">
-      <p>這些功能要讓手臂學會一個動作才會用到。錄資料和訓練通常要接攝影機，本手冊還沒有寫攝影機的安裝，這裡先介紹每個畫面怎麼看，實際操作請看官方影片。</p>
+      <p>這些功能要讓手臂學會一個動作才會用到。這裡先介紹每個畫面在哪裡；攝影機安裝、錄資料、用自己的 GPU 訓練、讓 AI 操作的完整步驟，在下一章 <a href="#t01">T-01</a> 到 <a href="#t06">T-06</a>。</p>
       <div class="tbl">
         <table>
           <thead><tr><th>首頁的位置</th><th>用途</th><th>重點</th></tr></thead>

@@ -1,0 +1,163 @@
+<section class="part" id="p7" data-phase="T" data-toc="延伸　攝影機與 AI 訓練">
+  <div class="part-head">
+    <span class="tag">延伸</span>
+    <h2>攝影機與第一次 AI 訓練</h2>
+    <p>讓執行臂「看示範、學動作」：用主控臂示範同一個任務很多次，LeLab 把攝影機畫面和關節角度錄下來，再用 GPU 訓練出一個策略模型，之後執行臂看著攝影機就能自己做。這一章全部用中文版 LeLab 操作，請先完成 <a href="#l01">L-01</a> 到 <a href="#l04">L-04</a>，確定雙臂遙控正常。</p>
+  </div>
+
+  <div class="note tip"><b class="k">什麼任務適合訓練</b><p>每次位置或角度不一樣、要「看了才知道怎麼動」的任務，例如從桌上不同位置拿起手把放進治具。位置固定、要精準力量的按鍵測試，還是用<a href="#p2">階段 B</a> 的程式控制比較準。官方建議的第一個任務：把同一個東西從幾個不同位置拿起來，放進盒子。</p></div>
+  <p class="src">本章依 LeRobot 0.7.0 官方文件（攝影機、模仿學習、硬體指南）、SO-ARM100 官方選配零件，以及中文版 LeLab 原始碼查證。截圖是中文版 LeLab 的示意畫面，攝影機畫面是瀏覽器的測試圖，手臂名稱、資料集名稱和數字是假的。</p>
+
+  <article class="step" id="t01">
+    <header><span class="code">T-01</span><h3>準備兩支攝影機</h3></header>
+    <div class="body">
+      <p>官方範例用兩支攝影機：一支固定在桌面看整個工作區，一支裝在手腕看夾爪。兩支都用一般的 USB 攝影機（免驅動的 UVC 規格）。官方說 640×480、每秒 30 張就夠，解析度不用高。</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>位置</th><th>攝影機</th><th>怎麼固定</th></tr></thead>
+          <tbody>
+            <tr><td><strong>桌面 <code>front</code></strong></td><td>一般 USB 網路攝影機</td><td>夾具或腳架鎖死在桌上，看得到手臂、物品和目標位置。官方也有支架 <a href="https://github.com/TheRobotStudio/SO-ARM100/tree/main/Optional/Overhead_Cam_Mount_Webcam" target="_blank" rel="noopener"><code>Overhead_Cam_Mount_Webcam</code></a>，但它要換掉底座的固定方式。</td></tr>
+            <tr><td><strong>手腕 <code>wrist</code></strong></td><td>32 × 32 mm 的 USB 攝影機模組，720p、30 fps 以上</td><td>官方有兩種支架，選一種印。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>手腕支架（SO-ARM100 <code>Optional/</code>）</th><th>怎麼裝</th><th>適合</th></tr></thead>
+          <tbody>
+            <tr><td><a href="https://github.com/TheRobotStudio/SO-ARM100/tree/main/Optional/Wrist_Cam_Mount_32x32_UVC_Module" target="_blank" rel="noopener"><code>Wrist_Cam_Mount_32x32_UVC_Module</code></a> 的 SO101 版</td><td>取代夾爪本體 <code>Wrist_Roll_Follower</code>，攝影機直接鎖在上面，用馬達附的 M2 螺絲</td><td>用官方原本夾爪的人</td></tr>
+            <tr><td><a href="https://github.com/TheRobotStudio/SO-ARM100/tree/main/Optional/SO101_Wrist_Cam_Hex-Nut_Mount_32x32_UVC_Module" target="_blank" rel="noopener"><code>SO101_Wrist_Cam_Hex-Nut_Mount_32x32_UVC_Module</code></a></td><td>外掛在手腕的六角螺帽槽，要另外買 M3 × 8 螺絲 2 顆和 M3 螺帽 2 顆。官方建議用樹狀支撐、填充 40%</td><td>已經換上 <a href="#p5">D-pad 指尖</a> 的人</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note warn"><b class="k">換了 D-pad 指尖，別印一體式支架</b><p>一體式支架和 D-pad 指尖都是「取代夾爪本體」的零件，兩個只能選一個。用 D-pad 指尖的話請印外掛式（Hex-Nut）。D-pad 版夾爪本體只多了套筒，手腕的螺帽槽和官方一樣；第一次裝的時候還是先比對一下會不會碰到。</p></div>
+      <ol class="do">
+        <li><strong>照官方的建議擺。</strong>
+          <ul>
+            <li>光線要均勻，避開太陽直射、反光和會移動的影子。</li>
+            <li>攝影機鎖死，錄資料和讓 AI 操作的時候都不能移動。</li>
+            <li>物品、夾爪和目標位置，至少要在一支攝影機裡看得到。</li>
+            <li>官方的判斷方法：只看攝影機畫面，你自己能不能完成這個任務。</li>
+          </ul>
+        </li>
+        <li><strong>USB 接孔要夠。</strong>兩塊驅動板加兩支攝影機，一共要 4 個 USB。筆電的孔不夠時，用有外接電源的 USB 集線器；兩支攝影機盡量接在不同的孔上。</li>
+      </ol>
+      <label class="check"><input type="checkbox" id="ck-t01"><span><b>檢查點</b>兩支攝影機都固定好，接上電腦；只看兩個畫面，就看得到手臂、物品和目標位置。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="t02">
+    <header><span class="code">T-02</span><h3>在 LeLab 加入攝影機</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li><strong>打開攝影機設定。</strong>首頁按手臂名稱旁的齒輪，進入「校準」頁，往下捲到「已連接的攝影機」，把右邊的開關打開。瀏覽器會詢問攝影機權限，按允許。</li>
+        <li><strong>加第一支。</strong>在「可用的攝影機」選桌面那一支，「攝影機名稱」輸入 <code>front</code>，按「新增攝影機」。</li>
+        <li><strong>加第二支。</strong>同樣的方式加入手腕那一支，名稱輸入 <code>wrist</code>。</li>
+        <li><strong>看預覽。</strong>下面會出現兩個即時畫面。畫面上下顛倒或轉 90 度，就改「旋轉角度」。</li>
+      </ol>
+      <figure style="max-width:640px"><div class="photo"><img src="assets/img/train/cam_added.webp" alt="校準頁的已連接的攝影機區塊：開關打開，加入了 front 和 wrist 兩支攝影機，各有即時預覽和旋轉角度選單" width="1200" height="1050" loading="lazy"></div><figcaption>圖中的綠色畫面是瀏覽器的測試圖，實際會是你的攝影機畫面。<ol class="marks"><li>開關打開才會掃描攝影機。</li><li>選攝影機。旁邊的箭頭可以重新掃描，剛插上的攝影機才會出現。</li><li>輸入名稱後按「新增攝影機」。</li><li>畫面方向不對，就改旋轉角度。</li></ol></figcaption></figure>
+      <div class="note warn"><b class="k">名稱定了就不要改</b><p>訓練好的模型是用 <code>front</code>、<code>wrist</code> 這兩個名稱來認攝影機的。之後錄資料、讓 AI 操作，都要用同樣的名稱和同樣的旋轉角度。</p></div>
+      <label class="check"><input type="checkbox" id="ck-t02"><span><b>檢查點</b>「已設定的攝影機」顯示 2 支，名稱是 <code>front</code> 和 <code>wrist</code>，兩個預覽的方向都正確。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="t03">
+    <header><span class="code">T-03</span><h3>錄示範資料</h3></header>
+    <div class="body">
+      <p>先用遙控把任務練熟，再開始錄。官方建議至少錄 50 段；如果物品會放在 5 個不同位置，每個位置各錄 10 段。動作要一致，一開始不要加太多變化。</p>
+      <ol class="do">
+        <li><strong>建立資料集。</strong>首頁「資料集」選單輸入名稱，例如 <code>so101_pick_controller</code>，按「建立」，會打開「設定錄製」視窗。</li>
+        <li><strong>填任務描述。</strong>用一句英文描述這個任務，例如 <code>Pick up the controller and place it in the fixture</code>。</li>
+        <li><strong>填片段數量和時間。</strong>
+          <ul>
+            <li>片段數量填 50。</li>
+            <li>每個片段的時間：完整做完一次大約要多久，再多留幾秒。LeLab 預設 60 秒，拿取放下的任務通常 20 秒左右就夠。</li>
+            <li>歸位時間：兩段之間讓你把物品放回去，預設 15 秒。</li>
+          </ul>
+        </li>
+        <li><strong>確認攝影機。</strong>視窗下方會顯示 <code>front</code>、<code>wrist</code> 的畫面。按「設為參考畫面」存一張，之後畫面上會半透明疊著它，攝影機被碰歪時一眼就看得出來，也方便擺回原位。</li>
+        <li><strong>開始錄製。</strong>每一段用主控臂做一次任務：
+          <ul>
+            <li>做完按空白鍵或 →，提早結束這一段。</li>
+            <li>歸位時間把物品放回去，或換到下一個位置。</li>
+            <li>做壞了按 Delete 或 ←，重錄這一段。</li>
+          </ul>
+        </li>
+        <li><strong>錄完。</strong>錄完會跳到上傳頁。不想上傳就按「跳過上傳」，資料只存在這台電腦。</li>
+      </ol>
+      <figure style="max-width:520px"><div class="photo"><img src="assets/img/train/record.webp" alt="設定錄製視窗：資料集名稱、任務描述、片段數量 50、每個片段的時間、歸位時間，下方是 front 和 wrist 兩支攝影機的畫面" width="1200" height="2435" loading="lazy"></div><figcaption>圖中的名稱和任務是範例。<ol class="marks"><li>任務描述：一句英文。</li><li>片段數量：至少 50。</li><li>每段的時間和歸位時間。</li><li>攝影機畫面，可以設參考畫面。</li></ol></figcaption></figure>
+      <label class="check"><input type="checkbox" id="ck-t03"><span><b>檢查點</b>錄完 50 段；首頁「資料集」選單裡可以打開這個資料集，逐格看到兩支攝影機的畫面和關節動作。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="t04">
+    <header><span class="code">T-04</span><h3>讓 LeLab 用到 RTX 5090</h3></header>
+    <div class="body">
+      <p>LeLab 會自動用 NVIDIA GPU 訓練，前提是安裝時裝到「GPU 版」的 PyTorch。Windows 一般安裝到的是只能用 CPU 的版本；而 RTX 50 系列是新架構，一定要 CUDA 12.8 以上的版本才能用。</p>
+      <ol class="do">
+        <li><strong>確認顯示卡驅動。</strong>在終端機執行 <code>nvidia-smi</code>，要看到 RTX 5090，右上角的 <code>CUDA Version</code> 要 12.8 以上。版本太舊就到 NVIDIA 官網更新驅動。</li>
+        <li><strong>用 GPU 版重裝 LeLab。</strong>在放 <code>AI-</code> 資料夾的那一層執行下面的指令。<code>--torch-backend auto</code> 會依你的驅動自動挑對應的 PyTorch；<code>--reinstall</code> 會把原本只能用 CPU 的版本換掉，會重新下載幾 GB。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>中文版 LeLab，GPU 版</span><button class="btn" type="button" data-copy>複製</button></div><pre>uv tool install --force --reinstall --torch-backend auto --with-executables-from huggingface_hub ./AI-/lelab-zh</pre></div>
+      <ol class="do" start="3">
+        <li><strong>確認有用到 GPU。</strong>執行 <code>lelab</code>。終端機如果出現 <code>NVIDIA GPU detected but PyTorch can't use CUDA</code>，就是還在用 CPU 版：把指令裡的 <code>auto</code> 改成 <code>cu128</code> 再裝一次。沒出現這行就是好了。</li>
+      </ol>
+      <div class="note tip"><b class="k">以後更新也要加</b><p>以後更新 LeLab 時，安裝指令一樣要加 <code>--torch-backend auto</code>，不然可能又裝回 CPU 版。</p></div>
+      <div class="note tip"><b class="k">筆電訓練的注意事項</b><p>插著電源訓練，Windows 電源模式選「最佳效能」，關掉自動睡眠，底下墊高幫助散熱。訓練中可以照常用電腦，但不要闔上螢幕。</p></div>
+      <label class="check"><input type="checkbox" id="ck-t04"><span><b>檢查點</b><code>nvidia-smi</code> 看得到 RTX 5090；執行 <code>lelab</code> 時，終端機沒有出現「PyTorch can't use CUDA」的警告。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="t05">
+    <header><span class="code">T-05</span><h3>第一次訓練</h3></header>
+    <div class="body">
+      <p>入門用 ACT 這個模型。照官方硬體指南，ACT 只需要約 2 到 6 GB 顯示記憶體，你們的 RTX 5090（24 GB）綽綽有餘。</p>
+      <ol class="do">
+        <li><strong>打開訓練頁。</strong>首頁「建立模型」按「訓練」。</li>
+        <li><strong>訓練位置選「本機：用你的電腦（免費）」。</strong>上方「雲端訓練需要 Hugging Face 權限」的提示可以不用理，本機訓練不用權杖。</li>
+        <li><strong>選資料集。</strong>在「資料集 ID」選剛錄好的 <code>so101_pick_controller</code>。</li>
+        <li><strong>策略模型選 ACT</strong>（預設就是）。批次大小先用預設的 8。</li>
+        <li><strong>算訓練步數。</strong>官方說模仿學習通常把資料看 5 到 10 遍就夠了，見下方算法。</li>
+        <li><strong>按「開始訓練」。</strong>回到首頁，下方「本機工作」會出現訓練卡片和進度條。</li>
+      </ol>
+      <div class="note tip"><b class="k">訓練步數怎麼算</b><p>總影格數 = 片段數 × 每段秒數 × 30。<br>
+        步數 = 總影格數 ÷ 批次大小 × 5 到 10。<br>
+        例如 50 段 × 20 秒 × 30 = 30,000 影格；30,000 ÷ 8 = 3,750 步算看完一遍；乘 5 到 10 倍，就是 <strong>20,000 到 40,000 步</strong>。第一次先用 20,000。LeLab 預設的 10,000 步，對這個資料量來說偏少。</p></div>
+      <figure style="max-width:620px"><div class="photo"><img src="assets/img/train/train.webp" alt="訓練頁：訓練位置選本機，資料集選 local/so101_pick_controller，策略模型 ACT，訓練步數、批次大小，右下角開始訓練按鈕" width="1200" height="1157" loading="lazy"></div><figcaption><ol class="marks"><li>訓練位置：本機（免費）。</li><li>選剛錄的資料集。</li><li>策略模型：ACT。</li><li>訓練步數：照上面的算法填。</li><li>開始訓練。</li></ol></figcaption></figure>
+      <figure><div class="photo"><img src="assets/img/train/jobs.webp" alt="首頁的本機工作：左邊一張訓練卡片顯示執行中和 41.3% 進度條，右邊一張顯示完成，有檢查點選單和綠色播放鍵" width="1200" height="307" loading="lazy"></div><figcaption>首頁的訓練卡片。<ol class="marks"><li>訓練進度。</li><li>中途停止訓練。</li><li>選檢查點：訓練中途存的版本，通常選最後一個。</li><li>綠色播放鍵：讓這個模型操作手臂，見 T-06。</li></ol></figcaption></figure>
+      <div class="note tip"><b class="k">要多久</b><p>官方的參考是桌機 RTX 4090 訓練 ACT（50 段資料）約 30 到 60 分鐘。筆電版 RTX 5090 的功耗比較低，會慢一些，先抓 1 小時左右，實際以進度條為準。</p></div>
+      <label class="check"><input type="checkbox" id="ck-t05"><span><b>檢查點</b>訓練卡片從「執行中」變成「完成」，下面出現檢查點選單和綠色播放鍵。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="t06">
+    <header><span class="code">T-06</span><h3>讓 AI 操作手臂</h3></header>
+    <div class="body">
+      <div class="note stop"><b class="k">第一次跑之前</b><p>這一步執行臂會自己動。手臂可動範圍內不要放其他東西，人站在手臂碰不到的地方，手放在執行臂的電源旁邊，動作不對就立刻拔電。「最長時間」第一次先設短一點。</p></div>
+      <ol class="do">
+        <li><strong>擺好場景。</strong>物品放在錄資料時用過的其中一個位置，攝影機和燈光都和錄的時候一樣。</li>
+        <li><strong>選檢查點。</strong>在完成的訓練卡片選檢查點（通常選最後一個），按綠色播放鍵，會打開「設定推論」視窗。</li>
+        <li><strong>設定。</strong>
+          <ul>
+            <li>「最長時間（秒）」第一次填 20。</li>
+            <li>「攝影機」區塊：<code>front</code>、<code>wrist</code> 各選對應的實體攝影機，旋轉角度要和錄資料時一樣。</li>
+          </ul>
+        </li>
+        <li><strong>按「開始推論」，觀察手臂。</strong>要提早停就按停止。</li>
+      </ol>
+      <figure style="max-width:560px"><div class="photo"><img src="assets/img/train/infer.webp" alt="設定推論視窗：檢查點選第 20000 步，最長時間 60 秒，下方攝影機區塊把 front 對應到 0 號攝影機" width="1200" height="1444" loading="lazy"></div><figcaption><ol class="marks"><li>檢查點：通常選最後一個。</li><li>最長時間：第一次設短一點。</li><li>攝影機對應：名稱要對到同一支實體攝影機。</li></ol></figcaption></figure>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>狀況</th><th>先試試看</th></tr></thead>
+          <tbody>
+            <tr><td>手臂亂動、找不到物品</td><td>攝影機有沒有被碰歪（用參考畫面對照）；燈光和錄資料時一不一樣；<code>front</code>、<code>wrist</code> 有沒有對反</td></tr>
+            <tr><td>大致會做，但常常失手</td><td>多錄一些資料，失手的位置多錄幾段；或把訓練步數加到 5 到 10 遍的上限</td></tr>
+            <tr><td>只會做某些位置</td><td>每個位置的片段數量要平均；新位置要先錄進資料再重新訓練</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>官方影片：<a href="https://youtu.be/VqyKUuW9V1g" target="_blank" rel="noopener">LeLab 操作示範</a></p>
+      <label class="check"><input type="checkbox" id="ck-t06"><span><b>檢查點</b>執行臂自己把物品從錄過的位置拿起來，放到目標位置。恭喜，你們訓練出第一個 AI 模型了！</span></label>
+    </div>
+  </article>
+</section>

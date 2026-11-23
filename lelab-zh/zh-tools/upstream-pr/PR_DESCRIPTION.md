@@ -16,7 +16,7 @@ I chose this over wrapping every string in `t()` for three reasons:
 - **New UI text is safe.** A string without a translation stays in English, so it never breaks.
 - **Easy to keep up to date.** `npm run i18n:check` uses the TypeScript parser to list UI strings in `src/` that are not in the dictionary yet.
 
-Coverage right now: 798 UI strings extracted. 746 are translated, plus 53 patterns for text built from variables (e.g. `Create "so101"`, `Episode 3 of 10`). The remaining strings are deliberately left in English: product and model names, CSS values, code. Common backend status messages are translated too. Joint names, file names and model names stay in English on purpose.
+Coverage right now: 798 UI strings extracted. 747 are translated, plus 60 patterns for text built from variables (e.g. `Create "so101"`, `Episode 3 of 10`, `started 25m ago`). The remaining strings are deliberately left in English: product and model names, CSS values, code. Common backend status messages are translated too. Joint names, file names and model names stay in English on purpose.
 
 If you would rather have a `react-i18next` / `t()` approach, I am happy to rework it. The dictionary would carry over as-is.
 
