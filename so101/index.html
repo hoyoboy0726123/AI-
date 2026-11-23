@@ -201,6 +201,12 @@ figcaption{font-size:13px;color:var(--ink-2)}
 .kv{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 16px;font-size:15px}
 .kv dt{font-weight:700}
 .kv dd{margin:0;color:var(--ink-2);min-width:0;overflow-wrap:anywhere}
+.talk{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:12px;counter-reset:talk}
+.talk>li{border:1px solid var(--rule);border-radius:6px;background:var(--sheet);padding:12px 14px;min-width:0;counter-increment:talk}
+.talk .t{font-family:var(--f-disp);font-weight:700;color:var(--mat);margin-bottom:6px}
+.talk .t::before{content:counter(talk) "．"}
+.talk .say{margin:0 0 8px;padding:6px 10px;border-left:3px solid var(--mat);background:var(--mat-soft);border-radius:0 4px 4px 0;font-weight:700}
+.talk .kv{font-size:14px;gap:4px 12px}
 .step .body :not(pre)>code{overflow-wrap:anywhere}
 .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:16px}
 .src{font-size:13px;color:var(--ink-2);overflow-wrap:anywhere}
@@ -2249,7 +2255,91 @@ uv tool install --force --torch-backend auto --with-executables-from huggingface
         </table>
       </div>
       <p>官方影片：<a href="https://youtu.be/VqyKUuW9V1g" target="_blank" rel="noopener">LeLab 操作示範</a></p>
+      <div class="note tip"><b class="k">想請 Claude Code 一起幫忙</b><p>從校準、錄資料到訓練，每一步可以怎麼請 Claude Code 協助，見下一章 <a href="#k01">K-01</a>。</p></div>
       <label class="check"><input type="checkbox" id="ck-t06"><span><b>檢查點</b>執行臂自己把物品從錄過的位置拿起來，放到目標位置。恭喜，你們訓練出第一個 AI 模型了！</span></label>
+    </div>
+  </article>
+</section>
+
+<section class="part" id="p8" data-phase="K" data-toc="延伸　用 Claude Code 協助">
+  <div class="part-head">
+    <span class="tag">延伸</span>
+    <h2>用 Claude Code 協助：從校準到訓練</h2>
+    <p>軟體都裝好之後，可以讓 Claude Code 在接著手臂的筆電上幫忙：下指令、檢查結果、看攝影機照片、算訓練參數、寫測試程式、看懂錯誤訊息。動手的部分（接線、轉關節、示範動作）還是要人來做，會讓手臂動的指令也一定要你同意才執行。</p>
+  </div>
+
+  <article class="step" id="k01">
+    <header><span class="code">K-01</span><h3>在筆電上準備 Claude Code</h3></header>
+    <div class="body">
+      <ol class="do">
+        <li><strong>裝在接手臂的那台筆電。</strong>Claude Code 要在連著手臂和攝影機的電腦上跑，才碰得到 USB。可以裝 Claude 桌面 App（內含 Claude Code），或照<a href="https://code.claude.com/docs/en/setup" target="_blank" rel="noopener">官方安裝說明</a>裝指令版。需要有 Claude Code 使用權限的 Claude 帳號。</li>
+      </ol>
+      <div class="codeblk"><div class="cap"><span>Windows PowerShell（官方安裝指令）</span><button class="btn" type="button" data-copy>複製</button></div><pre>irm https://claude.ai/install.ps1 | iex</pre></div>
+      <ol class="do" start="2">
+        <li><strong>在 <code>AI-</code> 資料夾打開。</strong>就是 <a href="#l01">L-01</a> 用 <code>git clone</code> 下載的那個資料夾。Claude Code 打開時會自動讀 <a href="https://github.com/hoyoboy0726123/AI-/blob/claude/project-review-sos0lj/CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a>，裡面寫好了我們的設備、電源、校準檔名稱、常用指令和安全規則，不用每次重新解釋。</li>
+        <li><strong>保持「每次詢問」。</strong>Claude Code 要執行指令前會先問你。操作手臂時保持這個預設模式，不要切成自動接受或略過權限。</li>
+        <li><strong>人不在電腦前也能用（選用）。</strong>在 <code>AI-</code> 資料夾的終端機執行 <code>claude remote-control</code>，就能用手機或平板上的 Claude App 連到這台筆電操作。要用 claude.ai 帳號登入（Pro、Max、Ultra、Team 或 Enterprise 方案，API 金鑰不行）；Team 和 Enterprise 要管理員先在後台開啟。詳見<a href="https://code.claude.com/docs/en/remote-control" target="_blank" rel="noopener">官方說明</a>。</li>
+      </ol>
+      <div class="note warn"><b class="k">手臂動的時候，人一定要在現場</b><p>就算用平板遠端下指令，手臂要動之前也要有人站在旁邊，手放在執行臂的電源旁。</p></div>
+      <label class="check"><input type="checkbox" id="ck-k01"><span><b>檢查點</b>在筆電的 <code>AI-</code> 資料夾打開 Claude Code，問它「我們的執行臂用什麼電源？」，它會回答 12V。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="k02">
+    <header><span class="code">K-02</span><h3>分工與安全規則</h3></header>
+    <div class="body">
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Claude Code 做</th><th>你做</th></tr></thead>
+          <tbody>
+            <tr><td>下不會讓手臂動的指令：檢查 GPU、列出連接埠、找攝影機、啟動 LeLab</td><td>接線、插拔 USB 和電源</td></tr>
+            <tr><td>告訴你下一步要做什麼，事後檢查結果對不對</td><td>需要按 Enter、用手轉關節的步驟（設定 ID、校準）</td></tr>
+            <tr><td>看攝影機照片，建議角度和光線怎麼調</td><td>把攝影機鎖好、調位置</td></tr>
+            <tr><td>規劃錄資料、檢查錄好的資料、算訓練步數、啟動並看著訓練</td><td><strong>用主控臂示範任務</strong>，AI 學的就是你的動作</td></tr>
+            <tr><td>寫測試程式、分析結果、做報表</td><td>手臂第一次跑新程式時在旁邊看著，最後判斷結果合不合格</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ol class="do">
+        <li><strong>會動的指令一定先問。</strong>遙控、錄資料、重播、讓 AI 操作、按壓測試，還有設定馬達 ID、校準，Claude 都要先說明手臂會怎麼動，得到你同意才執行。這些規則寫在 CLAUDE.md 裡。</li>
+        <li><strong>停止條件寫在程式裡。</strong>Claude 下指令後看不到手臂的即時動作，沒辦法在幾毫秒內停手。所以按壓這類動作，一定要用有力量上限和行程上限的程式，例如 <a href="#b06">B-06</a> 的 <code>force_probe.py push</code>。</li>
+        <li><strong>要按 Enter 的指令，在你自己的視窗執行。</strong><code>lerobot-setup-motors</code>、<code>lerobot-calibrate</code>、<code>lerobot-find-port</code> 執行到一半，會等你按 Enter。Claude 在背景跑指令時沒辦法替你按，所以它會給你指令，請你在另一個 Miniforge Prompt 視窗執行，做完再請它檢查。也可以直接用 LeLab 的網頁按鈕做。</li>
+      </ol>
+      <label class="check"><input type="checkbox" id="ck-k02"><span><b>檢查點</b>知道哪些事 Claude 會做、哪些要自己做；知道會動的指令要先經過你同意。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="k03">
+    <header><span class="code">K-03</span><h3>從校準到訓練：每一步這樣跟 Claude 說</h3></header>
+    <div class="body">
+      <p>照順序一步一步來，做完一步確認沒問題，再進下一步。綠色框裡的句子可以直接複製貼給 Claude，也可以用自己的話說。</p>
+      <ol class="talk">
+        <li><div class="t">檢查環境</div><p class="say">「幫我確認 LeLab 和 GPU 都裝好了」</p><dl class="kv"><dt>Claude</dt><dd>執行 <code>nvidia-smi</code>，檢查 PyTorch 有沒有用到 GPU，看 <code>lelab</code> 有沒有警告；有問題就照 <a href="#t04">T-04</a> 修</dd><dt>你</dt><dd>看結果，需要重裝時同意它執行</dd></dl></li>
+        <li><div class="t">找連接埠</div><p class="say">「幫我找兩隻手臂的連接埠」</p><dl class="kv"><dt>Claude</dt><dd>先列出連接埠，請你拔掉一隻手臂的 USB，再列一次，比對出哪個是執行臂、哪個是主控臂。USB 重插後可能會變，每次開工前都重新確認</dd><dt>你</dt><dd>照指示拔插 USB</dd></dl></li>
+        <li><div class="t">校準</div><p class="say">「帶我校準執行臂，再校準主控臂」</p><dl class="kv"><dt>Claude</dt><dd>告訴你中間姿勢怎麼擺，給你校準指令；你做完後檢查校準檔有沒有存好、數值合不合理</dd><dt>你</dt><dd>在自己的視窗執行指令，按 Enter，用手轉關節（或在 LeLab 校準頁操作）</dd></dl></li>
+        <li><div class="t">遙控確認</div><p class="say">「我要試遙控，幫我確認可以開始」</p><dl class="kv"><dt>Claude</dt><dd>檢查電源、連接埠沒被占用、校準檔名稱一致，提醒安全事項</dd><dt>你</dt><dd>在 LeLab 首頁按黃色的「遙控」，慢慢推主控臂（<a href="#l04">L-04</a>）</dd></dl></li>
+        <li><div class="t">攝影機</div><p class="say">「幫我找攝影機，看看畫面拍得清不清楚」</p><dl class="kv"><dt>Claude</dt><dd>執行 <code>lerobot-find-cameras opencv</code>，打開拍到的照片，告訴你看不看得到手臂、物品和目標，光線夠不夠</dd><dt>你</dt><dd>調整攝影機位置，在 LeLab 加入 <code>front</code>、<code>wrist</code>（<a href="#t02">T-02</a>）</dd></dl></li>
+        <li><div class="t">規劃錄資料</div><p class="say">「我要訓練手臂從桌上拿手把放進治具，幫我規劃怎麼錄」</p><dl class="kv"><dt>Claude</dt><dd>建議要放幾個位置、每個位置錄幾段、每段幾秒，寫成一張清單</dd><dt>你</dt><dd>照清單在 LeLab 示範並錄製（<a href="#t03">T-03</a>）</dd></dl></li>
+        <li><div class="t">檢查資料</div><p class="say">「幫我檢查剛錄的資料集」</p><dl class="kv"><dt>Claude</dt><dd>確認片段數量、每段長度、兩支攝影機的影片都在，找出太短或可能錄壞的片段</dd><dt>你</dt><dd>需要的話，重錄它挑出來的片段</dd></dl></li>
+        <li><div class="t">訓練</div><p class="say">「幫我用 ACT 訓練這個資料集」</p><dl class="kv"><dt>Claude</dt><dd>照資料量算訓練步數，告訴你 LeLab 要填什麼（或經你同意直接用指令開始），之後看進度、預估完成時間</dd><dt>你</dt><dd>在 LeLab 按「開始訓練」，筆電插電、別讓它睡眠</dd></dl></li>
+        <li><div class="t">讓 AI 操作</div><p class="say">「訓練好了，我要試跑，幫我準備」</p><dl class="kv"><dt>Claude</dt><dd>建議用哪個檢查點，提醒最長時間先設 20 秒、攝影機要對應好</dd><dt>你</dt><dd>站在旁邊、手放電源旁，在 LeLab 按「開始推論」（<a href="#t06">T-06</a>）</dd></dl></li>
+        <li><div class="t">改進</div><p class="say">「它常常拿不到，幫我看看是什麼原因」</p><dl class="kv"><dt>Claude</dt><dd>看你拍的照片或影片、比對錄資料時的畫面，建議多錄哪些位置、要不要加訓練步數</dd><dt>你</dt><dd>補錄資料、重新訓練</dd></dl></li>
+      </ol>
+      <div class="note tip"><b class="k">遇到錯誤時</b><p>直接把整段錯誤訊息貼給 Claude，或拍下畫面傳給它。也可以先對照附錄 <a href="#z01">Z-01</a>。</p></div>
+      <label class="check"><input type="checkbox" id="ck-k03"><span><b>檢查點</b>照上面的順序，在 Claude 協助下完成從校準到第一次訓練。</span></label>
+    </div>
+  </article>
+
+  <article class="step" id="k04">
+    <header><span class="code">K-04</span><h3>按鍵測試程式也可以請它寫</h3></header>
+    <div class="body">
+      <p>你們的按鍵、十字鍵測試，比較適合用程式控制，不需要 AI 訓練。可以請 Claude Code 根據 <a href="#b06">B-06</a> 的 <code>force_probe.py</code> 寫正式的測試程式，例如：</p>
+      <ul class="do">
+        <li>「幫我寫一個程式：記住十字鍵上、下、左、右四個位置，每個方向用 50 克壓 100 次，記錄每次的峰值力量，存成 CSV。」</li>
+        <li>「把這次測試的 CSV 做成報表，標出力量異常的那幾次。」</li>
+      </ul>
+      <div class="note warn"><b class="k">新程式照順序試</b><p>先關扭力空跑確認路徑 → 低速、短行程 → 才用正常速度。力量一定要設上限。Claude 每一步都會先問過你。</p></div>
+      <label class="check"><input type="checkbox" id="ck-k04"><span><b>檢查點</b>知道怎麼請 Claude 寫測試程式，以及新程式要照順序試跑。</span></label>
     </div>
   </article>
 </section>
@@ -2347,6 +2437,7 @@ uv tool install --force --torch-backend auto --with-executables-from huggingface
         <li>LeLab：<a href="https://github.com/huggingface/leLab" target="_blank" rel="noopener">huggingface/leLab</a>，commit 1894ab5（2026-11-06），Apache-2.0，內含 LeRobot 0.7.0。L-01 到 L-05 的安裝指令、按鈕名稱和校準流程來自它的原始碼和 LeRobot 官方文件 <code>docs/source/lelab.mdx</code>（commit 83883ae）。</li>
         <li>攝影機與訓練（T-01 到 T-06）：LeRobot 0.7.0 官方文件 <code>cameras.mdx</code>、<code>il_robots.mdx</code>、<code>hardware_guide.mdx</code>（<a href="https://github.com/huggingface/lerobot/tree/v0.7.0/docs/source" target="_blank" rel="noopener">v0.7.0 docs</a>），攝影機支架來自 SO-ARM100 的 <code>Optional/</code> 資料夾（commit a758567）。</li>
         <li>LeLab 中文版：本 repo 的 <code>lelab-zh</code> 資料夾，是上面官方 commit 加上中文／EN 切換外掛（新增檔案和 <code>main.tsx</code> 的一行 import），同樣是 Apache-2.0。維護說明在 <code>lelab-zh/I18N.zh-TW.md</code>。</li>
+        <li>Claude Code（K-01 到 K-04）：官方文件<a href="https://code.claude.com/docs/en/setup" target="_blank" rel="noopener">安裝說明</a>和 <a href="https://code.claude.com/docs/en/remote-control" target="_blank" rel="noopener">Remote Control</a>，查證日期 2026-11-23。給 Claude 的專案守則在本 repo 的 <a href="https://github.com/hoyoboy0726123/AI-/blob/claude/project-review-sos0lj/CLAUDE.md" target="_blank" rel="noopener">CLAUDE.md</a>。</li>
         <li>官方線上組裝說明：<a href="https://huggingface.co/docs/lerobot/so101" target="_blank" rel="noopener">huggingface.co/docs/lerobot/so101</a>。</li>
         <li>力感測：TAL221 荷重元、HX711、<a href="https://github.com/bogde/HX711" target="_blank" rel="noopener">bogde/HX711</a> 函式庫，細節列在階段 B。</li>
         <li>零件圖：由本手冊用官方 STL 算繪；3D 檢視器載入的也是官方 STL 原檔，組裝總圖為減面版本。</li>
